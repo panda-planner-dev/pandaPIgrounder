@@ -1,0 +1,55 @@
+25 29
+affix_warning_signs Eisenbahnwagen
+affix_warning_signs Lokomotive
+attach_train_car Lokomotive Eisenbahnwagen HauptbahnhofMuenchen
+attach_train_car Lokomotive Eisenbahnwagen HauptbahnhofUlm
+close_door Eisenbahnwagen
+collect_fees Briefe
+decontaminate_interior Eisenbahnwagen
+decontaminate_interior Lokomotive
+deliver_p Briefe
+detach_train_car Lokomotive Eisenbahnwagen HauptbahnhofMuenchen
+detach_train_car Lokomotive Eisenbahnwagen HauptbahnhofUlm
+do_clean_interior Eisenbahnwagen
+do_clean_interior Lokomotive
+load_package Briefe Eisenbahnwagen HauptbahnhofMuenchen
+load_package Briefe Eisenbahnwagen HauptbahnhofUlm
+lower_ramp Eisenbahnwagen
+lower_ramp Lokomotive
+move_vehicle_no_traincar Lokomotive HauptbahnhofUlm UlmMuenchenRailRoute HauptbahnhofMuenchen
+open_door Eisenbahnwagen
+raise_ramp Eisenbahnwagen
+raise_ramp Lokomotive
+remove_warning_signs Eisenbahnwagen
+remove_warning_signs Lokomotive
+unload_package Briefe Eisenbahnwagen HauptbahnhofMuenchen
+unload_package Briefe Eisenbahnwagen HauptbahnhofUlm
++At_Package Briefe Eisenbahnwagen
++At_Package Briefe HauptbahnhofMuenchen
++At_Package Briefe HauptbahnhofUlm
++At_Vehicle Eisenbahnwagen HauptbahnhofMuenchen
++At_Vehicle Eisenbahnwagen HauptbahnhofUlm
++At_Vehicle Lokomotive HauptbahnhofMuenchen
++At_Vehicle Lokomotive HauptbahnhofUlm
++Available Lokomotive
++Available UlmMuenchenRailRoute
++Connected_To Eisenbahnwagen Lokomotive
++Connects UlmMuenchenRailRoute HauptbahnhofUlm HauptbahnhofMuenchen
++Delivered Briefe
++Door_Open Eisenbahnwagen
++Fees_Collected Briefe
++In_City HauptbahnhofMuenchen Muenchen
++In_City HauptbahnhofUlm Ulm
++PV_Compatible Briefe Eisenbahnwagen
++RV_Compatible UlmMuenchenRailRoute Lokomotive
++Ramp_Down Eisenbahnwagen
++Ramp_Down Lokomotive
++Warning_Signs_Affixed Eisenbahnwagen
++Warning_Signs_Affixed Lokomotive
+-Connected_To Eisenbahnwagen Lokomotive
+-Door_Open Eisenbahnwagen
+-Fees_Collected Briefe
+-Ramp_Down Eisenbahnwagen
+-Ramp_Down Lokomotive
+-Warning_Signs_Affixed Eisenbahnwagen
+-Warning_Signs_Affixed Lokomotive

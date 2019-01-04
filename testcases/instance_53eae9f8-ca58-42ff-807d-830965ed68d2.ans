@@ -1,0 +1,51 @@
+23 27
+affix_warning_signs Eisenbahnwagen
+affix_warning_signs Lokomotive
+attach_train_car Lokomotive Eisenbahnwagen HauptbahnhofStuttgart
+attach_train_car Lokomotive Eisenbahnwagen HauptbahnhofUlm
+collect_fees MaseratiMC12
+decontaminate_interior Eisenbahnwagen
+decontaminate_interior Lokomotive
+deliver_p MaseratiMC12
+detach_train_car Lokomotive Eisenbahnwagen HauptbahnhofStuttgart
+detach_train_car Lokomotive Eisenbahnwagen HauptbahnhofUlm
+do_clean_interior Eisenbahnwagen
+do_clean_interior Lokomotive
+load_cars MaseratiMC12 Eisenbahnwagen HauptbahnhofStuttgart
+load_cars MaseratiMC12 Eisenbahnwagen HauptbahnhofUlm
+lower_ramp Eisenbahnwagen
+lower_ramp Lokomotive
+move_vehicle_no_traincar Lokomotive HauptbahnhofUlm UlmStuttgartRailRoute HauptbahnhofStuttgart
+raise_ramp Eisenbahnwagen
+raise_ramp Lokomotive
+remove_warning_signs Eisenbahnwagen
+remove_warning_signs Lokomotive
+unload_cars MaseratiMC12 Eisenbahnwagen HauptbahnhofStuttgart
+unload_cars MaseratiMC12 Eisenbahnwagen HauptbahnhofUlm
++At_Package MaseratiMC12 Eisenbahnwagen
++At_Package MaseratiMC12 HauptbahnhofStuttgart
++At_Package MaseratiMC12 HauptbahnhofUlm
++At_Vehicle Eisenbahnwagen HauptbahnhofStuttgart
++At_Vehicle Eisenbahnwagen HauptbahnhofUlm
++At_Vehicle Lokomotive HauptbahnhofStuttgart
++At_Vehicle Lokomotive HauptbahnhofUlm
++Available Lokomotive
++Available UlmStuttgartRailRoute
++Connected_To Eisenbahnwagen Lokomotive
++Connects UlmStuttgartRailRoute HauptbahnhofUlm HauptbahnhofStuttgart
++Delivered MaseratiMC12
++Fees_Collected MaseratiMC12
++In_City HauptbahnhofStuttgart Stuttgart
++In_City HauptbahnhofUlm Ulm
++PV_Compatible MaseratiMC12 Eisenbahnwagen
++RV_Compatible UlmStuttgartRailRoute Lokomotive
++Ramp_Down Eisenbahnwagen
++Ramp_Down Lokomotive
++Warning_Signs_Affixed Eisenbahnwagen
++Warning_Signs_Affixed Lokomotive
+-Connected_To Eisenbahnwagen Lokomotive
+-Fees_Collected MaseratiMC12
+-Ramp_Down Eisenbahnwagen
+-Ramp_Down Lokomotive
+-Warning_Signs_Affixed Eisenbahnwagen
+-Warning_Signs_Affixed Lokomotive

@@ -1,0 +1,101 @@
+43 57
+attachContactableInformationToCall call1 BiundoEMailAddress Biundo
+attachContactableInformationToCall call1 BiundoOfficeNumber Biundo
+attachContactableInformationToEMail email1 BiundoEMailAddress Biundo
+attachContactableInformationToEMail email1 BiundoOfficeNumber Biundo
+attachContactableInformationToSMS sms1 BiundoEMailAddress Biundo
+attachContactableInformationToSMS sms1 BiundoOfficeNumber Biundo
+attachRegularInformationToCall call1 dateForMeeting
+attachRegularInformationToCall call1 room101
+attachRegularInformationToEMail email1 BiundoPicture
+attachRegularInformationToEMail email1 agenda
+attachRegularInformationToEMail email1 dateForMeeting
+attachRegularInformationToEMail email1 room101
+attachRegularInformationToSMS sms1 dateForMeeting
+attachRegularInformationToSMS sms1 room101
+enter_EMailAddress Biundo BiundoEMailAddress
+enter_Number_ForCall_Office Biundo BiundoOfficeNumber
+enter_Number_ForSMS_Office Biundo BiundoOfficeNumber
+extractsInformation_Contactable Biundo call1 BiundoEMailAddress Biundo
+extractsInformation_Contactable Biundo call1 BiundoOfficeNumber Biundo
+extractsInformation_Contactable Biundo email1 BiundoEMailAddress Biundo
+extractsInformation_Contactable Biundo email1 BiundoOfficeNumber Biundo
+extractsInformation_Contactable Biundo sms1 BiundoEMailAddress Biundo
+extractsInformation_Contactable Biundo sms1 BiundoOfficeNumber Biundo
+extractsInformation_Regular Biundo call1 dateForMeeting
+extractsInformation_Regular Biundo call1 room101
+extractsInformation_Regular Biundo email1 BiundoPicture
+extractsInformation_Regular Biundo email1 agenda
+extractsInformation_Regular Biundo email1 dateForMeeting
+extractsInformation_Regular Biundo email1 room101
+extractsInformation_Regular Biundo sms1 dateForMeeting
+extractsInformation_Regular Biundo sms1 room101
+press_EMail_NewEMail account1
+press_EMail_NewEMail_Send Biundo email1
+press_Home_Default 
+press_Home_EMail 
+press_Home_From_SMS_Office Biundo
+press_Home_From_Telephone_Office Biundo
+press_Home_Messages 
+press_Home_Telephone 
+press_Messages_NewMessage 
+press_NewMessage_Send_Office Biundo sms1
+press_Telephone_Call_Office Biundo call1
+select_EMail_EMailAccount_NoOp account1
++associated_Contact contact1 Biundo
++associated_Picture contact1 BiundoPicture
++attached call1 BiundoEMailAddress
++attached call1 BiundoOfficeNumber
++attached call1 dateForMeeting
++attached call1 room101
++attached email1 BiundoEMailAddress
++attached email1 BiundoOfficeNumber
++attached email1 BiundoPicture
++attached email1 agenda
++attached email1 dateForMeeting
++attached email1 room101
++attached sms1 BiundoEMailAddress
++attached sms1 BiundoOfficeNumber
++attached sms1 dateForMeeting
++attached sms1 room101
++created contact1
++entered_AnyNumber 
++entered_EMail Biundo
++entered_NumberOffice Biundo
++hasInformation_Regular Biundo BiundoPicture
++hasInformation_Regular Biundo agenda
++hasInformation_Regular Biundo dateForMeeting
++hasInformation_Regular Biundo room101
++hasReceived Biundo call1
++hasReceived Biundo email1
++hasReceived Biundo sms1
++haveInformation_Contactable Biundo BiundoEMailAddress
++haveInformation_Contactable Biundo BiundoOfficeNumber
++haveInformation_Regular BiundoPicture
++haveInformation_Regular agenda
++haveInformation_Regular dateForMeeting
++haveInformation_Regular room101
++inMode_EMail 
++inMode_EMail_NewEMail 
++inMode_Home 
++inMode_Messages 
++inMode_NewMessage 
++inMode_Telephone 
++isFavourite contact1
++selected account1
+-entered_AnyNumber 
+-haveSent call1
+-haveSent email1
+-haveSent sms1
+-inMode_Calendar_ConfigureAppointment 
+-inMode_Contacts_ConfigureContact 
+-inMode_Contacts_Details 
+-inMode_EMail_Inbox 
+-inMode_EMail_NewEMail 
+-inMode_Menu 
+-inMode_NewMessage 
+-inMode_People_AddFavourite 
+-inMode_PictureSelection 
+-inMode_Tasks_ConfigureTask 
+-isSet_Contact_Picture contact1
+-selected_Favourite contact1

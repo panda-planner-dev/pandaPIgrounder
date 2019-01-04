@@ -1,0 +1,35 @@
+15 19
+affix_warning_signs LKW
+close_door LKW
+collect_fees Tische
+decontaminate_interior LKW
+deliver_p Tische
+do_clean_interior LKW
+load_package Tische LKW FrancheComte
+load_package Tische LKW Vendee
+lower_ramp LKW
+move_vehicle_no_traincar LKW Vendee VendeeFrancheComteRoadRoute FrancheComte
+open_door LKW
+raise_ramp LKW
+remove_warning_signs LKW
+unload_package Tische LKW FrancheComte
+unload_package Tische LKW Vendee
++At_Package Tische FrancheComte
++At_Package Tische LKW
++At_Package Tische Vendee
++At_Vehicle LKW FrancheComte
++At_Vehicle LKW Vendee
++Available LKW
++Available VendeeFrancheComteRoadRoute
++Connects VendeeFrancheComteRoadRoute Vendee FrancheComte
++Delivered Tische
++Door_Open LKW
++Fees_Collected Tische
++PV_Compatible Tische LKW
++RV_Compatible VendeeFrancheComteRoadRoute LKW
++Ramp_Down LKW
++Warning_Signs_Affixed LKW
+-Door_Open LKW
+-Fees_Collected Tische
+-Ramp_Down LKW
+-Warning_Signs_Affixed LKW

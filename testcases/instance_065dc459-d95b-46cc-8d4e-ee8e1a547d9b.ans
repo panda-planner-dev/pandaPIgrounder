@@ -1,0 +1,661 @@
+560 100
+do_glaze p0 glazer0 blue untreated glazed natural
+do_glaze p1 glazer0 blue untreated glazed natural
+do_glaze p2 glazer0 blue untreated glazed natural
+do_glaze p3 glazer0 blue untreated glazed natural
+do_glaze p4 glazer0 blue untreated glazed natural
+do_glaze p5 glazer0 blue untreated glazed natural
+do_grind p0 smooth black colourfragments untreated verysmooth natural
+do_grind p0 smooth black glazed untreated verysmooth natural
+do_grind p0 smooth black untreated untreated verysmooth natural
+do_grind p0 smooth black varnished colourfragments verysmooth natural
+do_grind p0 smooth blue colourfragments untreated verysmooth natural
+do_grind p0 smooth blue glazed untreated verysmooth natural
+do_grind p0 smooth blue untreated untreated verysmooth natural
+do_grind p0 smooth blue varnished colourfragments verysmooth natural
+do_grind p0 smooth mauve colourfragments untreated verysmooth natural
+do_grind p0 smooth mauve glazed untreated verysmooth natural
+do_grind p0 smooth mauve untreated untreated verysmooth natural
+do_grind p0 smooth mauve varnished colourfragments verysmooth natural
+do_grind p0 smooth natural colourfragments untreated verysmooth natural
+do_grind p0 smooth natural glazed untreated verysmooth natural
+do_grind p0 smooth natural untreated untreated verysmooth natural
+do_grind p0 smooth natural varnished colourfragments verysmooth natural
+do_grind p0 verysmooth black colourfragments untreated verysmooth natural
+do_grind p0 verysmooth black glazed untreated verysmooth natural
+do_grind p0 verysmooth black untreated untreated verysmooth natural
+do_grind p0 verysmooth black varnished colourfragments verysmooth natural
+do_grind p0 verysmooth blue colourfragments untreated verysmooth natural
+do_grind p0 verysmooth blue glazed untreated verysmooth natural
+do_grind p0 verysmooth blue untreated untreated verysmooth natural
+do_grind p0 verysmooth blue varnished colourfragments verysmooth natural
+do_grind p0 verysmooth mauve colourfragments untreated verysmooth natural
+do_grind p0 verysmooth mauve glazed untreated verysmooth natural
+do_grind p0 verysmooth mauve untreated untreated verysmooth natural
+do_grind p0 verysmooth mauve varnished colourfragments verysmooth natural
+do_grind p0 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p0 verysmooth natural glazed untreated verysmooth natural
+do_grind p0 verysmooth natural untreated untreated verysmooth natural
+do_grind p0 verysmooth natural varnished colourfragments verysmooth natural
+do_grind p1 smooth black colourfragments untreated verysmooth natural
+do_grind p1 smooth black glazed untreated verysmooth natural
+do_grind p1 smooth black untreated untreated verysmooth natural
+do_grind p1 smooth black varnished colourfragments verysmooth natural
+do_grind p1 smooth blue colourfragments untreated verysmooth natural
+do_grind p1 smooth blue glazed untreated verysmooth natural
+do_grind p1 smooth blue untreated untreated verysmooth natural
+do_grind p1 smooth blue varnished colourfragments verysmooth natural
+do_grind p1 smooth mauve colourfragments untreated verysmooth natural
+do_grind p1 smooth mauve glazed untreated verysmooth natural
+do_grind p1 smooth mauve untreated untreated verysmooth natural
+do_grind p1 smooth mauve varnished colourfragments verysmooth natural
+do_grind p1 smooth natural colourfragments untreated verysmooth natural
+do_grind p1 smooth natural glazed untreated verysmooth natural
+do_grind p1 smooth natural untreated untreated verysmooth natural
+do_grind p1 smooth natural varnished colourfragments verysmooth natural
+do_grind p1 verysmooth black colourfragments untreated verysmooth natural
+do_grind p1 verysmooth black glazed untreated verysmooth natural
+do_grind p1 verysmooth black untreated untreated verysmooth natural
+do_grind p1 verysmooth black varnished colourfragments verysmooth natural
+do_grind p1 verysmooth blue colourfragments untreated verysmooth natural
+do_grind p1 verysmooth blue glazed untreated verysmooth natural
+do_grind p1 verysmooth blue untreated untreated verysmooth natural
+do_grind p1 verysmooth blue varnished colourfragments verysmooth natural
+do_grind p1 verysmooth mauve colourfragments untreated verysmooth natural
+do_grind p1 verysmooth mauve glazed untreated verysmooth natural
+do_grind p1 verysmooth mauve untreated untreated verysmooth natural
+do_grind p1 verysmooth mauve varnished colourfragments verysmooth natural
+do_grind p1 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p1 verysmooth natural glazed untreated verysmooth natural
+do_grind p1 verysmooth natural untreated untreated verysmooth natural
+do_grind p1 verysmooth natural varnished colourfragments verysmooth natural
+do_grind p2 smooth black colourfragments untreated verysmooth natural
+do_grind p2 smooth black glazed untreated verysmooth natural
+do_grind p2 smooth black untreated untreated verysmooth natural
+do_grind p2 smooth black varnished colourfragments verysmooth natural
+do_grind p2 smooth blue colourfragments untreated verysmooth natural
+do_grind p2 smooth blue glazed untreated verysmooth natural
+do_grind p2 smooth blue untreated untreated verysmooth natural
+do_grind p2 smooth blue varnished colourfragments verysmooth natural
+do_grind p2 smooth mauve colourfragments untreated verysmooth natural
+do_grind p2 smooth mauve glazed untreated verysmooth natural
+do_grind p2 smooth mauve untreated untreated verysmooth natural
+do_grind p2 smooth mauve varnished colourfragments verysmooth natural
+do_grind p2 smooth natural colourfragments untreated verysmooth natural
+do_grind p2 smooth natural glazed untreated verysmooth natural
+do_grind p2 smooth natural untreated untreated verysmooth natural
+do_grind p2 smooth natural varnished colourfragments verysmooth natural
+do_grind p2 verysmooth black colourfragments untreated verysmooth natural
+do_grind p2 verysmooth black glazed untreated verysmooth natural
+do_grind p2 verysmooth black untreated untreated verysmooth natural
+do_grind p2 verysmooth black varnished colourfragments verysmooth natural
+do_grind p2 verysmooth blue colourfragments untreated verysmooth natural
+do_grind p2 verysmooth blue glazed untreated verysmooth natural
+do_grind p2 verysmooth blue untreated untreated verysmooth natural
+do_grind p2 verysmooth blue varnished colourfragments verysmooth natural
+do_grind p2 verysmooth mauve colourfragments untreated verysmooth natural
+do_grind p2 verysmooth mauve glazed untreated verysmooth natural
+do_grind p2 verysmooth mauve untreated untreated verysmooth natural
+do_grind p2 verysmooth mauve varnished colourfragments verysmooth natural
+do_grind p2 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p2 verysmooth natural glazed untreated verysmooth natural
+do_grind p2 verysmooth natural untreated untreated verysmooth natural
+do_grind p2 verysmooth natural varnished colourfragments verysmooth natural
+do_grind p3 smooth black colourfragments untreated verysmooth natural
+do_grind p3 smooth black glazed untreated verysmooth natural
+do_grind p3 smooth black untreated untreated verysmooth natural
+do_grind p3 smooth black varnished colourfragments verysmooth natural
+do_grind p3 smooth blue colourfragments untreated verysmooth natural
+do_grind p3 smooth blue glazed untreated verysmooth natural
+do_grind p3 smooth blue untreated untreated verysmooth natural
+do_grind p3 smooth blue varnished colourfragments verysmooth natural
+do_grind p3 smooth mauve colourfragments untreated verysmooth natural
+do_grind p3 smooth mauve glazed untreated verysmooth natural
+do_grind p3 smooth mauve untreated untreated verysmooth natural
+do_grind p3 smooth mauve varnished colourfragments verysmooth natural
+do_grind p3 smooth natural colourfragments untreated verysmooth natural
+do_grind p3 smooth natural glazed untreated verysmooth natural
+do_grind p3 smooth natural untreated untreated verysmooth natural
+do_grind p3 smooth natural varnished colourfragments verysmooth natural
+do_grind p3 verysmooth black colourfragments untreated verysmooth natural
+do_grind p3 verysmooth black glazed untreated verysmooth natural
+do_grind p3 verysmooth black untreated untreated verysmooth natural
+do_grind p3 verysmooth black varnished colourfragments verysmooth natural
+do_grind p3 verysmooth blue colourfragments untreated verysmooth natural
+do_grind p3 verysmooth blue glazed untreated verysmooth natural
+do_grind p3 verysmooth blue untreated untreated verysmooth natural
+do_grind p3 verysmooth blue varnished colourfragments verysmooth natural
+do_grind p3 verysmooth mauve colourfragments untreated verysmooth natural
+do_grind p3 verysmooth mauve glazed untreated verysmooth natural
+do_grind p3 verysmooth mauve untreated untreated verysmooth natural
+do_grind p3 verysmooth mauve varnished colourfragments verysmooth natural
+do_grind p3 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p3 verysmooth natural glazed untreated verysmooth natural
+do_grind p3 verysmooth natural untreated untreated verysmooth natural
+do_grind p3 verysmooth natural varnished colourfragments verysmooth natural
+do_grind p4 smooth black colourfragments untreated verysmooth natural
+do_grind p4 smooth black glazed untreated verysmooth natural
+do_grind p4 smooth black untreated untreated verysmooth natural
+do_grind p4 smooth black varnished colourfragments verysmooth natural
+do_grind p4 smooth blue colourfragments untreated verysmooth natural
+do_grind p4 smooth blue glazed untreated verysmooth natural
+do_grind p4 smooth blue untreated untreated verysmooth natural
+do_grind p4 smooth blue varnished colourfragments verysmooth natural
+do_grind p4 smooth mauve colourfragments untreated verysmooth natural
+do_grind p4 smooth mauve glazed untreated verysmooth natural
+do_grind p4 smooth mauve untreated untreated verysmooth natural
+do_grind p4 smooth mauve varnished colourfragments verysmooth natural
+do_grind p4 smooth natural colourfragments untreated verysmooth natural
+do_grind p4 smooth natural glazed untreated verysmooth natural
+do_grind p4 smooth natural untreated untreated verysmooth natural
+do_grind p4 smooth natural varnished colourfragments verysmooth natural
+do_grind p4 verysmooth black colourfragments untreated verysmooth natural
+do_grind p4 verysmooth black glazed untreated verysmooth natural
+do_grind p4 verysmooth black untreated untreated verysmooth natural
+do_grind p4 verysmooth black varnished colourfragments verysmooth natural
+do_grind p4 verysmooth blue colourfragments untreated verysmooth natural
+do_grind p4 verysmooth blue glazed untreated verysmooth natural
+do_grind p4 verysmooth blue untreated untreated verysmooth natural
+do_grind p4 verysmooth blue varnished colourfragments verysmooth natural
+do_grind p4 verysmooth mauve colourfragments untreated verysmooth natural
+do_grind p4 verysmooth mauve glazed untreated verysmooth natural
+do_grind p4 verysmooth mauve untreated untreated verysmooth natural
+do_grind p4 verysmooth mauve varnished colourfragments verysmooth natural
+do_grind p4 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p4 verysmooth natural glazed untreated verysmooth natural
+do_grind p4 verysmooth natural untreated untreated verysmooth natural
+do_grind p4 verysmooth natural varnished colourfragments verysmooth natural
+do_grind p5 smooth black colourfragments untreated verysmooth natural
+do_grind p5 smooth black glazed untreated verysmooth natural
+do_grind p5 smooth black untreated untreated verysmooth natural
+do_grind p5 smooth black varnished colourfragments verysmooth natural
+do_grind p5 smooth blue colourfragments untreated verysmooth natural
+do_grind p5 smooth blue glazed untreated verysmooth natural
+do_grind p5 smooth blue untreated untreated verysmooth natural
+do_grind p5 smooth blue varnished colourfragments verysmooth natural
+do_grind p5 smooth mauve colourfragments untreated verysmooth natural
+do_grind p5 smooth mauve glazed untreated verysmooth natural
+do_grind p5 smooth mauve untreated untreated verysmooth natural
+do_grind p5 smooth mauve varnished colourfragments verysmooth natural
+do_grind p5 smooth natural colourfragments untreated verysmooth natural
+do_grind p5 smooth natural glazed untreated verysmooth natural
+do_grind p5 smooth natural untreated untreated verysmooth natural
+do_grind p5 smooth natural varnished colourfragments verysmooth natural
+do_grind p5 verysmooth black colourfragments untreated verysmooth natural
+do_grind p5 verysmooth black glazed untreated verysmooth natural
+do_grind p5 verysmooth black untreated untreated verysmooth natural
+do_grind p5 verysmooth black varnished colourfragments verysmooth natural
+do_grind p5 verysmooth blue colourfragments untreated verysmooth natural
+do_grind p5 verysmooth blue glazed untreated verysmooth natural
+do_grind p5 verysmooth blue untreated untreated verysmooth natural
+do_grind p5 verysmooth blue varnished colourfragments verysmooth natural
+do_grind p5 verysmooth mauve colourfragments untreated verysmooth natural
+do_grind p5 verysmooth mauve glazed untreated verysmooth natural
+do_grind p5 verysmooth mauve untreated untreated verysmooth natural
+do_grind p5 verysmooth mauve varnished colourfragments verysmooth natural
+do_grind p5 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p5 verysmooth natural glazed untreated verysmooth natural
+do_grind p5 verysmooth natural untreated untreated verysmooth natural
+do_grind p5 verysmooth natural varnished colourfragments verysmooth natural
+do_grind_untreated p0 grinder0 smooth black untreated verysmooth natural
+do_grind_untreated p0 grinder0 smooth blue untreated verysmooth natural
+do_grind_untreated p0 grinder0 smooth mauve untreated verysmooth natural
+do_grind_untreated p0 grinder0 smooth natural untreated verysmooth natural
+do_grind_untreated p0 grinder0 verysmooth black untreated verysmooth natural
+do_grind_untreated p0 grinder0 verysmooth blue untreated verysmooth natural
+do_grind_untreated p0 grinder0 verysmooth mauve untreated verysmooth natural
+do_grind_untreated p0 grinder0 verysmooth natural untreated verysmooth natural
+do_grind_untreated p1 grinder0 smooth black untreated verysmooth natural
+do_grind_untreated p1 grinder0 smooth blue untreated verysmooth natural
+do_grind_untreated p1 grinder0 smooth mauve untreated verysmooth natural
+do_grind_untreated p1 grinder0 smooth natural untreated verysmooth natural
+do_grind_untreated p1 grinder0 verysmooth black untreated verysmooth natural
+do_grind_untreated p1 grinder0 verysmooth blue untreated verysmooth natural
+do_grind_untreated p1 grinder0 verysmooth mauve untreated verysmooth natural
+do_grind_untreated p1 grinder0 verysmooth natural untreated verysmooth natural
+do_grind_untreated p2 grinder0 smooth black untreated verysmooth natural
+do_grind_untreated p2 grinder0 smooth blue untreated verysmooth natural
+do_grind_untreated p2 grinder0 smooth mauve untreated verysmooth natural
+do_grind_untreated p2 grinder0 smooth natural untreated verysmooth natural
+do_grind_untreated p2 grinder0 verysmooth black untreated verysmooth natural
+do_grind_untreated p2 grinder0 verysmooth blue untreated verysmooth natural
+do_grind_untreated p2 grinder0 verysmooth mauve untreated verysmooth natural
+do_grind_untreated p2 grinder0 verysmooth natural untreated verysmooth natural
+do_grind_untreated p3 grinder0 smooth black untreated verysmooth natural
+do_grind_untreated p3 grinder0 smooth blue untreated verysmooth natural
+do_grind_untreated p3 grinder0 smooth mauve untreated verysmooth natural
+do_grind_untreated p3 grinder0 smooth natural untreated verysmooth natural
+do_grind_untreated p3 grinder0 verysmooth black untreated verysmooth natural
+do_grind_untreated p3 grinder0 verysmooth blue untreated verysmooth natural
+do_grind_untreated p3 grinder0 verysmooth mauve untreated verysmooth natural
+do_grind_untreated p3 grinder0 verysmooth natural untreated verysmooth natural
+do_grind_untreated p4 grinder0 smooth black untreated verysmooth natural
+do_grind_untreated p4 grinder0 smooth blue untreated verysmooth natural
+do_grind_untreated p4 grinder0 smooth mauve untreated verysmooth natural
+do_grind_untreated p4 grinder0 smooth natural untreated verysmooth natural
+do_grind_untreated p4 grinder0 verysmooth black untreated verysmooth natural
+do_grind_untreated p4 grinder0 verysmooth blue untreated verysmooth natural
+do_grind_untreated p4 grinder0 verysmooth mauve untreated verysmooth natural
+do_grind_untreated p4 grinder0 verysmooth natural untreated verysmooth natural
+do_grind_untreated p5 grinder0 rough black untreated verysmooth natural
+do_grind_untreated p5 grinder0 rough blue untreated verysmooth natural
+do_grind_untreated p5 grinder0 rough mauve untreated verysmooth natural
+do_grind_untreated p5 grinder0 rough natural untreated verysmooth natural
+do_grind_untreated p5 grinder0 smooth black untreated verysmooth natural
+do_grind_untreated p5 grinder0 smooth blue untreated verysmooth natural
+do_grind_untreated p5 grinder0 smooth mauve untreated verysmooth natural
+do_grind_untreated p5 grinder0 smooth natural untreated verysmooth natural
+do_grind_untreated p5 grinder0 verysmooth black untreated verysmooth natural
+do_grind_untreated p5 grinder0 verysmooth blue untreated verysmooth natural
+do_grind_untreated p5 grinder0 verysmooth mauve untreated verysmooth natural
+do_grind_untreated p5 grinder0 verysmooth natural untreated verysmooth natural
+do_immersion_varnish p0 immersion_varnisher0 black smooth untreated varnished natural
+do_immersion_varnish p0 immersion_varnisher0 black verysmooth untreated varnished natural
+do_immersion_varnish p0 immersion_varnisher0 mauve smooth untreated varnished natural
+do_immersion_varnish p0 immersion_varnisher0 mauve verysmooth untreated varnished natural
+do_immersion_varnish p1 immersion_varnisher0 black smooth untreated varnished natural
+do_immersion_varnish p1 immersion_varnisher0 black verysmooth untreated varnished natural
+do_immersion_varnish p1 immersion_varnisher0 mauve smooth untreated varnished natural
+do_immersion_varnish p1 immersion_varnisher0 mauve verysmooth untreated varnished natural
+do_immersion_varnish p2 immersion_varnisher0 black smooth untreated varnished natural
+do_immersion_varnish p2 immersion_varnisher0 black verysmooth untreated varnished natural
+do_immersion_varnish p2 immersion_varnisher0 mauve smooth untreated varnished natural
+do_immersion_varnish p2 immersion_varnisher0 mauve verysmooth untreated varnished natural
+do_immersion_varnish p3 immersion_varnisher0 black smooth untreated varnished natural
+do_immersion_varnish p3 immersion_varnisher0 black verysmooth untreated varnished natural
+do_immersion_varnish p3 immersion_varnisher0 mauve smooth untreated varnished natural
+do_immersion_varnish p3 immersion_varnisher0 mauve verysmooth untreated varnished natural
+do_immersion_varnish p4 immersion_varnisher0 black smooth untreated varnished natural
+do_immersion_varnish p4 immersion_varnisher0 black verysmooth untreated varnished natural
+do_immersion_varnish p4 immersion_varnisher0 mauve smooth untreated varnished natural
+do_immersion_varnish p4 immersion_varnisher0 mauve verysmooth untreated varnished natural
+do_immersion_varnish p5 immersion_varnisher0 black smooth untreated varnished natural
+do_immersion_varnish p5 immersion_varnisher0 black verysmooth untreated varnished natural
+do_immersion_varnish p5 immersion_varnisher0 mauve smooth untreated varnished natural
+do_immersion_varnish p5 immersion_varnisher0 mauve verysmooth untreated varnished natural
+do_plane p0 smooth black colourfragments smooth untreated natural
+do_plane p0 smooth black glazed smooth untreated natural
+do_plane p0 smooth black untreated smooth untreated natural
+do_plane p0 smooth black varnished smooth untreated natural
+do_plane p0 smooth blue colourfragments smooth untreated natural
+do_plane p0 smooth blue glazed smooth untreated natural
+do_plane p0 smooth blue untreated smooth untreated natural
+do_plane p0 smooth blue varnished smooth untreated natural
+do_plane p0 smooth mauve colourfragments smooth untreated natural
+do_plane p0 smooth mauve glazed smooth untreated natural
+do_plane p0 smooth mauve untreated smooth untreated natural
+do_plane p0 smooth mauve varnished smooth untreated natural
+do_plane p0 smooth natural colourfragments smooth untreated natural
+do_plane p0 smooth natural glazed smooth untreated natural
+do_plane p0 smooth natural untreated smooth untreated natural
+do_plane p0 smooth natural varnished smooth untreated natural
+do_plane p0 verysmooth black colourfragments smooth untreated natural
+do_plane p0 verysmooth black glazed smooth untreated natural
+do_plane p0 verysmooth black untreated smooth untreated natural
+do_plane p0 verysmooth black varnished smooth untreated natural
+do_plane p0 verysmooth blue colourfragments smooth untreated natural
+do_plane p0 verysmooth blue glazed smooth untreated natural
+do_plane p0 verysmooth blue untreated smooth untreated natural
+do_plane p0 verysmooth blue varnished smooth untreated natural
+do_plane p0 verysmooth mauve colourfragments smooth untreated natural
+do_plane p0 verysmooth mauve glazed smooth untreated natural
+do_plane p0 verysmooth mauve untreated smooth untreated natural
+do_plane p0 verysmooth mauve varnished smooth untreated natural
+do_plane p0 verysmooth natural colourfragments smooth untreated natural
+do_plane p0 verysmooth natural glazed smooth untreated natural
+do_plane p0 verysmooth natural untreated smooth untreated natural
+do_plane p0 verysmooth natural varnished smooth untreated natural
+do_plane p1 smooth black colourfragments smooth untreated natural
+do_plane p1 smooth black glazed smooth untreated natural
+do_plane p1 smooth black untreated smooth untreated natural
+do_plane p1 smooth black varnished smooth untreated natural
+do_plane p1 smooth blue colourfragments smooth untreated natural
+do_plane p1 smooth blue glazed smooth untreated natural
+do_plane p1 smooth blue untreated smooth untreated natural
+do_plane p1 smooth blue varnished smooth untreated natural
+do_plane p1 smooth mauve colourfragments smooth untreated natural
+do_plane p1 smooth mauve glazed smooth untreated natural
+do_plane p1 smooth mauve untreated smooth untreated natural
+do_plane p1 smooth mauve varnished smooth untreated natural
+do_plane p1 smooth natural colourfragments smooth untreated natural
+do_plane p1 smooth natural glazed smooth untreated natural
+do_plane p1 smooth natural untreated smooth untreated natural
+do_plane p1 smooth natural varnished smooth untreated natural
+do_plane p1 verysmooth black colourfragments smooth untreated natural
+do_plane p1 verysmooth black glazed smooth untreated natural
+do_plane p1 verysmooth black untreated smooth untreated natural
+do_plane p1 verysmooth black varnished smooth untreated natural
+do_plane p1 verysmooth blue colourfragments smooth untreated natural
+do_plane p1 verysmooth blue glazed smooth untreated natural
+do_plane p1 verysmooth blue untreated smooth untreated natural
+do_plane p1 verysmooth blue varnished smooth untreated natural
+do_plane p1 verysmooth mauve colourfragments smooth untreated natural
+do_plane p1 verysmooth mauve glazed smooth untreated natural
+do_plane p1 verysmooth mauve untreated smooth untreated natural
+do_plane p1 verysmooth mauve varnished smooth untreated natural
+do_plane p1 verysmooth natural colourfragments smooth untreated natural
+do_plane p1 verysmooth natural glazed smooth untreated natural
+do_plane p1 verysmooth natural untreated smooth untreated natural
+do_plane p1 verysmooth natural varnished smooth untreated natural
+do_plane p2 smooth black colourfragments smooth untreated natural
+do_plane p2 smooth black glazed smooth untreated natural
+do_plane p2 smooth black untreated smooth untreated natural
+do_plane p2 smooth black varnished smooth untreated natural
+do_plane p2 smooth blue colourfragments smooth untreated natural
+do_plane p2 smooth blue glazed smooth untreated natural
+do_plane p2 smooth blue untreated smooth untreated natural
+do_plane p2 smooth blue varnished smooth untreated natural
+do_plane p2 smooth mauve colourfragments smooth untreated natural
+do_plane p2 smooth mauve glazed smooth untreated natural
+do_plane p2 smooth mauve untreated smooth untreated natural
+do_plane p2 smooth mauve varnished smooth untreated natural
+do_plane p2 smooth natural colourfragments smooth untreated natural
+do_plane p2 smooth natural glazed smooth untreated natural
+do_plane p2 smooth natural untreated smooth untreated natural
+do_plane p2 smooth natural varnished smooth untreated natural
+do_plane p2 verysmooth black colourfragments smooth untreated natural
+do_plane p2 verysmooth black glazed smooth untreated natural
+do_plane p2 verysmooth black untreated smooth untreated natural
+do_plane p2 verysmooth black varnished smooth untreated natural
+do_plane p2 verysmooth blue colourfragments smooth untreated natural
+do_plane p2 verysmooth blue glazed smooth untreated natural
+do_plane p2 verysmooth blue untreated smooth untreated natural
+do_plane p2 verysmooth blue varnished smooth untreated natural
+do_plane p2 verysmooth mauve colourfragments smooth untreated natural
+do_plane p2 verysmooth mauve glazed smooth untreated natural
+do_plane p2 verysmooth mauve untreated smooth untreated natural
+do_plane p2 verysmooth mauve varnished smooth untreated natural
+do_plane p2 verysmooth natural colourfragments smooth untreated natural
+do_plane p2 verysmooth natural glazed smooth untreated natural
+do_plane p2 verysmooth natural untreated smooth untreated natural
+do_plane p2 verysmooth natural varnished smooth untreated natural
+do_plane p3 smooth black colourfragments smooth untreated natural
+do_plane p3 smooth black glazed smooth untreated natural
+do_plane p3 smooth black untreated smooth untreated natural
+do_plane p3 smooth black varnished smooth untreated natural
+do_plane p3 smooth blue colourfragments smooth untreated natural
+do_plane p3 smooth blue glazed smooth untreated natural
+do_plane p3 smooth blue untreated smooth untreated natural
+do_plane p3 smooth blue varnished smooth untreated natural
+do_plane p3 smooth mauve colourfragments smooth untreated natural
+do_plane p3 smooth mauve glazed smooth untreated natural
+do_plane p3 smooth mauve untreated smooth untreated natural
+do_plane p3 smooth mauve varnished smooth untreated natural
+do_plane p3 smooth natural colourfragments smooth untreated natural
+do_plane p3 smooth natural glazed smooth untreated natural
+do_plane p3 smooth natural untreated smooth untreated natural
+do_plane p3 smooth natural varnished smooth untreated natural
+do_plane p3 verysmooth black colourfragments smooth untreated natural
+do_plane p3 verysmooth black glazed smooth untreated natural
+do_plane p3 verysmooth black untreated smooth untreated natural
+do_plane p3 verysmooth black varnished smooth untreated natural
+do_plane p3 verysmooth blue colourfragments smooth untreated natural
+do_plane p3 verysmooth blue glazed smooth untreated natural
+do_plane p3 verysmooth blue untreated smooth untreated natural
+do_plane p3 verysmooth blue varnished smooth untreated natural
+do_plane p3 verysmooth mauve colourfragments smooth untreated natural
+do_plane p3 verysmooth mauve glazed smooth untreated natural
+do_plane p3 verysmooth mauve untreated smooth untreated natural
+do_plane p3 verysmooth mauve varnished smooth untreated natural
+do_plane p3 verysmooth natural colourfragments smooth untreated natural
+do_plane p3 verysmooth natural glazed smooth untreated natural
+do_plane p3 verysmooth natural untreated smooth untreated natural
+do_plane p3 verysmooth natural varnished smooth untreated natural
+do_plane p4 smooth black colourfragments smooth untreated natural
+do_plane p4 smooth black glazed smooth untreated natural
+do_plane p4 smooth black untreated smooth untreated natural
+do_plane p4 smooth black varnished smooth untreated natural
+do_plane p4 smooth blue colourfragments smooth untreated natural
+do_plane p4 smooth blue glazed smooth untreated natural
+do_plane p4 smooth blue untreated smooth untreated natural
+do_plane p4 smooth blue varnished smooth untreated natural
+do_plane p4 smooth mauve colourfragments smooth untreated natural
+do_plane p4 smooth mauve glazed smooth untreated natural
+do_plane p4 smooth mauve untreated smooth untreated natural
+do_plane p4 smooth mauve varnished smooth untreated natural
+do_plane p4 smooth natural colourfragments smooth untreated natural
+do_plane p4 smooth natural glazed smooth untreated natural
+do_plane p4 smooth natural untreated smooth untreated natural
+do_plane p4 smooth natural varnished smooth untreated natural
+do_plane p4 verysmooth black colourfragments smooth untreated natural
+do_plane p4 verysmooth black glazed smooth untreated natural
+do_plane p4 verysmooth black untreated smooth untreated natural
+do_plane p4 verysmooth black varnished smooth untreated natural
+do_plane p4 verysmooth blue colourfragments smooth untreated natural
+do_plane p4 verysmooth blue glazed smooth untreated natural
+do_plane p4 verysmooth blue untreated smooth untreated natural
+do_plane p4 verysmooth blue varnished smooth untreated natural
+do_plane p4 verysmooth mauve colourfragments smooth untreated natural
+do_plane p4 verysmooth mauve glazed smooth untreated natural
+do_plane p4 verysmooth mauve untreated smooth untreated natural
+do_plane p4 verysmooth mauve varnished smooth untreated natural
+do_plane p4 verysmooth natural colourfragments smooth untreated natural
+do_plane p4 verysmooth natural glazed smooth untreated natural
+do_plane p4 verysmooth natural untreated smooth untreated natural
+do_plane p4 verysmooth natural varnished smooth untreated natural
+do_plane p5 rough black colourfragments smooth untreated natural
+do_plane p5 rough black glazed smooth untreated natural
+do_plane p5 rough black untreated smooth untreated natural
+do_plane p5 rough black varnished smooth untreated natural
+do_plane p5 rough blue colourfragments smooth untreated natural
+do_plane p5 rough blue glazed smooth untreated natural
+do_plane p5 rough blue untreated smooth untreated natural
+do_plane p5 rough blue varnished smooth untreated natural
+do_plane p5 rough mauve colourfragments smooth untreated natural
+do_plane p5 rough mauve glazed smooth untreated natural
+do_plane p5 rough mauve untreated smooth untreated natural
+do_plane p5 rough mauve varnished smooth untreated natural
+do_plane p5 rough natural colourfragments smooth untreated natural
+do_plane p5 rough natural glazed smooth untreated natural
+do_plane p5 rough natural untreated smooth untreated natural
+do_plane p5 rough natural varnished smooth untreated natural
+do_plane p5 smooth black colourfragments smooth untreated natural
+do_plane p5 smooth black glazed smooth untreated natural
+do_plane p5 smooth black untreated smooth untreated natural
+do_plane p5 smooth black varnished smooth untreated natural
+do_plane p5 smooth blue colourfragments smooth untreated natural
+do_plane p5 smooth blue glazed smooth untreated natural
+do_plane p5 smooth blue untreated smooth untreated natural
+do_plane p5 smooth blue varnished smooth untreated natural
+do_plane p5 smooth mauve colourfragments smooth untreated natural
+do_plane p5 smooth mauve glazed smooth untreated natural
+do_plane p5 smooth mauve untreated smooth untreated natural
+do_plane p5 smooth mauve varnished smooth untreated natural
+do_plane p5 smooth natural colourfragments smooth untreated natural
+do_plane p5 smooth natural glazed smooth untreated natural
+do_plane p5 smooth natural untreated smooth untreated natural
+do_plane p5 smooth natural varnished smooth untreated natural
+do_plane p5 verysmooth black colourfragments smooth untreated natural
+do_plane p5 verysmooth black glazed smooth untreated natural
+do_plane p5 verysmooth black untreated smooth untreated natural
+do_plane p5 verysmooth black varnished smooth untreated natural
+do_plane p5 verysmooth blue colourfragments smooth untreated natural
+do_plane p5 verysmooth blue glazed smooth untreated natural
+do_plane p5 verysmooth blue untreated smooth untreated natural
+do_plane p5 verysmooth blue varnished smooth untreated natural
+do_plane p5 verysmooth mauve colourfragments smooth untreated natural
+do_plane p5 verysmooth mauve glazed smooth untreated natural
+do_plane p5 verysmooth mauve untreated smooth untreated natural
+do_plane p5 verysmooth mauve varnished smooth untreated natural
+do_plane p5 verysmooth natural colourfragments smooth untreated natural
+do_plane p5 verysmooth natural glazed smooth untreated natural
+do_plane p5 verysmooth natural untreated smooth untreated natural
+do_plane p5 verysmooth natural varnished smooth untreated natural
+do_plane_untreated p0 planer0 smooth black untreated smooth natural
+do_plane_untreated p0 planer0 smooth blue untreated smooth natural
+do_plane_untreated p0 planer0 smooth mauve untreated smooth natural
+do_plane_untreated p0 planer0 smooth natural untreated smooth natural
+do_plane_untreated p0 planer0 verysmooth black untreated smooth natural
+do_plane_untreated p0 planer0 verysmooth blue untreated smooth natural
+do_plane_untreated p0 planer0 verysmooth mauve untreated smooth natural
+do_plane_untreated p0 planer0 verysmooth natural untreated smooth natural
+do_plane_untreated p1 planer0 smooth black untreated smooth natural
+do_plane_untreated p1 planer0 smooth blue untreated smooth natural
+do_plane_untreated p1 planer0 smooth mauve untreated smooth natural
+do_plane_untreated p1 planer0 smooth natural untreated smooth natural
+do_plane_untreated p1 planer0 verysmooth black untreated smooth natural
+do_plane_untreated p1 planer0 verysmooth blue untreated smooth natural
+do_plane_untreated p1 planer0 verysmooth mauve untreated smooth natural
+do_plane_untreated p1 planer0 verysmooth natural untreated smooth natural
+do_plane_untreated p2 planer0 smooth black untreated smooth natural
+do_plane_untreated p2 planer0 smooth blue untreated smooth natural
+do_plane_untreated p2 planer0 smooth mauve untreated smooth natural
+do_plane_untreated p2 planer0 smooth natural untreated smooth natural
+do_plane_untreated p2 planer0 verysmooth black untreated smooth natural
+do_plane_untreated p2 planer0 verysmooth blue untreated smooth natural
+do_plane_untreated p2 planer0 verysmooth mauve untreated smooth natural
+do_plane_untreated p2 planer0 verysmooth natural untreated smooth natural
+do_plane_untreated p3 planer0 smooth black untreated smooth natural
+do_plane_untreated p3 planer0 smooth blue untreated smooth natural
+do_plane_untreated p3 planer0 smooth mauve untreated smooth natural
+do_plane_untreated p3 planer0 smooth natural untreated smooth natural
+do_plane_untreated p3 planer0 verysmooth black untreated smooth natural
+do_plane_untreated p3 planer0 verysmooth blue untreated smooth natural
+do_plane_untreated p3 planer0 verysmooth mauve untreated smooth natural
+do_plane_untreated p3 planer0 verysmooth natural untreated smooth natural
+do_plane_untreated p4 planer0 smooth black untreated smooth natural
+do_plane_untreated p4 planer0 smooth blue untreated smooth natural
+do_plane_untreated p4 planer0 smooth mauve untreated smooth natural
+do_plane_untreated p4 planer0 smooth natural untreated smooth natural
+do_plane_untreated p4 planer0 verysmooth black untreated smooth natural
+do_plane_untreated p4 planer0 verysmooth blue untreated smooth natural
+do_plane_untreated p4 planer0 verysmooth mauve untreated smooth natural
+do_plane_untreated p4 planer0 verysmooth natural untreated smooth natural
+do_plane_untreated p5 planer0 rough black untreated smooth natural
+do_plane_untreated p5 planer0 rough blue untreated smooth natural
+do_plane_untreated p5 planer0 rough mauve untreated smooth natural
+do_plane_untreated p5 planer0 rough natural untreated smooth natural
+do_plane_untreated p5 planer0 smooth black untreated smooth natural
+do_plane_untreated p5 planer0 smooth blue untreated smooth natural
+do_plane_untreated p5 planer0 smooth mauve untreated smooth natural
+do_plane_untreated p5 planer0 smooth natural untreated smooth natural
+do_plane_untreated p5 planer0 verysmooth black untreated smooth natural
+do_plane_untreated p5 planer0 verysmooth blue untreated smooth natural
+do_plane_untreated p5 planer0 verysmooth mauve untreated smooth natural
+do_plane_untreated p5 planer0 verysmooth natural untreated smooth natural
+do_saw_medium b0 p1 walnut smooth s6 s5 s4 medium natural untreated
+do_saw_medium b0 p3 walnut smooth s6 s5 s4 medium natural untreated
+do_spray_varnish p0 spray_varnisher0 black smooth untreated varnished natural
+do_spray_varnish p0 spray_varnisher0 black verysmooth untreated varnished natural
+do_spray_varnish p0 spray_varnisher0 mauve smooth untreated varnished natural
+do_spray_varnish p0 spray_varnisher0 mauve verysmooth untreated varnished natural
+do_spray_varnish p1 spray_varnisher0 black smooth untreated varnished natural
+do_spray_varnish p1 spray_varnisher0 black verysmooth untreated varnished natural
+do_spray_varnish p1 spray_varnisher0 mauve smooth untreated varnished natural
+do_spray_varnish p1 spray_varnisher0 mauve verysmooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 black smooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 black verysmooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 mauve smooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 mauve verysmooth untreated varnished natural
+do_spray_varnish p3 spray_varnisher0 black smooth untreated varnished natural
+do_spray_varnish p3 spray_varnisher0 black verysmooth untreated varnished natural
+do_spray_varnish p3 spray_varnisher0 mauve smooth untreated varnished natural
+do_spray_varnish p3 spray_varnisher0 mauve verysmooth untreated varnished natural
+do_spray_varnish p4 spray_varnisher0 black smooth untreated varnished natural
+do_spray_varnish p4 spray_varnisher0 black verysmooth untreated varnished natural
+do_spray_varnish p4 spray_varnisher0 mauve smooth untreated varnished natural
+do_spray_varnish p4 spray_varnisher0 mauve verysmooth untreated varnished natural
+do_spray_varnish p5 spray_varnisher0 black smooth untreated varnished natural
+do_spray_varnish p5 spray_varnisher0 black verysmooth untreated varnished natural
+do_spray_varnish p5 spray_varnisher0 mauve smooth untreated varnished natural
+do_spray_varnish p5 spray_varnisher0 mauve verysmooth untreated varnished natural
++available b0
++available p0
++available p1
++available p2
++available p3
++available p4
++available p5
++boardsize b0 s4
++boardsize b0 s6
++boardsize_successor s4 s5
++boardsize_successor s5 s6
++colour p0 black
++colour p0 blue
++colour p0 mauve
++colour p0 natural
++colour p1 black
++colour p1 blue
++colour p1 mauve
++colour p1 natural
++colour p2 black
++colour p2 blue
++colour p2 mauve
++colour p2 natural
++colour p3 black
++colour p3 blue
++colour p3 mauve
++colour p3 natural
++colour p4 black
++colour p4 blue
++colour p4 mauve
++colour p4 natural
++colour p5 black
++colour p5 blue
++colour p5 mauve
++colour p5 natural
++goalsize p0 small
++goalsize p1 medium
++goalsize p2 large
++goalsize p3 medium
++goalsize p4 large
++goalsize p5 small
++grind_treatment_change colourfragments untreated
++grind_treatment_change glazed untreated
++grind_treatment_change untreated untreated
++grind_treatment_change varnished colourfragments
++has_colour glazer0 blue
++has_colour immersion_varnisher0 black
++has_colour immersion_varnisher0 mauve
++has_colour spray_varnisher0 black
++has_colour spray_varnisher0 mauve
++is_smooth smooth
++is_smooth verysmooth
++machine_present grinder0
++machine_present planer0
++surface_condition b0 smooth
++surface_condition p0 smooth
++surface_condition p0 verysmooth
++surface_condition p1 smooth
++surface_condition p1 verysmooth
++surface_condition p2 smooth
++surface_condition p2 verysmooth
++surface_condition p3 smooth
++surface_condition p3 verysmooth
++surface_condition p4 smooth
++surface_condition p4 verysmooth
++surface_condition p5 rough
++surface_condition p5 smooth
++surface_condition p5 verysmooth
++treatment p0 colourfragments
++treatment p0 glazed
++treatment p0 untreated
++treatment p0 varnished
++treatment p1 colourfragments
++treatment p1 glazed
++treatment p1 untreated
++treatment p1 varnished
++treatment p2 colourfragments
++treatment p2 glazed
++treatment p2 untreated
++treatment p2 varnished
++treatment p3 colourfragments
++treatment p3 glazed
++treatment p3 untreated
++treatment p3 varnished
++treatment p4 colourfragments
++treatment p4 glazed
++treatment p4 untreated
++treatment p4 varnished
++treatment p5 colourfragments
++treatment p5 glazed
++treatment p5 untreated
++treatment p5 varnished
++unused p1
++unused p3
++wood b0 walnut
++wood p1 walnut
++wood p2 mahogany
++wood p3 walnut
++wood p4 mahogany
++wood p5 walnut

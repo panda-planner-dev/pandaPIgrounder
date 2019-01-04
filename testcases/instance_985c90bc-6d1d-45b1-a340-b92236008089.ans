@@ -1,0 +1,98 @@
+46 51
+SHOP_methodm-dconnect-a-empty_12_precondition dvd-1 scart-to-cinch-cable-1
+SHOP_methodm-dconnect-a-empty_12_precondition scart-to-cinch-cable-1 dvd-1
+SHOP_methodm-dconnect-a-empty_12_precondition scart-to-cinch-cable-1 simple-tv-1
+SHOP_methodm-dconnect-a-empty_12_precondition simple-tv-1 scart-to-cinch-cable-1
+SHOP_methodm-dconnect-a_9_precondition dvd-1-scart-1 scart-to-cinch-cable-1-cinch-2
+SHOP_methodm-dconnect-a_9_precondition dvd-1-scart-1 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-a_9_precondition dvd-1-scart-1 simple-tv-1-cinch-2
+SHOP_methodm-dconnect-a_9_precondition scart-to-cinch-cable-1-cinch-2 scart-to-cinch-cable-1-cinch-2
+SHOP_methodm-dconnect-a_9_precondition scart-to-cinch-cable-1-cinch-2 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-a_9_precondition scart-to-cinch-cable-1-cinch-2 simple-tv-1-cinch-2
+SHOP_methodm-dconnect-a_9_precondition scart-to-cinch-cable-1-scart-1 scart-to-cinch-cable-1-cinch-2
+SHOP_methodm-dconnect-a_9_precondition scart-to-cinch-cable-1-scart-1 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-a_9_precondition scart-to-cinch-cable-1-scart-1 simple-tv-1-cinch-2
+SHOP_methodm-dconnect-av-empty_11_precondition dvd-1 scart-to-cinch-cable-1
+SHOP_methodm-dconnect-av-empty_11_precondition scart-to-cinch-cable-1 dvd-1
+SHOP_methodm-dconnect-av-empty_11_precondition scart-to-cinch-cable-1 simple-tv-1
+SHOP_methodm-dconnect-av-empty_11_precondition simple-tv-1 scart-to-cinch-cable-1
+SHOP_methodm-dconnect-av_8_precondition dvd-1-scart-1 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-av_8_precondition scart-to-cinch-cable-1-scart-1 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-v-empty_13_precondition dvd-1 scart-to-cinch-cable-1
+SHOP_methodm-dconnect-v-empty_13_precondition scart-to-cinch-cable-1 dvd-1
+SHOP_methodm-dconnect-v-empty_13_precondition scart-to-cinch-cable-1 simple-tv-1
+SHOP_methodm-dconnect-v-empty_13_precondition simple-tv-1 scart-to-cinch-cable-1
+SHOP_methodm-dconnect-v_10_precondition dvd-1-scart-1 scart-to-cinch-cable-1-cinch-3
+SHOP_methodm-dconnect-v_10_precondition dvd-1-scart-1 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-v_10_precondition dvd-1-scart-1 simple-tv-1-cinch-1
+SHOP_methodm-dconnect-v_10_precondition scart-to-cinch-cable-1-cinch-3 scart-to-cinch-cable-1-cinch-3
+SHOP_methodm-dconnect-v_10_precondition scart-to-cinch-cable-1-cinch-3 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-v_10_precondition scart-to-cinch-cable-1-cinch-3 simple-tv-1-cinch-1
+SHOP_methodm-dconnect-v_10_precondition scart-to-cinch-cable-1-scart-1 scart-to-cinch-cable-1-cinch-3
+SHOP_methodm-dconnect-v_10_precondition scart-to-cinch-cable-1-scart-1 scart-to-cinch-cable-1-scart-1
+SHOP_methodm-dconnect-v_10_precondition scart-to-cinch-cable-1-scart-1 simple-tv-1-cinch-1
+plug__ANTECEDENT__DISJUNCT-0__ANTECEDENT__DISJUNCT-1 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-3 simple-tv-1 simple-tv-1-cinch-2
+plug__ANTECEDENT__DISJUNCT-0__ANTECEDENT__DISJUNCT-1 simple-tv-1 simple-tv-1-cinch-1 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-2
+plug__ANTECEDENT__DISJUNCT-0__CONSEQUENT__ scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-3 simple-tv-1 simple-tv-1-cinch-1
+plug__ANTECEDENT__DISJUNCT-0__CONSEQUENT__ simple-tv-1 simple-tv-1-cinch-1 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-3
+plug__ANTECEDENT__DISJUNCT-1__ANTECEDENT__DISJUNCT-0 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-2 simple-tv-1 simple-tv-1-cinch-1
+plug__ANTECEDENT__DISJUNCT-1__ANTECEDENT__DISJUNCT-0 simple-tv-1 simple-tv-1-cinch-2 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-3
+plug__ANTECEDENT__DISJUNCT-1__CONSEQUENT__ scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-3 simple-tv-1 simple-tv-1-cinch-1
+plug__ANTECEDENT__DISJUNCT-1__CONSEQUENT__ simple-tv-1 simple-tv-1-cinch-1 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-3
+plug__CONSEQUENT____ANTECEDENT__DISJUNCT-0 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-2 simple-tv-1 simple-tv-1-cinch-2
+plug__CONSEQUENT____ANTECEDENT__DISJUNCT-0 simple-tv-1 simple-tv-1-cinch-2 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-2
+plug__CONSEQUENT____ANTECEDENT__DISJUNCT-1 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-2 simple-tv-1 simple-tv-1-cinch-2
+plug__CONSEQUENT____ANTECEDENT__DISJUNCT-1 simple-tv-1 simple-tv-1-cinch-2 scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-2
+plug__CONSEQUENT____CONSEQUENT__ dvd-1 dvd-1-scart-1 scart-to-cinch-cable-1 scart-to-cinch-cable-1-scart-1
+plug__CONSEQUENT____CONSEQUENT__ scart-to-cinch-cable-1 scart-to-cinch-cable-1-scart-1 dvd-1 dvd-1-scart-1
++audio_connected dvd-1 scart-to-cinch-cable-1
++audio_connected scart-to-cinch-cable-1 dvd-1
++audio_connected scart-to-cinch-cable-1 simple-tv-1
++audio_connected simple-tv-1 scart-to-cinch-cable-1
++audio_connector dvd-1-scart-1
++audio_connector scart-to-cinch-cable-1-cinch-2
++audio_connector scart-to-cinch-cable-1-scart-1
++audio_connector simple-tv-1-cinch-2
++compatible dvd-1-scart-1 scart-to-cinch-cable-1-scart-1
++compatible scart-to-cinch-cable-1-cinch-2 simple-tv-1-cinch-1
++compatible scart-to-cinch-cable-1-cinch-2 simple-tv-1-cinch-2
++compatible scart-to-cinch-cable-1-cinch-3 simple-tv-1-cinch-1
++compatible scart-to-cinch-cable-1-cinch-3 simple-tv-1-cinch-2
++compatible scart-to-cinch-cable-1-scart-1 dvd-1-scart-1
++compatible simple-tv-1-cinch-1 scart-to-cinch-cable-1-cinch-2
++compatible simple-tv-1-cinch-1 scart-to-cinch-cable-1-cinch-3
++compatible simple-tv-1-cinch-2 scart-to-cinch-cable-1-cinch-2
++compatible simple-tv-1-cinch-2 scart-to-cinch-cable-1-cinch-3
++conn_of dvd-1 dvd-1-scart-1
++conn_of scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-2
++conn_of scart-to-cinch-cable-1 scart-to-cinch-cable-1-cinch-3
++conn_of scart-to-cinch-cable-1 scart-to-cinch-cable-1-scart-1
++conn_of simple-tv-1 simple-tv-1-cinch-1
++conn_of simple-tv-1 simple-tv-1-cinch-2
++in_connector scart-to-cinch-cable-1-cinch-2
++in_connector scart-to-cinch-cable-1-cinch-3
++in_connector scart-to-cinch-cable-1-scart-1
++in_connector simple-tv-1-cinch-1
++in_connector simple-tv-1-cinch-2
++out_connector dvd-1-scart-1
++out_connector scart-to-cinch-cable-1-cinch-2
++out_connector scart-to-cinch-cable-1-cinch-3
++out_connector scart-to-cinch-cable-1-scart-1
++unused dvd-1-scart-1
++unused scart-to-cinch-cable-1-cinch-2
++unused scart-to-cinch-cable-1-cinch-3
++unused scart-to-cinch-cable-1-scart-1
++unused simple-tv-1-cinch-1
++unused simple-tv-1-cinch-2
++video_connected dvd-1 scart-to-cinch-cable-1
++video_connected scart-to-cinch-cable-1 dvd-1
++video_connected scart-to-cinch-cable-1 simple-tv-1
++video_connected simple-tv-1 scart-to-cinch-cable-1
++video_connector dvd-1-scart-1
++video_connector scart-to-cinch-cable-1-cinch-3
++video_connector scart-to-cinch-cable-1-scart-1
++video_connector simple-tv-1-cinch-1
+-audio_connector scart-to-cinch-cable-1-cinch-3
+-audio_connector simple-tv-1-cinch-1
+-video_connector scart-to-cinch-cable-1-cinch-2
+-video_connector simple-tv-1-cinch-2

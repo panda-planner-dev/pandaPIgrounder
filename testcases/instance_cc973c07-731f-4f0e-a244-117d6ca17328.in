@@ -1,0 +1,1662 @@
+#number_constants_number_sorts
+14 16
+#constants
+Eisenbahnwagen
+Stuttgart_Paris_Rail_Route
+Paris_London_Rail_Route
+GareParisNord
+Stuttgart
+London
+Paris
+Chemicalien
+BadenWuerttemberg
+LondonRegion
+LokomotiveDB
+LokomotiveSNCF
+HauptbahnhofStuttgart
+LondonWaterloo
+#end_constants
+#sorts_each_with_number_of_members_and_members
+Object 4 0 10 11 7
+Region 2 8 9
+Vehicle 3 10 11 0
+Route 2 1 2
+Package 1 7
+adhocSort_?l_v 1 0
+adhocSort_?c_ld 3 13 12 3
+Thing 14 4 6 8 1 13 12 0 11 3 7 2 9 10 5
+adhocSort_?l_p 0
+Vehicle_Position 9 4 6 8 13 12 0 3 9 5
+Physical 2 7 0
+City 3 4 5 6
+Equipment_Position 11 4 6 8 13 12 0 11 3 9 10 5
+Hub 1 3
+Train 2 10 11
+Location 8 4 6 8 13 12 3 9 5
+#end_sorts
+#number_of_predicates
+34
+#predicates_each_with_number_of_arguments_and_argument_sorts
++Delivered 1 4
++City_Hazardous_Compatible 1 11
++Valve_Open 1 5
+-Valve_Open 1 5
++In_Region 2 11 1
++Ramp_Connected 2 8 8
++PV_Compatible 2 4 2
++Insured 1 8
+-Insured 1 8
++Empty 1 8
++Hose_Connected 2 5 4
+-Hose_Connected 2 5 4
++RV_Compatible 2 3 2
++Have_Permit 1 4
+-Have_Permit 1 4
++Chute_Connected 1 8
+-Chute_Connected 1 8
++Serves 2 6 15
++Ramp_Down 1 2
+-Ramp_Down 1 2
++Available 1 7
++Warning_Signs_Affixed 1 2
+-Warning_Signs_Affixed 1 2
++Connected_To 2 5 14
+-Connected_To 2 5 14
++At_Equipment 2 8 12
++At_Package 2 4 12
++In_City 2 6 11
++At_Vehicle 2 2 9
++Fees_Collected 1 4
+-Fees_Collected 1 4
++Door_Open 1 2
+-Door_Open 1 2
++Connects 3 3 15 15
+#end_predicates
+#number_primitiv_tasks_and_number_abstract_tasks
+35 22
+#begin_task_name_costs_number_of_variables
+obtain_permit 1 1
+#sorts_of_variables
+4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+14 0
+#add_each_predicate_and_argument_variables
+1
+13 0
+#del_each_predicate_and_argument_variables
+1
+14 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+collect_fees 1 1
+#sorts_of_variables
+4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+30 0
+#add_each_predicate_and_argument_variables
+1
+29 0
+#del_each_predicate_and_argument_variables
+1
+30 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_tcenter_cc 1 5
+#sorts_of_variables
+8 8 11 11 6
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+27 0 2
+27 1 3
+17 4 2
+17 4 3
+20 4
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_two_tcenters_cities_ottd 1 6
+#sorts_of_variables
+8 8 11 11 6 6
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+27 0 2
+27 1 3
+17 4 2
+17 5 3
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_two_tcenters_cities_otd 1 5
+#sorts_of_variables
+8 11 11 6 6
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+27 3 1
+27 0 2
+17 4 2
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_two_tcenters_cities_ott 1 5
+#sorts_of_variables
+6 11 11 6 6
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+27 0 1
+27 4 2
+17 3 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_two_tcenters 1 2
+#sorts_of_variables
+6 6
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+20 0
+20 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_two_tcenters_tt 1 4
+#sorts_of_variables
+6 6 11 11
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+27 0 2
+27 1 3
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_two_tcenters_via_hub_hazardous 1 8
+#sorts_of_variables
+6 6 13 11 11 11 1 1
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+11
+20 0
+20 1
+27 2 4
+1 4
+27 0 3
+27 1 5
+4 3 6
+4 5 7
+17 2 6
+17 2 7
+20 2
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+go_through_two_tcenters_via_hub_not_hazardous 1 7
+#sorts_of_variables
+6 6 11 11 1 1 13
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+9
+20 0
+20 1
+27 0 2
+27 1 3
+4 2 4
+4 3 5
+17 6 4
+17 6 5
+20 6
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+deliver_p 1 1
+#sorts_of_variables
+4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+29 0
+#add_each_predicate_and_argument_variables
+2
+30 0
+0 0
+#del_each_predicate_and_argument_variables
+1
+29 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+deliver_h 1 1
+#sorts_of_variables
+4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+29 0
+13 0
+#add_each_predicate_and_argument_variables
+3
+14 0
+30 0
+0 0
+#del_each_predicate_and_argument_variables
+2
+13 0
+29 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+post_guard_outside 1 1
+#sorts_of_variables
+8
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+post_guard_inside 1 1
+#sorts_of_variables
+8
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+remove_guard 1 1
+#sorts_of_variables
+8
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+decontaminate_interior 1 1
+#sorts_of_variables
+2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+affix_warning_signs 1 1
+#sorts_of_variables
+2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+22 0
+#add_each_predicate_and_argument_variables
+1
+21 0
+#del_each_predicate_and_argument_variables
+1
+22 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+remove_warning_signs 1 1
+#sorts_of_variables
+2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+21 0
+#add_each_predicate_and_argument_variables
+1
+22 0
+#del_each_predicate_and_argument_variables
+1
+21 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attach_train_car 1 3
+#sorts_of_variables
+14 5 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+28 1 2
+28 0 2
+24 1 0
+#add_each_predicate_and_argument_variables
+1
+23 1 0
+#del_each_predicate_and_argument_variables
+2
+24 1 0
+28 1 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+detach_train_car 1 3
+#sorts_of_variables
+14 5 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+28 0 2
+23 1 0
+#add_each_predicate_and_argument_variables
+2
+28 1 2
+24 1 0
+#del_each_predicate_and_argument_variables
+1
+23 1 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+connect_hose 1 2
+#sorts_of_variables
+5 4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+11 0 1
+#add_each_predicate_and_argument_variables
+1
+10 0 1
+#del_each_predicate_and_argument_variables
+1
+11 0 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+disconnect_hose 1 2
+#sorts_of_variables
+5 4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+10 0 1
+#add_each_predicate_and_argument_variables
+1
+11 0 1
+#del_each_predicate_and_argument_variables
+1
+10 0 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+open_valve 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+3 0
+#add_each_predicate_and_argument_variables
+1
+2 0
+#del_each_predicate_and_argument_variables
+1
+3 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+close_valve 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+2 0
+#add_each_predicate_and_argument_variables
+1
+3 0
+#del_each_predicate_and_argument_variables
+1
+2 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+fill_tank 1 3
+#sorts_of_variables
+5 4 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+10 0 1
+2 0
+26 1 2
+28 0 2
+6 1 0
+#add_each_predicate_and_argument_variables
+1
+26 1 0
+#del_each_predicate_and_argument_variables
+1
+26 1 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+empty_tank 1 3
+#sorts_of_variables
+5 4 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+10 0 1
+2 0
+26 1 0
+28 0 2
+#add_each_predicate_and_argument_variables
+1
+26 1 2
+#del_each_predicate_and_argument_variables
+1
+26 1 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+load_cars 1 3
+#sorts_of_variables
+8 8 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+26 0 2
+28 1 2
+18 1
+6 0 1
+#add_each_predicate_and_argument_variables
+1
+26 0 1
+#del_each_predicate_and_argument_variables
+1
+26 0 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+unload_cars 1 3
+#sorts_of_variables
+8 8 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+26 0 1
+28 1 2
+18 1
+#add_each_predicate_and_argument_variables
+1
+26 0 2
+#del_each_predicate_and_argument_variables
+1
+26 0 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+raise_ramp 1 1
+#sorts_of_variables
+2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+18 0
+#add_each_predicate_and_argument_variables
+1
+19 0
+#del_each_predicate_and_argument_variables
+1
+18 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+lower_ramp 1 1
+#sorts_of_variables
+2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+19 0
+#add_each_predicate_and_argument_variables
+1
+18 0
+#del_each_predicate_and_argument_variables
+1
+19 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+load_livestock 1 3
+#sorts_of_variables
+8 8 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+26 0 2
+28 1 2
+18 1
+6 0 1
+#add_each_predicate_and_argument_variables
+1
+26 0 1
+#del_each_predicate_and_argument_variables
+1
+26 0 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+unload_livestock 1 3
+#sorts_of_variables
+8 8 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+26 0 1
+28 1 2
+18 1
+#add_each_predicate_and_argument_variables
+1
+26 0 2
+#del_each_predicate_and_argument_variables
+1
+26 0 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+fill_trough 1 1
+#sorts_of_variables
+8
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+do_clean_interior 1 1
+#sorts_of_variables
+2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+move_vehicle_no_traincar 1 4
+#sorts_of_variables
+2 15 3 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+33 2 1 3
+20 0
+20 2
+12 2 0
+28 0 1
+#add_each_predicate_and_argument_variables
+1
+28 0 3
+#del_each_predicate_and_argument_variables
+1
+28 0 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+transport 1 3
+#sorts_of_variables
+4 15 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+pickup 1 1
+#sorts_of_variables
+4
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+carry 1 3
+#sorts_of_variables
+4 15 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+carry_direct 1 3
+#sorts_of_variables
+4 15 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+carry_between_tcenters 1 3
+#sorts_of_variables
+4 6 6
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+carry_via_hub 1 3
+#sorts_of_variables
+4 6 6
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+load 1 3
+#sorts_of_variables
+4 2 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+load_top 1 3
+#sorts_of_variables
+4 2 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+unload 1 3
+#sorts_of_variables
+4 2 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+unload_top 1 3
+#sorts_of_variables
+4 2 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+deliver 1 1
+#sorts_of_variables
+4
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+move 1 3
+#sorts_of_variables
+2 15 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_tt 1 5
+#sorts_of_variables
+4 6 11 6 11
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_ott 1 6
+#sorts_of_variables
+4 6 11 6 6 11
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_otd 1 6
+#sorts_of_variables
+4 6 11 6 8 11
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_ottd 1 7
+#sorts_of_variables
+4 8 11 6 6 8 11
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_cc 1 6
+#sorts_of_variables
+4 8 11 6 8 11
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_via_hub_not_hazardous 1 8
+#sorts_of_variables
+4 6 11 1 13 6 11 1
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_via_hub_hazardous 1 9
+#sorts_of_variables
+4 6 11 1 13 11 6 11 1
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_carry_direct 1 4
+#sorts_of_variables
+2 4 15 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+helper_move_traincar 1 4
+#sorts_of_variables
+5 14 15 15
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+__artificialTopCompilation__top_1 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#number_of_methods
+42
+#begin_method_name_abstract_task_number_of_variables
+method_transport_pi_ca_de 35 3
+#variable_sorts
+4 15 15
+#parameter_of_abstract_task
+0 2 1
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+36 0
+37 0 2 1
+45 0
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+1
+!= 2 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_pickup_normal 36 1
+#variable_sorts
+4
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_pickup_hazardous 36 1
+#variable_sorts
+4
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+1 0
+0 0
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_deliver_dp 45 1
+#variable_sorts
+4
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+10 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_deliver_dh 45 1
+#variable_sorts
+4
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+11 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_cd 37 3
+#variable_sorts
+15 15 4
+#parameter_of_abstract_task
+2 0 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+38 2 0 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 0 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_cvh 37 5
+#variable_sorts
+15 11 15 4 11
+#parameter_of_abstract_task
+3 0 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+47 3 0 1 2 4
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 0 2
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_cvh 47 5
+#variable_sorts
+4 11 6 11 6
+#parameter_of_abstract_task
+0 2 1 4 3
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+40 0 2 4
+7 2 4 1 3
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+2
+!= 2 4
+!= 1 3
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_cd_cbtc 37 6
+#variable_sorts
+15 6 11 11 15 4
+#parameter_of_abstract_task
+5 0 4
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+48 5 0 3 1 4 2
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+2
+!= 3 2
+!= 0 4
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_cd_cbtc 48 6
+#variable_sorts
+6 11 6 4 6 11
+#parameter_of_abstract_task
+3 2 5 4 0 1
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+38 3 2 4
+5 2 5 1 4 0
+39 3 4 0
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+1
+!= 5 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_cbtc_cd 37 6
+#variable_sorts
+15 6 15 4 11 11
+#parameter_of_abstract_task
+3 0 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+49 3 0 4 1 2 5
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+3
+!= 0 2
+!= 0 1
+!= 2 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_cbtc_cd 49 6
+#variable_sorts
+6 11 4 8 11 6
+#parameter_of_abstract_task
+2 5 4 0 3 1
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+39 2 5 0
+4 3 4 1 5 0
+38 2 0 3
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+2
+!= 4 1
+!= 5 0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_cd_cbtc_cd 37 7
+#variable_sorts
+15 6 6 15 11 11 4
+#parameter_of_abstract_task
+6 0 3
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+50 6 0 5 2 1 3 4
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+5
+!= 0 3
+!= 0 2
+!= 3 2
+!= 0 1
+!= 3 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_cd_cbtc_cd 50 7
+#variable_sorts
+6 8 4 8 11 11 6
+#parameter_of_abstract_task
+2 3 4 0 6 1 5
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+38 2 3 0
+3 3 1 4 5 0 6
+39 2 0 6
+38 2 6 1
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+1 2
+2 3
+#variable_constraints
+3
+!= 3 1
+!= 0 6
+!= 4 5
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_cd_cd 37 6
+#variable_sorts
+15 11 15 4 6 11
+#parameter_of_abstract_task
+3 0 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+51 3 0 5 4 2 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 0 2
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_cd_cd 51 6
+#variable_sorts
+4 11 8 6 8 11
+#parameter_of_abstract_task
+0 2 5 3 4 1
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+38 0 2 3
+2 2 4 5 1 3
+38 0 3 4
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+2
+!= 2 4
+!= 5 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_between_tcenters_cd 39 3
+#variable_sorts
+6 6 4
+#parameter_of_abstract_task
+2 1 0
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+6 1 0
+38 2 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 1 0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_between_tcenters_cvh 39 3
+#variable_sorts
+6 6 4
+#parameter_of_abstract_task
+2 1 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+40 2 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 1 0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_via_hub_not_hazardous 40 8
+#variable_sorts
+6 13 11 4 6 1 11 1
+#parameter_of_abstract_task
+3 0 4
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+52 3 0 6 5 1 4 2 7
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+3
+!= 0 4
+!= 0 1
+!= 4 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_via_hub_not_hazardous 52 8
+#variable_sorts
+1 4 13 1 6 6 11 11
+#parameter_of_abstract_task
+1 5 6 0 2 4 7 3
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+38 1 5 2
+9 5 4 6 7 0 3 2
+38 1 2 4
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+5
+!= 5 4
+!= 5 2
+!= 2 4
+!= 6 7
+!= 0 3
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_via_hub_hazardous 40 9
+#variable_sorts
+1 11 6 13 1 11 11 4 6
+#parameter_of_abstract_task
+7 2 8
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+53 7 2 1 4 3 5 8 6 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+3
+!= 2 8
+!= 2 3
+!= 8 3
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_via_hub_hazardous 53 9
+#variable_sorts
+4 11 11 13 6 1 6 11 1
+#parameter_of_abstract_task
+0 6 2 5 3 7 4 1 8
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+38 0 6 3
+8 6 4 3 2 7 1 5 8
+38 0 3 4
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+7
+!= 6 4
+!= 6 3
+!= 3 4
+!= 2 7
+!= 2 1
+!= 7 1
+!= 5 8
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_carry_direct 38 4
+#variable_sorts
+2 15 4 15
+#parameter_of_abstract_task
+2 3 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+54 0 2 3 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 3 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_direct 54 5
+#variable_sorts
+15 15 4 15 2
+#parameter_of_abstract_task
+4 2 0 3
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+46 4 1 0
+42 2 4 0
+46 4 0 3
+44 2 4 3
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+1 2
+2 3
+#variable_constraints
+2
+!= 1 0
+!= 0 3
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_carry_direct_noMoveFirst 54 4
+#variable_sorts
+15 4 15 2
+#parameter_of_abstract_task
+3 1 0 2
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+42 1 3 0
+46 3 0 2
+44 1 3 2
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+1
+!= 0 2
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_move_no_traincar 46 4
+#variable_sorts
+3 15 15 2
+#parameter_of_abstract_task
+3 1 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+34 3 1 0 2
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 1 2
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_move_traincar 46 4
+#variable_sorts
+14 15 15 2
+#parameter_of_abstract_task
+3 1 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+55 3 0 1 2
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 1 2
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_move_traincar 55 5
+#variable_sorts
+15 15 14 5 15
+#parameter_of_abstract_task
+3 2 4 0
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+46 2 1 4
+18 2 3 4
+46 2 4 0
+19 2 3 0
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+1 2
+2 3
+#variable_constraints
+2
+!= 4 0
+!= 1 4
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_helper_move_traincar_noMoveFirst 55 4
+#variable_sorts
+15 14 5 15
+#parameter_of_abstract_task
+2 1 3 0
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+18 1 2 3
+46 1 3 0
+19 1 2 0
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+1
+!= 3 0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_unload_tanker 43 3
+#variable_sorts
+15 4 2
+#parameter_of_abstract_task
+1 2 0
+#number_of_subtasks
+5
+#subtasks_each_with_task_id_and_parameter_variables
+20 2 1
+22 2
+25 2 1 0
+23 2
+21 2 1
+#number_of_ordering_constraints_and_ordering
+4
+0 1
+1 2
+2 3
+3 4
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_unload_livestock 43 3
+#variable_sorts
+15 4 2
+#parameter_of_abstract_task
+1 2 0
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+29 2
+31 1 2 0
+33 2
+28 2
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+1 2
+2 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_unload_cars 43 3
+#variable_sorts
+15 4 2
+#parameter_of_abstract_task
+1 2 0
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+29 2
+27 1 2 0
+28 2
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_load_top_normal 42 3
+#variable_sorts
+4 15 2
+#parameter_of_abstract_task
+0 2 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+41 0 2 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_load_top_hazardous 42 3
+#variable_sorts
+4 15 2
+#parameter_of_abstract_task
+0 2 1
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+16 2
+41 0 2 1
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_load_top_valuable 42 3
+#variable_sorts
+4 15 2
+#parameter_of_abstract_task
+0 2 1
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+12 2
+41 0 2 1
+13 2
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_unload_top_normal 44 3
+#variable_sorts
+2 4 15
+#parameter_of_abstract_task
+1 0 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+43 1 0 2
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_unload_top_hazardous 44 3
+#variable_sorts
+2 4 15
+#parameter_of_abstract_task
+1 0 2
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+43 1 0 2
+15 0
+17 0
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_unload_top_valuable 44 3
+#variable_sorts
+2 4 15
+#parameter_of_abstract_task
+1 0 2
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+12 0
+43 1 0 2
+14 0
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_load_tanker 41 3
+#variable_sorts
+4 2 15
+#parameter_of_abstract_task
+0 1 2
+#number_of_subtasks
+5
+#subtasks_each_with_task_id_and_parameter_variables
+20 1 0
+22 1
+24 1 0 2
+23 1
+21 1 0
+#number_of_ordering_constraints_and_ordering
+4
+0 1
+1 2
+2 3
+3 4
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_load_livestock 41 3
+#variable_sorts
+4 2 15
+#parameter_of_abstract_task
+0 1 2
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+29 1
+32 1
+30 0 1 2
+28 1
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+1 2
+2 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method_load_cars 41 3
+#variable_sorts
+4 2 15
+#parameter_of_abstract_task
+0 1 2
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+29 1
+26 0 1 2
+28 1
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+__top_1 56 3
+#variable_sorts
+6 6 4
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+35 2 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#init_and_goal_facts
+36 1
+19 0
+22 10
+14 7
+19 10
+11 0 7
+24 0 11
+24 0 10
+19 11
+3 0
+22 0
+22 11
+30 7
+4 4 8
+4 5 9
+27 12 4
+20 12
+27 13 5
+20 13
+20 3
+27 3 6
+1 6
+17 3 8
+17 3 9
+28 10 12
+28 11 3
+28 0 12
+33 1 12 3
+33 2 3 13
+20 1
+20 2
+20 10
+20 11
+6 7 0
+12 1 10
+12 2 11
+26 7 12
+#end_init
+0 7
+#end_goal
+#initial_task
+56

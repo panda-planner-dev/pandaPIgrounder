@@ -1,0 +1,85 @@
+56 28
+do_grind p0 smooth natural colourfragments untreated verysmooth natural
+do_grind p0 smooth natural untreated untreated verysmooth natural
+do_grind p0 smooth natural varnished colourfragments verysmooth natural
+do_grind p0 smooth red colourfragments untreated verysmooth natural
+do_grind p0 smooth red untreated untreated verysmooth natural
+do_grind p0 smooth red varnished colourfragments verysmooth natural
+do_grind p0 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p0 verysmooth natural untreated untreated verysmooth natural
+do_grind p0 verysmooth natural varnished colourfragments verysmooth natural
+do_grind p0 verysmooth red colourfragments untreated verysmooth natural
+do_grind p0 verysmooth red untreated untreated verysmooth natural
+do_grind p0 verysmooth red varnished colourfragments verysmooth natural
+do_grind p2 smooth natural colourfragments untreated verysmooth natural
+do_grind p2 smooth natural untreated untreated verysmooth natural
+do_grind p2 smooth natural varnished colourfragments verysmooth natural
+do_grind p2 smooth red colourfragments untreated verysmooth natural
+do_grind p2 smooth red untreated untreated verysmooth natural
+do_grind p2 smooth red varnished colourfragments verysmooth natural
+do_grind p2 verysmooth natural colourfragments untreated verysmooth natural
+do_grind p2 verysmooth natural untreated untreated verysmooth natural
+do_grind p2 verysmooth natural varnished colourfragments verysmooth natural
+do_grind p2 verysmooth red colourfragments untreated verysmooth natural
+do_grind p2 verysmooth red untreated untreated verysmooth natural
+do_grind p2 verysmooth red varnished colourfragments verysmooth natural
+do_plane p0 smooth natural colourfragments smooth untreated natural
+do_plane p0 smooth natural untreated smooth untreated natural
+do_plane p0 smooth natural varnished smooth untreated natural
+do_plane p0 smooth red colourfragments smooth untreated natural
+do_plane p0 smooth red untreated smooth untreated natural
+do_plane p0 smooth red varnished smooth untreated natural
+do_plane p0 verysmooth natural colourfragments smooth untreated natural
+do_plane p0 verysmooth natural untreated smooth untreated natural
+do_plane p0 verysmooth natural varnished smooth untreated natural
+do_plane p0 verysmooth red colourfragments smooth untreated natural
+do_plane p0 verysmooth red untreated smooth untreated natural
+do_plane p0 verysmooth red varnished smooth untreated natural
+do_plane p2 smooth natural colourfragments smooth untreated natural
+do_plane p2 smooth natural untreated smooth untreated natural
+do_plane p2 smooth natural varnished smooth untreated natural
+do_plane p2 smooth red colourfragments smooth untreated natural
+do_plane p2 smooth red untreated smooth untreated natural
+do_plane p2 smooth red varnished smooth untreated natural
+do_plane p2 verysmooth natural colourfragments smooth untreated natural
+do_plane p2 verysmooth natural untreated smooth untreated natural
+do_plane p2 verysmooth natural varnished smooth untreated natural
+do_plane p2 verysmooth red colourfragments smooth untreated natural
+do_plane p2 verysmooth red untreated smooth untreated natural
+do_plane p2 verysmooth red varnished smooth untreated natural
+do_spray_varnish p0 spray_varnisher0 natural smooth untreated varnished natural
+do_spray_varnish p0 spray_varnisher0 natural verysmooth untreated varnished natural
+do_spray_varnish p0 spray_varnisher0 red smooth untreated varnished natural
+do_spray_varnish p0 spray_varnisher0 red verysmooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 natural smooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 natural verysmooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 red smooth untreated varnished natural
+do_spray_varnish p2 spray_varnisher0 red verysmooth untreated varnished natural
++available p0
++available p2
++colour p0 natural
++colour p0 red
++colour p2 natural
++colour p2 red
++goalsize p0 small
++goalsize p2 large
++grind_treatment_change colourfragments untreated
++grind_treatment_change glazed untreated
++grind_treatment_change untreated untreated
++grind_treatment_change varnished colourfragments
++has_colour spray_varnisher0 natural
++has_colour spray_varnisher0 red
++is_smooth smooth
++is_smooth verysmooth
++surface_condition p0 smooth
++surface_condition p0 verysmooth
++surface_condition p2 smooth
++surface_condition p2 verysmooth
++treatment p0 colourfragments
++treatment p0 untreated
++treatment p0 varnished
++treatment p2 colourfragments
++treatment p2 untreated
++treatment p2 varnished
++wood p0 pine
++wood p2 teak

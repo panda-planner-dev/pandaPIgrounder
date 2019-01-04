@@ -1,0 +1,125 @@
+61 63
+affix_warning_signs Eisenbahnwagen
+affix_warning_signs LKW_Muenchen
+affix_warning_signs LKW_Ulm
+affix_warning_signs Lokomotive
+attach_train_car Lokomotive Eisenbahnwagen HauptbahnhofMuenchen
+attach_train_car Lokomotive Eisenbahnwagen HauptbahnhofUlm
+close_door Eisenbahnwagen
+close_door LKW_Muenchen
+close_door LKW_Ulm
+collect_fees Stuehle
+decontaminate_interior Eisenbahnwagen
+decontaminate_interior LKW_Muenchen
+decontaminate_interior LKW_Ulm
+decontaminate_interior Lokomotive
+deliver_p Stuehle
+detach_train_car Lokomotive Eisenbahnwagen HauptbahnhofMuenchen
+detach_train_car Lokomotive Eisenbahnwagen HauptbahnhofUlm
+do_clean_interior Eisenbahnwagen
+do_clean_interior LKW_Muenchen
+do_clean_interior LKW_Ulm
+do_clean_interior Lokomotive
+go_through_tcenter_cc FrauenStrassePost FrauenStrassePost Ulm Ulm HauptbahnhofUlm
+go_through_tcenter_cc MuenchnerStrassePost MuenchnerStrassePost Muenchen Muenchen HauptbahnhofMuenchen
+go_through_two_tcenters HauptbahnhofMuenchen HauptbahnhofMuenchen
+go_through_two_tcenters HauptbahnhofMuenchen HauptbahnhofUlm
+go_through_two_tcenters HauptbahnhofUlm HauptbahnhofMuenchen
+go_through_two_tcenters HauptbahnhofUlm HauptbahnhofUlm
+go_through_two_tcenters_cities_ottd FrauenStrassePost FrauenStrassePost Ulm Ulm HauptbahnhofUlm HauptbahnhofUlm
+go_through_two_tcenters_cities_ottd FrauenStrassePost MuenchnerStrassePost Ulm Muenchen HauptbahnhofUlm HauptbahnhofMuenchen
+go_through_two_tcenters_cities_ottd MuenchnerStrassePost FrauenStrassePost Muenchen Ulm HauptbahnhofMuenchen HauptbahnhofUlm
+go_through_two_tcenters_cities_ottd MuenchnerStrassePost MuenchnerStrassePost Muenchen Muenchen HauptbahnhofMuenchen HauptbahnhofMuenchen
+load_package Stuehle Eisenbahnwagen HauptbahnhofMuenchen
+load_package Stuehle Eisenbahnwagen HauptbahnhofUlm
+load_package Stuehle LKW_Muenchen HauptbahnhofMuenchen
+load_package Stuehle LKW_Muenchen MuenchnerStrassePost
+load_package Stuehle LKW_Ulm FrauenStrassePost
+load_package Stuehle LKW_Ulm HauptbahnhofUlm
+lower_ramp Eisenbahnwagen
+lower_ramp LKW_Muenchen
+lower_ramp LKW_Ulm
+lower_ramp Lokomotive
+move_vehicle_no_traincar LKW_Muenchen HauptbahnhofMuenchen BlumenStrasse MuenchnerStrassePost
+move_vehicle_no_traincar LKW_Ulm FrauenStrassePost James_Franck_Ring HauptbahnhofUlm
+move_vehicle_no_traincar Lokomotive HauptbahnhofUlm UlmMuenchenRailRoute HauptbahnhofMuenchen
+open_door Eisenbahnwagen
+open_door LKW_Muenchen
+open_door LKW_Ulm
+raise_ramp Eisenbahnwagen
+raise_ramp LKW_Muenchen
+raise_ramp LKW_Ulm
+raise_ramp Lokomotive
+remove_warning_signs Eisenbahnwagen
+remove_warning_signs LKW_Muenchen
+remove_warning_signs LKW_Ulm
+remove_warning_signs Lokomotive
+unload_package Stuehle Eisenbahnwagen HauptbahnhofMuenchen
+unload_package Stuehle Eisenbahnwagen HauptbahnhofUlm
+unload_package Stuehle LKW_Muenchen HauptbahnhofMuenchen
+unload_package Stuehle LKW_Muenchen MuenchnerStrassePost
+unload_package Stuehle LKW_Ulm FrauenStrassePost
+unload_package Stuehle LKW_Ulm HauptbahnhofUlm
++At_Package Stuehle Eisenbahnwagen
++At_Package Stuehle FrauenStrassePost
++At_Package Stuehle HauptbahnhofMuenchen
++At_Package Stuehle HauptbahnhofUlm
++At_Package Stuehle LKW_Muenchen
++At_Package Stuehle LKW_Ulm
++At_Package Stuehle MuenchnerStrassePost
++At_Vehicle Eisenbahnwagen HauptbahnhofMuenchen
++At_Vehicle Eisenbahnwagen HauptbahnhofUlm
++At_Vehicle LKW_Muenchen HauptbahnhofMuenchen
++At_Vehicle LKW_Muenchen MuenchnerStrassePost
++At_Vehicle LKW_Ulm FrauenStrassePost
++At_Vehicle LKW_Ulm HauptbahnhofUlm
++At_Vehicle Lokomotive HauptbahnhofMuenchen
++At_Vehicle Lokomotive HauptbahnhofUlm
++Available BlumenStrasse
++Available HauptbahnhofMuenchen
++Available HauptbahnhofUlm
++Available James_Franck_Ring
++Available LKW_Muenchen
++Available LKW_Ulm
++Available Lokomotive
++Available UlmMuenchenRailRoute
++Connected_To Eisenbahnwagen Lokomotive
++Connects BlumenStrasse HauptbahnhofMuenchen MuenchnerStrassePost
++Connects James_Franck_Ring FrauenStrassePost HauptbahnhofUlm
++Connects UlmMuenchenRailRoute HauptbahnhofUlm HauptbahnhofMuenchen
++Delivered Stuehle
++Door_Open Eisenbahnwagen
++Door_Open LKW_Muenchen
++Door_Open LKW_Ulm
++Fees_Collected Stuehle
++In_City FrauenStrassePost Ulm
++In_City MuenchnerStrassePost Muenchen
++PV_Compatible Stuehle Eisenbahnwagen
++PV_Compatible Stuehle LKW_Muenchen
++PV_Compatible Stuehle LKW_Ulm
++RV_Compatible BlumenStrasse LKW_Muenchen
++RV_Compatible James_Franck_Ring LKW_Ulm
++RV_Compatible UlmMuenchenRailRoute Lokomotive
++Ramp_Down Eisenbahnwagen
++Ramp_Down LKW_Muenchen
++Ramp_Down LKW_Ulm
++Ramp_Down Lokomotive
++Serves HauptbahnhofMuenchen Muenchen
++Serves HauptbahnhofUlm Ulm
++Warning_Signs_Affixed Eisenbahnwagen
++Warning_Signs_Affixed LKW_Muenchen
++Warning_Signs_Affixed LKW_Ulm
++Warning_Signs_Affixed Lokomotive
+-Connected_To Eisenbahnwagen Lokomotive
+-Door_Open Eisenbahnwagen
+-Door_Open LKW_Muenchen
+-Door_Open LKW_Ulm
+-Fees_Collected Stuehle
+-Ramp_Down Eisenbahnwagen
+-Ramp_Down LKW_Muenchen
+-Ramp_Down LKW_Ulm
+-Ramp_Down Lokomotive
+-Warning_Signs_Affixed Eisenbahnwagen
+-Warning_Signs_Affixed LKW_Muenchen
+-Warning_Signs_Affixed LKW_Ulm
+-Warning_Signs_Affixed Lokomotive

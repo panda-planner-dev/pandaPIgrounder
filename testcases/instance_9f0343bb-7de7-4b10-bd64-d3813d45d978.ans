@@ -1,0 +1,37 @@
+15 21
+affix_warning_signs Pferd
+close_door Pferd
+collect_fees Toshiba_Laptops
+decontaminate_interior Pferd
+deliver_p Toshiba_Laptops
+do_clean_interior Pferd
+load_package Toshiba_Laptops Pferd O27
+load_package Toshiba_Laptops Pferd O28
+lower_ramp Pferd
+move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28
+open_door Pferd
+raise_ramp Pferd
+remove_warning_signs Pferd
+unload_package Toshiba_Laptops Pferd O27
+unload_package Toshiba_Laptops Pferd O28
++At_Package Toshiba_Laptops O27
++At_Package Toshiba_Laptops O28
++At_Package Toshiba_Laptops Pferd
++At_Vehicle Pferd O27
++At_Vehicle Pferd O28
++Available James_Franck_Ring
++Available Pferd
++Connects James_Franck_Ring O27 O28
++Delivered Toshiba_Laptops
++Door_Open Pferd
++Fees_Collected Toshiba_Laptops
++In_City O27 Ulm
++In_City O28 Ulm
++PV_Compatible Toshiba_Laptops Pferd
++RV_Compatible James_Franck_Ring Pferd
++Ramp_Down Pferd
++Warning_Signs_Affixed Pferd
+-Door_Open Pferd
+-Fees_Collected Toshiba_Laptops
+-Ramp_Down Pferd
+-Warning_Signs_Affixed Pferd

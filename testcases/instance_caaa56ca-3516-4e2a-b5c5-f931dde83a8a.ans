@@ -1,0 +1,74 @@
+46 27
+drive truck-0 city-loc-0 city-loc-0
+drive truck-0 city-loc-0 city-loc-1
+drive truck-0 city-loc-1 city-loc-0
+drive truck-0 city-loc-1 city-loc-1
+drive truck-0 city-loc-1 city-loc-2
+drive truck-0 city-loc-2 city-loc-1
+drive truck-0 city-loc-2 city-loc-2
+drop truck-0 city-loc-0 package-0 capacity-0 capacity-1
+drop truck-0 city-loc-0 package-0 capacity-1 capacity-2
+drop truck-0 city-loc-0 package-1 capacity-0 capacity-1
+drop truck-0 city-loc-0 package-1 capacity-1 capacity-2
+drop truck-0 city-loc-0 package-2 capacity-0 capacity-1
+drop truck-0 city-loc-0 package-2 capacity-1 capacity-2
+drop truck-0 city-loc-1 package-0 capacity-0 capacity-1
+drop truck-0 city-loc-1 package-0 capacity-1 capacity-2
+drop truck-0 city-loc-1 package-1 capacity-0 capacity-1
+drop truck-0 city-loc-1 package-1 capacity-1 capacity-2
+drop truck-0 city-loc-1 package-2 capacity-0 capacity-1
+drop truck-0 city-loc-1 package-2 capacity-1 capacity-2
+drop truck-0 city-loc-2 package-0 capacity-0 capacity-1
+drop truck-0 city-loc-2 package-0 capacity-1 capacity-2
+drop truck-0 city-loc-2 package-1 capacity-0 capacity-1
+drop truck-0 city-loc-2 package-1 capacity-1 capacity-2
+drop truck-0 city-loc-2 package-2 capacity-0 capacity-1
+drop truck-0 city-loc-2 package-2 capacity-1 capacity-2
+noop truck-0 city-loc-0
+noop truck-0 city-loc-1
+noop truck-0 city-loc-2
+pick-up truck-0 city-loc-0 package-0 capacity-0 capacity-1
+pick-up truck-0 city-loc-0 package-0 capacity-1 capacity-2
+pick-up truck-0 city-loc-0 package-1 capacity-0 capacity-1
+pick-up truck-0 city-loc-0 package-1 capacity-1 capacity-2
+pick-up truck-0 city-loc-0 package-2 capacity-0 capacity-1
+pick-up truck-0 city-loc-0 package-2 capacity-1 capacity-2
+pick-up truck-0 city-loc-1 package-0 capacity-0 capacity-1
+pick-up truck-0 city-loc-1 package-0 capacity-1 capacity-2
+pick-up truck-0 city-loc-1 package-1 capacity-0 capacity-1
+pick-up truck-0 city-loc-1 package-1 capacity-1 capacity-2
+pick-up truck-0 city-loc-1 package-2 capacity-0 capacity-1
+pick-up truck-0 city-loc-1 package-2 capacity-1 capacity-2
+pick-up truck-0 city-loc-2 package-0 capacity-0 capacity-1
+pick-up truck-0 city-loc-2 package-0 capacity-1 capacity-2
+pick-up truck-0 city-loc-2 package-1 capacity-0 capacity-1
+pick-up truck-0 city-loc-2 package-1 capacity-1 capacity-2
+pick-up truck-0 city-loc-2 package-2 capacity-0 capacity-1
+pick-up truck-0 city-loc-2 package-2 capacity-1 capacity-2
++at package-0 city-loc-0
++at package-0 city-loc-1
++at package-0 city-loc-2
++at package-1 city-loc-0
++at package-1 city-loc-1
++at package-1 city-loc-2
++at package-2 city-loc-0
++at package-2 city-loc-1
++at package-2 city-loc-2
++at truck-0 city-loc-0
++at truck-0 city-loc-1
++at truck-0 city-loc-2
++capacity truck-0 capacity-0
++capacity truck-0 capacity-1
++capacity truck-0 capacity-2
++capacity-predecessor capacity-0 capacity-1
++capacity-predecessor capacity-1 capacity-2
++in package-0 truck-0
++in package-1 truck-0
++in package-2 truck-0
++road city-loc-0 city-loc-0
++road city-loc-0 city-loc-1
++road city-loc-1 city-loc-0
++road city-loc-1 city-loc-1
++road city-loc-1 city-loc-2
++road city-loc-2 city-loc-1
++road city-loc-2 city-loc-2

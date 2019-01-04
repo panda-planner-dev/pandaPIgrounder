@@ -1,0 +1,55 @@
+16 38
+attachContactableInformationToEMail email1 headOfDepartmentEMailAddress headOfDepartment
+attachRegularInformationToEMail email1 agenda
+attachRegularInformationToEMail email1 dateForMeeting
+attachRegularInformationToEMail email1 headOfDepartmentPicture
+attachRegularInformationToEMail email1 room101
+enter_EMailAddress headOfDepartment headOfDepartmentEMailAddress
+extractsInformation_Contactable headOfDepartment email1 headOfDepartmentEMailAddress headOfDepartment
+extractsInformation_Regular headOfDepartment email1 agenda
+extractsInformation_Regular headOfDepartment email1 dateForMeeting
+extractsInformation_Regular headOfDepartment email1 headOfDepartmentPicture
+extractsInformation_Regular headOfDepartment email1 room101
+press_EMail_NewEMail account1
+press_EMail_NewEMail_Send headOfDepartment email1
+press_Home_Default 
+press_Home_EMail 
+select_EMail_EMailAccount_NoOp account1
++associated_Contact contact1 headOfDepartment
++associated_Picture contact1 headOfDepartmentPicture
++attached email1 agenda
++attached email1 dateForMeeting
++attached email1 headOfDepartmentEMailAddress
++attached email1 headOfDepartmentPicture
++attached email1 room101
++created contact1
++entered_EMail headOfDepartment
++hasInformation_Regular headOfDepartment agenda
++hasInformation_Regular headOfDepartment dateForMeeting
++hasInformation_Regular headOfDepartment headOfDepartmentPicture
++hasInformation_Regular headOfDepartment room101
++hasReceived headOfDepartment email1
++haveInformation_Contactable headOfDepartment headOfDepartmentEMailAddress
++haveInformation_Regular agenda
++haveInformation_Regular dateForMeeting
++haveInformation_Regular headOfDepartmentPicture
++haveInformation_Regular room101
++inMode_EMail 
++inMode_EMail_NewEMail 
++inMode_Home 
++isFavourite contact1
++selected account1
+-entered_AnyNumber 
+-haveSent email1
+-inMode_Calendar_ConfigureAppointment 
+-inMode_Contacts_ConfigureContact 
+-inMode_Contacts_Details 
+-inMode_EMail_Inbox 
+-inMode_EMail_NewEMail 
+-inMode_Menu 
+-inMode_NewMessage 
+-inMode_People_AddFavourite 
+-inMode_PictureSelection 
+-inMode_Tasks_ConfigureTask 
+-isSet_Contact_Picture contact1
+-selected_Favourite contact1

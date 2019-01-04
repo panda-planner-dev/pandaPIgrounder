@@ -1,0 +1,45 @@
+17 27
+affix_warning_signs Pferd
+collect_fees Holz
+decontaminate_interior Pferd
+deliver_p Holz
+do_clean_interior Pferd
+lower_ramp Pferd
+move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28
+pick_up_package_ground Holz CraneO27 O27
+pick_up_package_ground Holz CraneO28 O28
+pick_up_package_vehicle Holz CraneO27 Pferd O27
+pick_up_package_vehicle Holz CraneO28 Pferd O28
+put_down_package_ground Holz CraneO27 O27
+put_down_package_ground Holz CraneO28 O28
+put_down_package_vehicle Holz CraneO27 Pferd O27
+put_down_package_vehicle Holz CraneO28 Pferd O28
+raise_ramp Pferd
+remove_warning_signs Pferd
++At_Equipment CraneO27 O27
++At_Equipment CraneO28 O28
++At_Package Holz CraneO27
++At_Package Holz CraneO28
++At_Package Holz O27
++At_Package Holz O28
++At_Package Holz Pferd
++At_Vehicle Pferd O27
++At_Vehicle Pferd O28
++Available CraneO27
++Available CraneO28
++Available James_Franck_Ring
++Available Pferd
++Connects James_Franck_Ring O27 O28
++Delivered Holz
++Empty CraneO27
++Empty CraneO28
++Fees_Collected Holz
++In_City O27 Ulm
++In_City O28 Ulm
++PV_Compatible Holz Pferd
++RV_Compatible James_Franck_Ring Pferd
++Ramp_Down Pferd
++Warning_Signs_Affixed Pferd
+-Fees_Collected Holz
+-Ramp_Down Pferd
+-Warning_Signs_Affixed Pferd

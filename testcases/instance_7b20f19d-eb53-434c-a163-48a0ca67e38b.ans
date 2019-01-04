@@ -1,0 +1,642 @@
+399 242
+SHOP_methodm-calibrate_abs_12_precondition camera0 objective0 waypoint0
+SHOP_methodm-calibrate_abs_12_precondition camera0 objective0 waypoint1
+SHOP_methodm-calibrate_abs_12_precondition camera0 objective0 waypoint2
+SHOP_methodm-calibrate_abs_12_precondition camera0 objective0 waypoint3
+SHOP_methodm-calibrate_abs_12_precondition camera0 objective0 waypoint4
+SHOP_methodm-calibrate_abs_12_precondition camera1 objective1 waypoint0
+SHOP_methodm-calibrate_abs_12_precondition camera1 objective1 waypoint1
+SHOP_methodm-calibrate_abs_12_precondition camera1 objective1 waypoint2
+SHOP_methodm-calibrate_abs_12_precondition camera1 objective1 waypoint3
+SHOP_methodm-empty-store-1_0_precondition rover0store
+SHOP_methodm-empty-store-1_0_precondition rover1store
+SHOP_methodm-empty-store-1_0_precondition rover2store
+SHOP_methodm-empty-store-2_1_precondition rover0store
+SHOP_methodm-empty-store-2_1_precondition rover1store
+SHOP_methodm-empty-store-2_1_precondition rover2store
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint0 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint0 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint1 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint1 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint2 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint2 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint3 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint3 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition colour rover0 waypoint4 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint0 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint0 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint1 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint1 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint2 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint2 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint3 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint3 camera0 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover0 waypoint4 camera0 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint0 camera1 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint0 camera1 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint1 camera1 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint1 camera1 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint2 camera1 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint2 camera1 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint3 camera1 objective0
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint3 camera1 objective1
+SHOP_methodm-get_image_data_11_precondition high_res rover2 waypoint4 camera1 objective0
+SHOP_methodm-get_rock_data_9_precondition rover0 rover0store
+SHOP_methodm-get_rock_data_9_precondition rover1 rover1store
+SHOP_methodm-get_rock_data_9_precondition rover2 rover2store
+SHOP_methodm-get_soil_data_7_precondition rover0store rover0
+SHOP_methodm-get_soil_data_7_precondition rover2store rover2
+SHOP_methodm-navigate_abs-1_2_precondition rover0 waypoint0
+SHOP_methodm-navigate_abs-1_2_precondition rover0 waypoint1
+SHOP_methodm-navigate_abs-1_2_precondition rover0 waypoint2
+SHOP_methodm-navigate_abs-1_2_precondition rover0 waypoint3
+SHOP_methodm-navigate_abs-1_2_precondition rover0 waypoint4
+SHOP_methodm-navigate_abs-1_2_precondition rover0 waypoint5
+SHOP_methodm-navigate_abs-1_2_precondition rover1 waypoint0
+SHOP_methodm-navigate_abs-1_2_precondition rover1 waypoint1
+SHOP_methodm-navigate_abs-1_2_precondition rover1 waypoint2
+SHOP_methodm-navigate_abs-1_2_precondition rover1 waypoint3
+SHOP_methodm-navigate_abs-1_2_precondition rover1 waypoint4
+SHOP_methodm-navigate_abs-1_2_precondition rover1 waypoint5
+SHOP_methodm-navigate_abs-1_2_precondition rover2 waypoint0
+SHOP_methodm-navigate_abs-1_2_precondition rover2 waypoint1
+SHOP_methodm-navigate_abs-1_2_precondition rover2 waypoint2
+SHOP_methodm-navigate_abs-1_2_precondition rover2 waypoint3
+SHOP_methodm-navigate_abs-1_2_precondition rover2 waypoint4
+SHOP_methodm-navigate_abs-1_2_precondition rover2 waypoint5
+SHOP_methodm-navigate_abs-2_3_precondition rover0 waypoint0
+SHOP_methodm-navigate_abs-2_3_precondition rover0 waypoint1
+SHOP_methodm-navigate_abs-2_3_precondition rover0 waypoint2
+SHOP_methodm-navigate_abs-2_3_precondition rover0 waypoint3
+SHOP_methodm-navigate_abs-2_3_precondition rover0 waypoint4
+SHOP_methodm-navigate_abs-2_3_precondition rover0 waypoint5
+SHOP_methodm-navigate_abs-2_3_precondition rover1 waypoint0
+SHOP_methodm-navigate_abs-2_3_precondition rover1 waypoint1
+SHOP_methodm-navigate_abs-2_3_precondition rover1 waypoint2
+SHOP_methodm-navigate_abs-2_3_precondition rover1 waypoint3
+SHOP_methodm-navigate_abs-2_3_precondition rover1 waypoint4
+SHOP_methodm-navigate_abs-2_3_precondition rover1 waypoint5
+SHOP_methodm-navigate_abs-2_3_precondition rover2 waypoint0
+SHOP_methodm-navigate_abs-2_3_precondition rover2 waypoint1
+SHOP_methodm-navigate_abs-2_3_precondition rover2 waypoint2
+SHOP_methodm-navigate_abs-2_3_precondition rover2 waypoint3
+SHOP_methodm-navigate_abs-2_3_precondition rover2 waypoint4
+SHOP_methodm-navigate_abs-2_3_precondition rover2 waypoint5
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint0 waypoint2
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint1 waypoint2
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint2 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint2 waypoint1
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover0 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint0 waypoint5
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint3 waypoint4
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint4 waypoint3
+SHOP_methodm-navigate_abs-3_4_precondition rover1 waypoint5 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint4 waypoint5
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-3_4_precondition rover2 waypoint5 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint0 waypoint0 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint0 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint0 waypoint1 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint0 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint0 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint1 waypoint0 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint1 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint1 waypoint1 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint1 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint1 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint1 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint2 waypoint2 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint2 waypoint2 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint2 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint2 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint2 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint3 waypoint0 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint3 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint3 waypoint1 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint3 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint3 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint3 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint1 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint2 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint2 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint4 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint5 waypoint0 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint5 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint5 waypoint1 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint5 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint5 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover0 waypoint5 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint0 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint0 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint0 waypoint0 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint0 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint0 waypoint4 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint1 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint1 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint1 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint1 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint1 waypoint3 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint1 waypoint4 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint1 waypoint5 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint2 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint2 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint2 waypoint0 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint2 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint2 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint2 waypoint4 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint2 waypoint5 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint3 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint3 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint3 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint3 waypoint3 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint3 waypoint5 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint4 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint4 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint4 waypoint0 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint4 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint4 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint4 waypoint4 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint4 waypoint5 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint5 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint5 waypoint2 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint5 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint5 waypoint3 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint5 waypoint3 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint5 waypoint4 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover1 waypoint5 waypoint5 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint0 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint0 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint0 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint0 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint0 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint0 waypoint5 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint1 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint1 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint1 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint1 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint1 waypoint4 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint1 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint1 waypoint5 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint2 waypoint4 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint3 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint3 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint3 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint3 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint3 waypoint4 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint3 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint3 waypoint5 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint4 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint4 waypoint2 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint4 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint4 waypoint4 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint4 waypoint4 waypoint5
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint5 waypoint0 waypoint1
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint5 waypoint0 waypoint3
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint5 waypoint0 waypoint4
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint5 waypoint1 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint5 waypoint3 waypoint0
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint5 waypoint5 waypoint2
+SHOP_methodm-navigate_abs-4_5_precondition rover2 waypoint5 waypoint5 waypoint4
+SHOP_methodm-send_image_data_10_precondition general waypoint3 waypoint0
+SHOP_methodm-send_image_data_10_precondition general waypoint3 waypoint2
+SHOP_methodm-send_image_data_10_precondition general waypoint3 waypoint4
+SHOP_methodm-send_rock_data_8_precondition general waypoint3 waypoint0
+SHOP_methodm-send_rock_data_8_precondition general waypoint3 waypoint2
+SHOP_methodm-send_rock_data_8_precondition general waypoint3 waypoint4
+SHOP_methodm-send_soil_data_6_precondition general waypoint3 waypoint0
+SHOP_methodm-send_soil_data_6_precondition general waypoint3 waypoint2
+SHOP_methodm-send_soil_data_6_precondition general waypoint3 waypoint4
+calibrate rover0 camera0 objective0 waypoint0
+calibrate rover0 camera0 objective0 waypoint1
+calibrate rover0 camera0 objective0 waypoint2
+calibrate rover0 camera0 objective0 waypoint3
+calibrate rover0 camera0 objective0 waypoint4
+calibrate rover2 camera1 objective1 waypoint0
+calibrate rover2 camera1 objective1 waypoint1
+calibrate rover2 camera1 objective1 waypoint2
+calibrate rover2 camera1 objective1 waypoint3
+communicate_image_data rover0 general objective0 colour waypoint0 waypoint3
+communicate_image_data rover0 general objective0 colour waypoint2 waypoint3
+communicate_image_data rover0 general objective0 colour waypoint4 waypoint3
+communicate_image_data rover0 general objective0 high_res waypoint0 waypoint3
+communicate_image_data rover0 general objective0 high_res waypoint2 waypoint3
+communicate_image_data rover0 general objective0 high_res waypoint4 waypoint3
+communicate_image_data rover0 general objective1 colour waypoint0 waypoint3
+communicate_image_data rover0 general objective1 colour waypoint2 waypoint3
+communicate_image_data rover0 general objective1 colour waypoint4 waypoint3
+communicate_image_data rover0 general objective1 high_res waypoint0 waypoint3
+communicate_image_data rover0 general objective1 high_res waypoint2 waypoint3
+communicate_image_data rover0 general objective1 high_res waypoint4 waypoint3
+communicate_image_data rover2 general objective0 high_res waypoint0 waypoint3
+communicate_image_data rover2 general objective0 high_res waypoint2 waypoint3
+communicate_image_data rover2 general objective0 high_res waypoint4 waypoint3
+communicate_image_data rover2 general objective1 high_res waypoint0 waypoint3
+communicate_image_data rover2 general objective1 high_res waypoint2 waypoint3
+communicate_image_data rover2 general objective1 high_res waypoint4 waypoint3
+communicate_rock_data rover0 general waypoint2 waypoint0 waypoint3
+communicate_rock_data rover0 general waypoint2 waypoint2 waypoint3
+communicate_rock_data rover0 general waypoint2 waypoint4 waypoint3
+communicate_rock_data rover0 general waypoint3 waypoint0 waypoint3
+communicate_rock_data rover0 general waypoint3 waypoint2 waypoint3
+communicate_rock_data rover0 general waypoint3 waypoint4 waypoint3
+communicate_rock_data rover0 general waypoint4 waypoint0 waypoint3
+communicate_rock_data rover0 general waypoint4 waypoint2 waypoint3
+communicate_rock_data rover0 general waypoint4 waypoint4 waypoint3
+communicate_rock_data rover0 general waypoint5 waypoint0 waypoint3
+communicate_rock_data rover0 general waypoint5 waypoint2 waypoint3
+communicate_rock_data rover0 general waypoint5 waypoint4 waypoint3
+communicate_rock_data rover1 general waypoint2 waypoint0 waypoint3
+communicate_rock_data rover1 general waypoint2 waypoint2 waypoint3
+communicate_rock_data rover1 general waypoint2 waypoint4 waypoint3
+communicate_rock_data rover1 general waypoint3 waypoint0 waypoint3
+communicate_rock_data rover1 general waypoint3 waypoint2 waypoint3
+communicate_rock_data rover1 general waypoint3 waypoint4 waypoint3
+communicate_rock_data rover1 general waypoint4 waypoint0 waypoint3
+communicate_rock_data rover1 general waypoint4 waypoint2 waypoint3
+communicate_rock_data rover1 general waypoint4 waypoint4 waypoint3
+communicate_rock_data rover1 general waypoint5 waypoint0 waypoint3
+communicate_rock_data rover1 general waypoint5 waypoint2 waypoint3
+communicate_rock_data rover1 general waypoint5 waypoint4 waypoint3
+communicate_rock_data rover2 general waypoint2 waypoint0 waypoint3
+communicate_rock_data rover2 general waypoint2 waypoint2 waypoint3
+communicate_rock_data rover2 general waypoint2 waypoint4 waypoint3
+communicate_rock_data rover2 general waypoint3 waypoint0 waypoint3
+communicate_rock_data rover2 general waypoint3 waypoint2 waypoint3
+communicate_rock_data rover2 general waypoint3 waypoint4 waypoint3
+communicate_rock_data rover2 general waypoint4 waypoint0 waypoint3
+communicate_rock_data rover2 general waypoint4 waypoint2 waypoint3
+communicate_rock_data rover2 general waypoint4 waypoint4 waypoint3
+communicate_rock_data rover2 general waypoint5 waypoint0 waypoint3
+communicate_rock_data rover2 general waypoint5 waypoint2 waypoint3
+communicate_rock_data rover2 general waypoint5 waypoint4 waypoint3
+communicate_soil_data rover0 general waypoint1 waypoint0 waypoint3
+communicate_soil_data rover0 general waypoint1 waypoint2 waypoint3
+communicate_soil_data rover0 general waypoint1 waypoint4 waypoint3
+communicate_soil_data rover0 general waypoint4 waypoint0 waypoint3
+communicate_soil_data rover0 general waypoint4 waypoint2 waypoint3
+communicate_soil_data rover0 general waypoint4 waypoint4 waypoint3
+communicate_soil_data rover2 general waypoint1 waypoint0 waypoint3
+communicate_soil_data rover2 general waypoint1 waypoint2 waypoint3
+communicate_soil_data rover2 general waypoint1 waypoint4 waypoint3
+communicate_soil_data rover2 general waypoint4 waypoint0 waypoint3
+communicate_soil_data rover2 general waypoint4 waypoint2 waypoint3
+communicate_soil_data rover2 general waypoint4 waypoint4 waypoint3
+drop rover0 rover0store
+drop rover1 rover1store
+drop rover2 rover2store
+navigate rover0 waypoint0 waypoint2
+navigate rover0 waypoint0 waypoint4
+navigate rover0 waypoint1 waypoint2
+navigate rover0 waypoint2 waypoint0
+navigate rover0 waypoint2 waypoint1
+navigate rover0 waypoint2 waypoint3
+navigate rover0 waypoint2 waypoint5
+navigate rover0 waypoint3 waypoint2
+navigate rover0 waypoint4 waypoint0
+navigate rover0 waypoint5 waypoint2
+navigate rover1 waypoint0 waypoint1
+navigate rover1 waypoint0 waypoint3
+navigate rover1 waypoint0 waypoint5
+navigate rover1 waypoint1 waypoint0
+navigate rover1 waypoint2 waypoint3
+navigate rover1 waypoint3 waypoint0
+navigate rover1 waypoint3 waypoint2
+navigate rover1 waypoint3 waypoint4
+navigate rover1 waypoint4 waypoint3
+navigate rover1 waypoint5 waypoint0
+navigate rover2 waypoint0 waypoint1
+navigate rover2 waypoint0 waypoint3
+navigate rover2 waypoint0 waypoint4
+navigate rover2 waypoint1 waypoint0
+navigate rover2 waypoint2 waypoint5
+navigate rover2 waypoint3 waypoint0
+navigate rover2 waypoint4 waypoint0
+navigate rover2 waypoint4 waypoint5
+navigate rover2 waypoint5 waypoint2
+navigate rover2 waypoint5 waypoint4
+sample_rock rover0 rover0store waypoint2
+sample_rock rover0 rover0store waypoint3
+sample_rock rover0 rover0store waypoint4
+sample_rock rover0 rover0store waypoint5
+sample_rock rover1 rover1store waypoint2
+sample_rock rover1 rover1store waypoint3
+sample_rock rover1 rover1store waypoint4
+sample_rock rover1 rover1store waypoint5
+sample_rock rover2 rover2store waypoint2
+sample_rock rover2 rover2store waypoint3
+sample_rock rover2 rover2store waypoint4
+sample_rock rover2 rover2store waypoint5
+sample_soil rover0 rover0store waypoint1
+sample_soil rover0 rover0store waypoint4
+sample_soil rover2 rover2store waypoint1
+sample_soil rover2 rover2store waypoint4
+take_image rover0 waypoint0 objective0 camera0 colour
+take_image rover0 waypoint0 objective0 camera0 high_res
+take_image rover0 waypoint0 objective1 camera0 colour
+take_image rover0 waypoint0 objective1 camera0 high_res
+take_image rover0 waypoint1 objective0 camera0 colour
+take_image rover0 waypoint1 objective0 camera0 high_res
+take_image rover0 waypoint1 objective1 camera0 colour
+take_image rover0 waypoint1 objective1 camera0 high_res
+take_image rover0 waypoint2 objective0 camera0 colour
+take_image rover0 waypoint2 objective0 camera0 high_res
+take_image rover0 waypoint2 objective1 camera0 colour
+take_image rover0 waypoint2 objective1 camera0 high_res
+take_image rover0 waypoint3 objective0 camera0 colour
+take_image rover0 waypoint3 objective0 camera0 high_res
+take_image rover0 waypoint3 objective1 camera0 colour
+take_image rover0 waypoint3 objective1 camera0 high_res
+take_image rover0 waypoint4 objective0 camera0 colour
+take_image rover0 waypoint4 objective0 camera0 high_res
+take_image rover2 waypoint0 objective0 camera1 high_res
+take_image rover2 waypoint0 objective1 camera1 high_res
+take_image rover2 waypoint1 objective0 camera1 high_res
+take_image rover2 waypoint1 objective1 camera1 high_res
+take_image rover2 waypoint2 objective0 camera1 high_res
+take_image rover2 waypoint2 objective1 camera1 high_res
+take_image rover2 waypoint3 objective0 camera1 high_res
+take_image rover2 waypoint3 objective1 camera1 high_res
+take_image rover2 waypoint4 objective0 camera1 high_res
+unvisit waypoint0
+unvisit waypoint1
+unvisit waypoint2
+unvisit waypoint3
+unvisit waypoint4
+unvisit waypoint5
+visit waypoint0
+visit waypoint1
+visit waypoint2
+visit waypoint3
+visit waypoint4
+visit waypoint5
++at rover0 waypoint0
++at rover0 waypoint1
++at rover0 waypoint2
++at rover0 waypoint3
++at rover0 waypoint4
++at rover0 waypoint5
++at rover1 waypoint0
++at rover1 waypoint1
++at rover1 waypoint2
++at rover1 waypoint3
++at rover1 waypoint4
++at rover1 waypoint5
++at rover2 waypoint0
++at rover2 waypoint1
++at rover2 waypoint2
++at rover2 waypoint3
++at rover2 waypoint4
++at rover2 waypoint5
++at_lander general waypoint3
++at_rock_sample waypoint2
++at_rock_sample waypoint3
++at_rock_sample waypoint4
++at_rock_sample waypoint5
++at_soil_sample waypoint1
++at_soil_sample waypoint4
++available rover0
++available rover1
++available rover2
++calibrated camera0 rover0
++calibrated camera1 rover2
++calibration_target camera0 objective0
++calibration_target camera1 objective1
++can_traverse rover0 waypoint0 waypoint2
++can_traverse rover0 waypoint0 waypoint4
++can_traverse rover0 waypoint1 waypoint2
++can_traverse rover0 waypoint2 waypoint0
++can_traverse rover0 waypoint2 waypoint1
++can_traverse rover0 waypoint2 waypoint3
++can_traverse rover0 waypoint2 waypoint5
++can_traverse rover0 waypoint3 waypoint2
++can_traverse rover0 waypoint4 waypoint0
++can_traverse rover0 waypoint5 waypoint2
++can_traverse rover1 waypoint0 waypoint1
++can_traverse rover1 waypoint0 waypoint3
++can_traverse rover1 waypoint0 waypoint5
++can_traverse rover1 waypoint1 waypoint0
++can_traverse rover1 waypoint2 waypoint3
++can_traverse rover1 waypoint3 waypoint0
++can_traverse rover1 waypoint3 waypoint2
++can_traverse rover1 waypoint3 waypoint4
++can_traverse rover1 waypoint4 waypoint3
++can_traverse rover1 waypoint5 waypoint0
++can_traverse rover2 waypoint0 waypoint1
++can_traverse rover2 waypoint0 waypoint3
++can_traverse rover2 waypoint0 waypoint4
++can_traverse rover2 waypoint1 waypoint0
++can_traverse rover2 waypoint2 waypoint5
++can_traverse rover2 waypoint3 waypoint0
++can_traverse rover2 waypoint4 waypoint0
++can_traverse rover2 waypoint4 waypoint5
++can_traverse rover2 waypoint5 waypoint2
++can_traverse rover2 waypoint5 waypoint4
++channel_free general
++empty rover0store
++empty rover1store
++empty rover2store
++equipped_for_imaging rover0
++equipped_for_imaging rover2
++equipped_for_rock_analysis rover0
++equipped_for_rock_analysis rover1
++equipped_for_rock_analysis rover2
++equipped_for_soil_analysis rover0
++equipped_for_soil_analysis rover2
++full rover0store
++full rover1store
++full rover2store
++have_image rover0 objective0 colour
++have_image rover0 objective0 high_res
++have_image rover0 objective1 colour
++have_image rover0 objective1 high_res
++have_image rover2 objective0 high_res
++have_image rover2 objective1 high_res
++have_rock_analysis rover0 waypoint2
++have_rock_analysis rover0 waypoint3
++have_rock_analysis rover0 waypoint4
++have_rock_analysis rover0 waypoint5
++have_rock_analysis rover1 waypoint2
++have_rock_analysis rover1 waypoint3
++have_rock_analysis rover1 waypoint4
++have_rock_analysis rover1 waypoint5
++have_rock_analysis rover2 waypoint2
++have_rock_analysis rover2 waypoint3
++have_rock_analysis rover2 waypoint4
++have_rock_analysis rover2 waypoint5
++have_soil_analysis rover0 waypoint1
++have_soil_analysis rover0 waypoint4
++have_soil_analysis rover2 waypoint1
++have_soil_analysis rover2 waypoint4
++on_board camera0 rover0
++on_board camera1 rover2
++store_of rover0store rover0
++store_of rover1store rover1
++store_of rover2store rover2
++supports camera0 colour
++supports camera0 high_res
++supports camera1 high_res
++visible waypoint0 waypoint1
++visible waypoint0 waypoint2
++visible waypoint0 waypoint3
++visible waypoint0 waypoint4
++visible waypoint0 waypoint5
++visible waypoint1 waypoint0
++visible waypoint1 waypoint2
++visible waypoint1 waypoint5
++visible waypoint2 waypoint0
++visible waypoint2 waypoint1
++visible waypoint2 waypoint3
++visible waypoint2 waypoint5
++visible waypoint3 waypoint0
++visible waypoint3 waypoint2
++visible waypoint3 waypoint4
++visible waypoint4 waypoint0
++visible waypoint4 waypoint3
++visible waypoint4 waypoint5
++visible waypoint5 waypoint0
++visible waypoint5 waypoint1
++visible waypoint5 waypoint2
++visible waypoint5 waypoint4
++visible_from objective0 waypoint0
++visible_from objective0 waypoint1
++visible_from objective0 waypoint2
++visible_from objective0 waypoint3
++visible_from objective0 waypoint4
++visible_from objective1 waypoint0
++visible_from objective1 waypoint1
++visible_from objective1 waypoint2
++visible_from objective1 waypoint3
+-at rover0 waypoint0
+-at rover0 waypoint1
+-at rover0 waypoint2
+-at rover0 waypoint3
+-at rover0 waypoint4
+-at rover0 waypoint5
+-at rover1 waypoint0
+-at rover1 waypoint1
+-at rover1 waypoint2
+-at rover1 waypoint3
+-at rover1 waypoint4
+-at rover1 waypoint5
+-at rover2 waypoint0
+-at rover2 waypoint1
+-at rover2 waypoint2
+-at rover2 waypoint3
+-at rover2 waypoint4
+-at rover2 waypoint5
+-can_traverse rover0 waypoint0 waypoint0
+-can_traverse rover0 waypoint0 waypoint1
+-can_traverse rover0 waypoint0 waypoint3
+-can_traverse rover0 waypoint0 waypoint5
+-can_traverse rover0 waypoint1 waypoint0
+-can_traverse rover0 waypoint1 waypoint1
+-can_traverse rover0 waypoint1 waypoint3
+-can_traverse rover0 waypoint1 waypoint4
+-can_traverse rover0 waypoint1 waypoint5
+-can_traverse rover0 waypoint2 waypoint2
+-can_traverse rover0 waypoint2 waypoint4
+-can_traverse rover0 waypoint3 waypoint0
+-can_traverse rover0 waypoint3 waypoint1
+-can_traverse rover0 waypoint3 waypoint3
+-can_traverse rover0 waypoint3 waypoint4
+-can_traverse rover0 waypoint3 waypoint5
+-can_traverse rover0 waypoint4 waypoint1
+-can_traverse rover0 waypoint4 waypoint2
+-can_traverse rover0 waypoint4 waypoint3
+-can_traverse rover0 waypoint4 waypoint4
+-can_traverse rover0 waypoint4 waypoint5
+-can_traverse rover0 waypoint5 waypoint0
+-can_traverse rover0 waypoint5 waypoint1
+-can_traverse rover0 waypoint5 waypoint3
+-can_traverse rover0 waypoint5 waypoint4
+-can_traverse rover0 waypoint5 waypoint5
+-can_traverse rover1 waypoint0 waypoint0
+-can_traverse rover1 waypoint0 waypoint2
+-can_traverse rover1 waypoint0 waypoint4
+-can_traverse rover1 waypoint1 waypoint1
+-can_traverse rover1 waypoint1 waypoint2
+-can_traverse rover1 waypoint1 waypoint3
+-can_traverse rover1 waypoint1 waypoint4
+-can_traverse rover1 waypoint1 waypoint5
+-can_traverse rover1 waypoint2 waypoint0
+-can_traverse rover1 waypoint2 waypoint1
+-can_traverse rover1 waypoint2 waypoint2
+-can_traverse rover1 waypoint2 waypoint4
+-can_traverse rover1 waypoint2 waypoint5
+-can_traverse rover1 waypoint3 waypoint1
+-can_traverse rover1 waypoint3 waypoint3
+-can_traverse rover1 waypoint3 waypoint5
+-can_traverse rover1 waypoint4 waypoint0
+-can_traverse rover1 waypoint4 waypoint1
+-can_traverse rover1 waypoint4 waypoint2
+-can_traverse rover1 waypoint4 waypoint4
+-can_traverse rover1 waypoint4 waypoint5
+-can_traverse rover1 waypoint5 waypoint1
+-can_traverse rover1 waypoint5 waypoint2
+-can_traverse rover1 waypoint5 waypoint3
+-can_traverse rover1 waypoint5 waypoint4
+-can_traverse rover1 waypoint5 waypoint5
+-can_traverse rover2 waypoint0 waypoint0
+-can_traverse rover2 waypoint0 waypoint2
+-can_traverse rover2 waypoint0 waypoint5
+-can_traverse rover2 waypoint1 waypoint1
+-can_traverse rover2 waypoint1 waypoint2
+-can_traverse rover2 waypoint1 waypoint3
+-can_traverse rover2 waypoint1 waypoint4
+-can_traverse rover2 waypoint1 waypoint5
+-can_traverse rover2 waypoint2 waypoint0
+-can_traverse rover2 waypoint2 waypoint1
+-can_traverse rover2 waypoint2 waypoint2
+-can_traverse rover2 waypoint2 waypoint3
+-can_traverse rover2 waypoint2 waypoint4
+-can_traverse rover2 waypoint3 waypoint1
+-can_traverse rover2 waypoint3 waypoint2
+-can_traverse rover2 waypoint3 waypoint3
+-can_traverse rover2 waypoint3 waypoint4
+-can_traverse rover2 waypoint3 waypoint5
+-can_traverse rover2 waypoint4 waypoint1
+-can_traverse rover2 waypoint4 waypoint2
+-can_traverse rover2 waypoint4 waypoint3
+-can_traverse rover2 waypoint4 waypoint4
+-can_traverse rover2 waypoint5 waypoint0
+-can_traverse rover2 waypoint5 waypoint1
+-can_traverse rover2 waypoint5 waypoint3
+-can_traverse rover2 waypoint5 waypoint5
+-empty rover0store
+-empty rover1store
+-empty rover2store
+-visited waypoint0
+-visited waypoint1
+-visited waypoint2
+-visited waypoint3
+-visited waypoint4
+-visited waypoint5

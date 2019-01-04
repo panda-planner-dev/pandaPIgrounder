@@ -1,0 +1,1861 @@
+#number_constants_number_sorts
+28 18
+#constants
+appointmentForMeeting
+taskCreateHandout
+headOfDepartmentPicture
+peer1Picture
+peer1EMailAddress
+peer4EMailAddress
+peer3EMailAddress
+peer2EMailAddress
+headOfDepartmentEMailAddress
+account1
+agenda
+email1
+email5
+email2
+email3
+email4
+dateForMeeting
+contact1
+contact4
+contact5
+contact2
+contact3
+peer3
+peer2
+peer4
+peer1
+headOfDepartment
+room101
+#end_constants
+#sorts_each_with_number_of_members_and_members
+Picture 2 2 3
+adhocSort_?newObj_variable145 2 16 27
+Message 5 11 12 13 14 15
+Appointment 1 0
+Contact 5 17 18 19 20 21
+Task 1 1
+adhocSort_?extractsInformation_variable3 5 4 5 6 7 8
+Creatable 7 17 18 19 20 1 0 21
+adhocSort_?newObj_variable7 7 16 4 5 6 27 7 8
+adhocSort_?extractsInformation_variable3 5 16 3 10 27 2
+adhocSort_?newObj_variable4 0
+Selectable 8 17 18 19 20 1 9 0 21
+EMailAccount 1 9
+Information 10 16 3 4 5 10 6 27 7 8 2
+Location 1 27
+Contactable 5 22 23 24 25 26
+Agenda 1 10
+Date 1 16
+#end_sorts
+#number_of_predicates
+67
+#predicates_each_with_number_of_arguments_and_argument_sorts
++selected_AddAsFavourite 1 4
++inMode_Clock 0
++inMode_EMail_NewEMail 0
+-inMode_EMail_NewEMail 0
++selected_Favourite 1 4
+-selected_Favourite 1 4
++selected 1 11
+-selected 1 11
++isFavourite 1 4
+-isFavourite 1 4
++inMode_Clock_Alarm 0
++hasReceived 2 15 2
++inMode_People_AddFavourite 0
+-inMode_People_AddFavourite 0
++inMode_Programs 0
+-isSet_Contact_Picture 1 4
++inMode_Contacts_ConfigureContact 0
+-inMode_Contacts_ConfigureContact 0
++entered_EMail 1 15
++isSet_Contact_Name 1 4
++haveInformation_Contactable 2 15 6
++entered_AnyNumber 0
+-entered_AnyNumber 0
++isSet_Task_Name 1 5
++selected_FavouriteNumber 0
++inMode_EMail 0
++inMode_Tasks_ConfigureTask 0
+-inMode_Tasks_ConfigureTask 0
++inMode_Contacts 0
++inMode_NewMessage 0
+-inMode_NewMessage 0
++inMode_People_AddFavourite_SelectPicture 0
++isSet_Contact_EmailAddress 1 4
++inMode_Menu 0
+-inMode_Menu 0
++inMode_People 0
++entered_NumberMobile 1 15
++associated_Contact 2 4 15
++isSet_Appointment_Name 1 3
++inMode_People_ReadyToAddFavourite 0
++haveInformation_Regular 1 9
++isSet_Appointment_Time 2 3 17
++inMode_Messages 0
++entered_NumberOffice 1 15
++isSet_Contact_NumberMobile 1 4
++inMode_PictureSelection 0
+-inMode_PictureSelection 0
++hasInformation_Regular 2 15 9
++inMode_Tasks 0
++inMode_People_AddFavourite_SelectContact 0
++inMode_People_FavouriteSelected 0
++attached 2 2 13
++inMode_AccountSelection 0
++isSet_Contact_NumberOffice 1 4
++associated_Picture 2 4 0
++inMode_Calendar 0
++inMode_Home 0
++inMode_Telephone 0
+-inMode_EMail_Inbox 0
+-inUse 1 7
++inMode_Calendar_ConfigureAppointment 0
+-inMode_Calendar_ConfigureAppointment 0
++created 1 7
+-haveSent 1 2
++inMode_People_AddFavourite_SelectFavouriteNumber 0
++inMode_Contacts_Details 0
+-inMode_Contacts_Details 0
+#end_predicates
+#number_primitiv_tasks_and_number_abstract_tasks
+38 23
+#begin_task_name_costs_number_of_variables
+set_Task_Name 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+48
+34
+6 0
+#add_each_predicate_and_argument_variables
+1
+23 0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+set_Task_Name_Light 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+48
+34
+59 0
+6 0
+#add_each_predicate_and_argument_variables
+2
+23 0
+62 0
+#del_each_predicate_and_argument_variables
+1
+59 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Tasks_Menu_NewTask 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+48
+33
+59 0
+#add_each_predicate_and_argument_variables
+3
+26
+34
+6 0
+#del_each_predicate_and_argument_variables
+4
+27
+33
+59 0
+7 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Tasks_Menu 1 0
+#sorts_of_variables
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+48
+27
+34
+#add_each_predicate_and_argument_variables
+1
+33
+#del_each_predicate_and_argument_variables
+1
+34
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Calendar_Menu 1 0
+#sorts_of_variables
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+55
+61
+34
+#add_each_predicate_and_argument_variables
+1
+33
+#del_each_predicate_and_argument_variables
+1
+34
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+set_Appointment_Time 1 2
+#sorts_of_variables
+3 17
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+55
+60
+6 0
+40 1
+#add_each_predicate_and_argument_variables
+1
+41 0 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+set_Appointment_Name 1 1
+#sorts_of_variables
+3
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+55
+60
+6 0
+#add_each_predicate_and_argument_variables
+1
+38 0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+set_Appointment_Reminder 1 1
+#sorts_of_variables
+3
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+55
+60
+6 0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+set_Appointment_Location 1 2
+#sorts_of_variables
+3 14
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+55
+60
+6 0
+40 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_Calendar 1 0
+#sorts_of_variables
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+56
+#add_each_predicate_and_argument_variables
+1
+55
+#del_each_predicate_and_argument_variables
+1
+56
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Programs_Tasks 1 0
+#sorts_of_variables
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+14
+#add_each_predicate_and_argument_variables
+1
+48
+#del_each_predicate_and_argument_variables
+1
+14
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_Programs 1 0
+#sorts_of_variables
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+56
+#add_each_predicate_and_argument_variables
+1
+14
+#del_each_predicate_and_argument_variables
+1
+56
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Calendar_Menu_NewAppointment 1 1
+#sorts_of_variables
+3
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+55
+33
+59 0
+#add_each_predicate_and_argument_variables
+3
+60
+34
+6 0
+#del_each_predicate_and_argument_variables
+4
+61
+33
+59 0
+7 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_Default 1 0
+#sorts_of_variables
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+13
+22
+66
+#add_each_predicate_and_argument_variables
+6
+56
+34
+30
+3
+58
+66
+#del_each_predicate_and_argument_variables
+14
+55
+1
+33
+14
+48
+57
+28
+39
+42
+29
+25
+2
+35
+65
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_Add_Favourite 1 1
+#sorts_of_variables
+4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+12
+#add_each_predicate_and_argument_variables
+7
+56
+34
+13
+30
+58
+3
+66
+#del_each_predicate_and_argument_variables
+17
+55
+1
+33
+14
+48
+57
+28
+39
+12
+0 0
+24
+42
+29
+25
+2
+35
+65
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_EMail_NewEMail 1 1
+#sorts_of_variables
+12
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+25
+3
+58
+6 0
+#add_each_predicate_and_argument_variables
+1
+2
+#del_each_predicate_and_argument_variables
+1
+3
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+select_EMail_EMailAccount_NoOp 1 1
+#sorts_of_variables
+12
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+25
+3
+58
+6 0
+#add_each_predicate_and_argument_variables
+1
+6 0
+#del_each_predicate_and_argument_variables
+1
+7 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+select_EMail_EMailAccount_WithPreviousSelection 1 2
+#sorts_of_variables
+12 12
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+25
+6 0
+3
+58
+7 1
+#add_each_predicate_and_argument_variables
+2
+6 1
+7 0
+#del_each_predicate_and_argument_variables
+2
+7 1
+6 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_SMS_Mobile 1 1
+#sorts_of_variables
+15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+29
+36 0
+21
+#add_each_predicate_and_argument_variables
+7
+56
+34
+30
+58
+3
+22
+66
+#del_each_predicate_and_argument_variables
+16
+55
+1
+33
+14
+48
+57
+28
+39
+42
+29
+25
+2
+36 0
+21
+35
+65
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_Telephone_Office 1 1
+#sorts_of_variables
+15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+57
+43 0
+21
+#add_each_predicate_and_argument_variables
+7
+56
+34
+30
+58
+3
+22
+66
+#del_each_predicate_and_argument_variables
+16
+55
+1
+33
+14
+48
+57
+28
+39
+42
+29
+43 0
+25
+2
+21
+35
+65
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_SMS_Office 1 1
+#sorts_of_variables
+15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+29
+43 0
+21
+#add_each_predicate_and_argument_variables
+7
+56
+34
+30
+58
+3
+22
+66
+#del_each_predicate_and_argument_variables
+16
+55
+1
+33
+14
+48
+57
+28
+39
+42
+29
+43 0
+25
+2
+21
+35
+65
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_Telephone_Mobile 1 1
+#sorts_of_variables
+15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+57
+36 0
+21
+#add_each_predicate_and_argument_variables
+7
+56
+34
+30
+58
+3
+22
+66
+#del_each_predicate_and_argument_variables
+16
+55
+1
+33
+14
+48
+57
+28
+39
+42
+29
+25
+2
+36 0
+21
+35
+65
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_Contacts_Details 1 1
+#sorts_of_variables
+4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+65
+6 0
+#add_each_predicate_and_argument_variables
+7
+56
+34
+30
+3
+58
+66
+7 0
+#del_each_predicate_and_argument_variables
+15
+55
+1
+33
+14
+48
+57
+28
+39
+42
+29
+25
+2
+35
+65
+6 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Calendar_NewAppointment_OK 1 2
+#sorts_of_variables
+3 17
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+55
+60
+6 0
+38 0
+41 0 1
+#add_each_predicate_and_argument_variables
+3
+61
+7 0
+62 0
+#del_each_predicate_and_argument_variables
+2
+60
+6 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+set_Task_Time 1 2
+#sorts_of_variables
+5 17
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+48
+26
+6 0
+40 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+set_Task_Reminder 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+3
+48
+26
+6 0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Tasks_NewTask_OK 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+48
+26
+23 0
+6 0
+#add_each_predicate_and_argument_variables
+3
+27
+7 0
+62 0
+#del_each_predicate_and_argument_variables
+2
+26
+6 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_EMail_NewEMail_Send 1 2
+#sorts_of_variables
+15 2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+25
+2
+18 0
+63 1
+#add_each_predicate_and_argument_variables
+2
+3
+11 0 1
+#del_each_predicate_and_argument_variables
+4
+2
+58
+18 0
+63 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+enter_EMailAddress 1 2
+#sorts_of_variables
+15 6
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+20 0 1
+2
+#add_each_predicate_and_argument_variables
+1
+18 0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_EMail 1 0
+#sorts_of_variables
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+56
+#add_each_predicate_and_argument_variables
+1
+25
+#del_each_predicate_and_argument_variables
+1
+56
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+extractsInformation_Contactable 1 4
+#sorts_of_variables
+15 2 6 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+11 0 1
+51 1 2
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+extractsInformation_Regular 1 3
+#sorts_of_variables
+15 2 9
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+11 0 1
+51 1 2
+#add_each_predicate_and_argument_variables
+1
+47 0 2
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachContactableInformationToEMail 1 3
+#sorts_of_variables
+2 6 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+20 2 1
+63 0
+#add_each_predicate_and_argument_variables
+1
+51 0 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachContactableInformationToSMS 1 3
+#sorts_of_variables
+10 6 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+20 2 1
+63 0
+#add_each_predicate_and_argument_variables
+1
+51 0 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachRegularInformationToEMail 1 2
+#sorts_of_variables
+2 9
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+40 1
+63 0
+#add_each_predicate_and_argument_variables
+1
+51 0 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachRegularInformationToSMS 1 2
+#sorts_of_variables
+10 1
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+40 1
+63 0
+#add_each_predicate_and_argument_variables
+1
+51 0 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachContactableInformationToCall 1 3
+#sorts_of_variables
+10 6 15
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+20 2 1
+63 0
+#add_each_predicate_and_argument_variables
+1
+51 0 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachRegularInformationToCall 1 2
+#sorts_of_variables
+10 1
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+40 1
+63 0
+#add_each_predicate_and_argument_variables
+1
+51 0 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+create_NewTask 1 1
+#sorts_of_variables
+5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+configure_Task 1 1
+#sorts_of_variables
+5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+create_Task 1 1
+#sorts_of_variables
+5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+enterMode_Tasks 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+create_Appointment 1 3
+#sorts_of_variables
+3 14 17
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+enterMode_Calendar 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+create_NewAppointment 1 3
+#sorts_of_variables
+3 17 14
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+configure_Appointment 1 3
+#sorts_of_variables
+3 17 14
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+select_EMail_EMailAccount 1 1
+#sorts_of_variables
+12
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_Telephone 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home_From_SMS 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+press_Home 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+enterMode_Home 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+send_EMail 1 2
+#sorts_of_variables
+15 2
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+enterMode_EMail 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+extractsInformation 1 3
+#sorts_of_variables
+15 2 13
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachInformationToCall 1 2
+#sorts_of_variables
+10 8
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachInformationToSMS 1 2
+#sorts_of_variables
+10 8
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachInformationToEMail 1 2
+#sorts_of_variables
+2 13
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachMultipleInformation 1 1
+#sorts_of_variables
+2
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+extractsMultipleInformation 1 2
+#sorts_of_variables
+15 2
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+attachInformation 1 2
+#sorts_of_variables
+2 13
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+__artificialTopCompilation__top_1 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#number_of_methods
+42
+#begin_method_name_abstract_task_number_of_variables
+do_enterMode_Calendar_ViaHome 43 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+50
+9
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_configure_Appointment 45 3
+#variable_sorts
+17 14 3
+#parameter_of_abstract_task
+2 0 1
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+8 2 1
+6 2
+7 2
+5 2 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_create_NewAppointment 44 3
+#variable_sorts
+17 14 3
+#parameter_of_abstract_task
+2 0 1
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+4
+12 2
+45 2 0 1
+23 2 0
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+1 2
+2 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_create_Appointment 42 3
+#variable_sorts
+14 3 17
+#parameter_of_abstract_task
+1 0 2
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+43
+44 1 2 0
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_enterMode_Tasks_ViaHome 41 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+50
+11
+10
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_configure_Task 39 2
+#variable_sorts
+5 17
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+0 0
+24 0 1
+25 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_create_NewTask_Normal 38 1
+#variable_sorts
+5
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+3
+2 0
+39 0
+26 0
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+1 2
+2 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_create_NewTask_Light 38 1
+#variable_sorts
+5
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_create_Task 40 1
+#variable_sorts
+5
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+41
+38 0
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_enterMode_Home 50 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+49
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_Default 49 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+13
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_Add_Favourite 49 1
+#variable_sorts
+4
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+14 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_enterMode_EMail_ViaHome 52 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+29
+49
+#number_of_ordering_constraints_and_ordering
+1
+1 0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_send_EMail_ViaEMail 51 4
+#variable_sorts
+2 12 6 15
+#parameter_of_abstract_task
+3 0
+#number_of_subtasks
+5
+#subtasks_each_with_task_id_and_parameter_variables
+52
+46 1
+28 3 2
+27 3 0
+15 1
+#number_of_ordering_constraints_and_ordering
+4
+0 1
+4 2
+2 3
+1 4
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_select_EMail_EMailAccount_NoOp 46 1
+#variable_sorts
+12
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+16 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_select_EMail_EMailAccount_WithPreviousSelection 46 2
+#variable_sorts
+12 12
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+17 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+1
+!= 0 1
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformationToCall_Regular 54 2
+#variable_sorts
+8 10
+#parameter_of_abstract_task
+1 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+37 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformationToCall_Contactable 54 3
+#variable_sorts
+15 8 10
+#parameter_of_abstract_task
+2 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+36 2 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformationToEMail_Regular 56 2
+#variable_sorts
+2 13
+#parameter_of_abstract_task
+0 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+34 0 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformationToEMail_Contactable 56 3
+#variable_sorts
+15 2 13
+#parameter_of_abstract_task
+1 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+32 1 2 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformationToSMS_Regular 55 2
+#variable_sorts
+10 8
+#parameter_of_abstract_task
+0 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+35 0 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformationToSMS_Contactable 55 3
+#variable_sorts
+15 10 8
+#parameter_of_abstract_task
+1 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+33 1 2 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformation_ToCall 59 2
+#variable_sorts
+13 2
+#parameter_of_abstract_task
+1 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+54 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformation_ToEMail 59 2
+#variable_sorts
+13 2
+#parameter_of_abstract_task
+1 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+56 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachInformation_ToSMS 59 2
+#variable_sorts
+13 2
+#parameter_of_abstract_task
+1 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+55 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_extractsInformation_Regular 53 3
+#variable_sorts
+13 15 2
+#parameter_of_abstract_task
+1 2 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+31 1 2 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_extractsInformation_Contactable 53 4
+#variable_sorts
+13 15 15 2
+#parameter_of_abstract_task
+2 3 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+30 2 3 0 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachMultipleInformation_Single 57 2
+#variable_sorts
+2 13
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+59 0 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_attachMultipleInformation_Multiple 57 2
+#variable_sorts
+13 2
+#parameter_of_abstract_task
+1
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+57 1
+59 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_extractsMultipleInformation_Single 58 3
+#variable_sorts
+2 15 13
+#parameter_of_abstract_task
+1 0
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+53 1 0 2
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_extractsMultipleInformation_Multiple 58 3
+#variable_sorts
+13 2 15
+#parameter_of_abstract_task
+2 1
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+58 2 1
+53 2 1 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_enterMode_Calendar_FromHome 43 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+9
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_enterMode_EMail_FromHome 52 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+29
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_enterMode_Tasks_FromHome 41 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+10
+11
+#number_of_ordering_constraints_and_ordering
+1
+1 0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_SMS_Mobile 48 1
+#variable_sorts
+15
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+18 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_SMS_Office 48 1
+#variable_sorts
+15
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+20 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_Telephone_Mobile 47 1
+#variable_sorts
+15
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+21 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_Telephone_Office 47 1
+#variable_sorts
+15
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+19 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_SMS 49 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+48
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_Telephone 49 0
+#variable_sorts
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+47
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+do_press_Home_From_Contacts_Details 49 1
+#variable_sorts
+4
+#parameter_of_abstract_task
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+22 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+__top_1 60 14
+#variable_sorts
+5 2 2 2 15 15 3 15 15 17 15 14 2 2
+#parameter_of_abstract_task
+#number_of_subtasks
+17
+#subtasks_each_with_task_id_and_parameter_variables
+57 12
+57 1
+57 13
+57 3
+57 2
+51 4 12
+51 10 1
+51 8 13
+51 5 3
+51 7 2
+42 6 11 9
+40 0
+58 4 12
+58 10 1
+58 8 13
+58 5 3
+58 7 2
+#number_of_ordering_constraints_and_ordering
+10
+0 5
+1 6
+2 7
+3 8
+4 9
+5 12
+6 13
+7 14
+8 15
+9 16
+#variable_constraints
+0
+#end_of_method
+#init_and_goal_facts
+57 17
+5 19
+59 1
+13
+22
+46
+61
+66
+63 12
+63 11
+3
+27
+15 20
+5 17
+34
+15 18
+9 18
+30
+15 17
+15 19
+9 19
+58
+5 20
+59 0
+63 13
+63 14
+5 21
+63 15
+15 21
+5 18
+9 21
+17
+37 17 26
+37 20 25
+37 21 23
+37 18 22
+37 19 24
+54 17 2
+54 20 3
+62 17
+62 20
+62 21
+62 18
+62 19
+20 26 8
+20 25 4
+20 23 7
+20 22 6
+20 24 5
+40 10
+40 16
+40 2
+40 3
+40 27
+56
+8 17
+8 20
+6 9
+#end_init
+47 26 16
+47 25 16
+47 23 16
+47 22 16
+47 24 16
+47 26 27
+47 25 27
+47 23 27
+47 22 27
+47 24 27
+47 26 10
+47 25 10
+47 23 10
+47 22 10
+47 24 10
+62 0
+62 1
+#end_goal
+#initial_task
+60

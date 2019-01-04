@@ -1,0 +1,45 @@
+19 25
+affix_warning_signs Pferd
+close_valve Pferd
+collect_fees Chemicalien
+connect_hose Pferd Chemicalien
+decontaminate_interior Pferd
+deliver_h Chemicalien
+deliver_p Chemicalien
+disconnect_hose Pferd Chemicalien
+do_clean_interior Pferd
+empty_tank Pferd Chemicalien O27
+empty_tank Pferd Chemicalien O28
+fill_tank Pferd Chemicalien O27
+fill_tank Pferd Chemicalien O28
+lower_ramp Pferd
+move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28
+obtain_permit Chemicalien
+open_valve Pferd
+raise_ramp Pferd
+remove_warning_signs Pferd
++At_Package Chemicalien O27
++At_Package Chemicalien O28
++At_Package Chemicalien Pferd
++At_Vehicle Pferd O27
++At_Vehicle Pferd O28
++Available James_Franck_Ring
++Available Pferd
++Connects James_Franck_Ring O27 O28
++Delivered Chemicalien
++Fees_Collected Chemicalien
++Have_Permit Chemicalien
++Hose_Connected Pferd Chemicalien
++In_City O27 Ulm
++In_City O28 Ulm
++PV_Compatible Chemicalien Pferd
++RV_Compatible James_Franck_Ring Pferd
++Ramp_Down Pferd
++Valve_Open Pferd
++Warning_Signs_Affixed Pferd
+-Fees_Collected Chemicalien
+-Have_Permit Chemicalien
+-Hose_Connected Pferd Chemicalien
+-Ramp_Down Pferd
+-Valve_Open Pferd
+-Warning_Signs_Affixed Pferd

@@ -1,0 +1,350 @@
+#number_constants_number_sorts
+13 7
+#constants
+thermograph
+x_ray
+hd_video
+GroundStation0
+instrument01
+instrument02
+instrument03
+satellite0
+Phenomenon7
+Star5
+Phenomenon4
+Phenomenon8
+Phenomenon6
+#end_constants
+#sorts_each_with_number_of_members_and_members
+image_direction 5 8 9 10 11 12
+direction 6 8 9 10 3 11 12
+mode 3 0 1 2
+calib_direction 1 3
+satellite 1 7
+Object__ 7 2 0 7 4 1 6 5
+instrument 3 4 5 6
+#end_sorts
+#number_of_predicates
+7
+#predicates_each_with_number_of_arguments_and_argument_sorts
++power_on 1 6
++calibration_target 2 6 3
++pointing 2 4 1
++power_avail 1 4
++on_board 2 6 4
++calibrated 1 6
++supports 2 6 2
+#end_predicates
+#number_primitiv_tasks_and_number_abstract_tasks
+5 5
+#begin_task_name_costs_number_of_variables
+turn_to 1 3
+#sorts_of_variables
+4 1 1
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+2 0 2
+#add_each_predicate_and_argument_variables
+1
+2 0 1
+#del_each_predicate_and_argument_variables
+1
+2 0 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+switch_on 1 2
+#sorts_of_variables
+6 4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+4 0 1
+3 1
+#add_each_predicate_and_argument_variables
+1
+0 0
+#del_each_predicate_and_argument_variables
+2
+5 0
+3 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+switch_off 1 2
+#sorts_of_variables
+6 4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+4 0 1
+0 0
+#add_each_predicate_and_argument_variables
+1
+3 1
+#del_each_predicate_and_argument_variables
+1
+0 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+calibrate 1 3
+#sorts_of_variables
+4 6 3
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+4 1 0
+1 1 2
+2 0 2
+0 1
+#add_each_predicate_and_argument_variables
+1
+5 1
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+take_image 1 4
+#sorts_of_variables
+4 0 6 2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+5 2
+2 0 1
+4 2 0
+0 2
+6 2 3
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+do_observation 1 2
+#sorts_of_variables
+0 2
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+activate_instrument 1 2
+#sorts_of_variables
+4 6
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+auto_calibrate 1 2
+#sorts_of_variables
+4 6
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+take_image_method1_3 1 3
+#sorts_of_variables
+4 0 2
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+__artificialTopCompilation__top_1 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#number_of_methods
+10
+#begin_method_name_abstract_task_number_of_variables
+method0 5 5
+#variable_sorts
+6 4 1 0 2
+#parameter_of_abstract_task
+3 4
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+6 1 0
+0 1 3 2
+4 1 3 0 4
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+1
+!= 3 2
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method1_method1_3 8 4
+#variable_sorts
+4 0 6 2
+#parameter_of_abstract_task
+0 1 3
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+4 0 1 2 3
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method1 5 4
+#variable_sorts
+4 0 2 1
+#parameter_of_abstract_task
+1 2
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+0 0 1 3
+8 0 1 2
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+1
+!= 1 3
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method2 5 4
+#variable_sorts
+0 6 2 4
+#parameter_of_abstract_task
+0 2
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+6 3 1
+4 3 0 1 2
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method3 5 4
+#variable_sorts
+0 4 6 2
+#parameter_of_abstract_task
+0 3
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+4 1 0 2 3
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method4 6 3
+#variable_sorts
+6 6 4
+#parameter_of_abstract_task
+2 0
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+2 1 2
+1 0 2
+7 2 0
+#number_of_ordering_constraints_and_ordering
+2
+0 1
+1 2
+#variable_constraints
+1
+!= 1 0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method5 6 2
+#variable_sorts
+6 4
+#parameter_of_abstract_task
+1 0
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+1 0 1
+7 1 0
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method6 7 4
+#variable_sorts
+1 4 6 3
+#parameter_of_abstract_task
+1 2
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+0 1 3 0
+3 1 2 3
+#number_of_ordering_constraints_and_ordering
+1
+0 1
+#variable_constraints
+1
+!= 3 0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+method7 7 3
+#variable_sorts
+4 3 6
+#parameter_of_abstract_task
+0 2
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+3 0 2 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+__top_1 9 6
+#variable_sorts
+2 2 0 0 2 0
+#parameter_of_abstract_task
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+5 2 4
+5 3 1
+5 5 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#init_and_goal_facts
+11 0
+4 4 7
+6 4 0
+1 4 3
+4 5 7
+6 5 1
+1 5 3
+4 6 7
+6 6 2
+1 6 3
+3 7
+2 7 12
+#end_init
+#end_goal
+#initial_task
+9

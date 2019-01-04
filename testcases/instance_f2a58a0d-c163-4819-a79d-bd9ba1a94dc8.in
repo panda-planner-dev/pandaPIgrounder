@@ -1,0 +1,3755 @@
+#number_constants_number_sorts
+50 8
+#constants
+waypoint14
+waypoint19
+waypoint3
+waypoint4
+waypoint18
+waypoint7
+waypoint15
+waypoint5
+waypoint1
+waypoint8
+waypoint16
+waypoint12
+waypoint9
+waypoint11
+waypoint17
+waypoint10
+waypoint0
+waypoint13
+waypoint6
+waypoint2
+colour
+high_res
+low_res
+rover1store
+rover5store
+rover3store
+rover0store
+rover4store
+rover2store
+rover5
+rover3
+rover1
+rover2
+rover4
+rover0
+camera5
+camera6
+camera1
+camera2
+camera4
+camera0
+camera3
+general
+objective4
+objective6
+objective2
+objective3
+objective5
+objective0
+objective1
+#end_constants
+#sorts_each_with_number_of_members_and_members
+camera 7 35 36 37 38 39 40 41
+object 50 43 0 44 1 2 35 45 46 3 4 5 36 6 23 47 22 42 37 38 7 24 29 8 9 30 10 11 39 31 25 40 26 12 48 13 14 15 32 27 21 16 20 28 41 33 17 49 34 18 19
+mode 3 20 21 22
+objective 7 43 44 45 46 47 48 49
+rover 6 29 30 31 32 33 34
+waypoint 20 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+lander 1 42
+store 6 23 24 25 26 27 28
+#end_sorts
+#number_of_predicates
+26
+#predicates_each_with_number_of_arguments_and_argument_sorts
++calibrated 2 0 4
++equipped_for_imaging 1 4
++full 1 7
++on_board 2 0 4
++visible_from 2 3 5
++at_soil_sample 1 5
++visible 2 5 5
++have_soil_analysis 2 4 5
++have_image 3 4 3 2
+-visited 1 5
++store_of 2 7 4
++at 2 4 5
+-at 2 4 5
++channel_free 1 6
++empty 1 7
+-empty 1 7
++equipped_for_soil_analysis 1 4
++available 1 4
++at_lander 2 6 5
++equipped_for_rock_analysis 1 4
++at_rock_sample 1 5
++can_traverse 3 4 5 5
+-can_traverse 3 4 5 5
++calibration_target 2 0 3
++have_rock_analysis 2 4 5
++supports 2 0 2
+#end_predicates
+#number_primitiv_tasks_and_number_abstract_tasks
+24 10
+#begin_task_name_costs_number_of_variables
+navigate 1 3
+#sorts_of_variables
+4 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+21 0 1 2
+17 0
+11 0 1
+6 1 2
+#add_each_predicate_and_argument_variables
+2
+12 0 1
+11 0 2
+#del_each_predicate_and_argument_variables
+2
+11 0 1
+12 0 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+sample_soil 1 3
+#sorts_of_variables
+4 7 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+11 0 2
+5 2
+16 0
+10 1 0
+14 1
+#add_each_predicate_and_argument_variables
+3
+15 1
+2 1
+7 0 2
+#del_each_predicate_and_argument_variables
+2
+14 1
+5 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+sample_rock 1 3
+#sorts_of_variables
+4 7 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+20 2
+19 0
+10 1 0
+14 1
+#add_each_predicate_and_argument_variables
+3
+15 1
+2 1
+24 0 2
+#del_each_predicate_and_argument_variables
+2
+14 1
+20 2
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+drop 1 2
+#sorts_of_variables
+4 7
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+10 1 0
+2 1
+#add_each_predicate_and_argument_variables
+1
+14 1
+#del_each_predicate_and_argument_variables
+2
+2 1
+15 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+calibrate 1 4
+#sorts_of_variables
+4 0 3 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+5
+1 0
+23 1 2
+11 0 3
+4 2 3
+3 1 0
+#add_each_predicate_and_argument_variables
+1
+0 1 0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+take_image 1 5
+#sorts_of_variables
+4 5 3 0 2
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+6
+0 3 0
+3 3 0
+1 0
+25 3 4
+4 2 1
+11 0 1
+#add_each_predicate_and_argument_variables
+1
+8 0 2 4
+#del_each_predicate_and_argument_variables
+1
+0 3 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+communicate_soil_data 1 5
+#sorts_of_variables
+4 6 5 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+6
+11 0 3
+18 1 4
+7 0 2
+6 3 4
+17 0
+13 1
+#add_each_predicate_and_argument_variables
+2
+13 1
+17 0
+#del_each_predicate_and_argument_variables
+2
+17 0
+13 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+communicate_rock_data 1 5
+#sorts_of_variables
+4 6 5 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+6
+11 0 3
+18 1 4
+24 0 2
+6 3 4
+17 0
+13 1
+#add_each_predicate_and_argument_variables
+2
+13 1
+17 0
+#del_each_predicate_and_argument_variables
+2
+17 0
+13 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+communicate_image_data 1 6
+#sorts_of_variables
+4 6 3 2 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+6
+11 0 4
+18 1 5
+8 0 2 3
+6 4 5
+17 0
+13 1
+#add_each_predicate_and_argument_variables
+2
+13 1
+17 0
+#del_each_predicate_and_argument_variables
+2
+17 0
+13 1
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+visit 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+1
+9 0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+unvisit 1 1
+#sorts_of_variables
+5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+0
+#add_each_predicate_and_argument_variables
+1
+9 0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-empty-store-1_0_precondition 1 1
+#sorts_of_variables
+7
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+14 0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-empty-store-2_1_precondition 1 1
+#sorts_of_variables
+7
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+15 0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-navigate_abs-1_2_precondition 1 2
+#sorts_of_variables
+4 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+11 0 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-navigate_abs-2_3_precondition 1 2
+#sorts_of_variables
+4 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+1
+11 0 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-navigate_abs-3_4_precondition 1 3
+#sorts_of_variables
+4 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+12 0 1
+21 0 2 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-navigate_abs-4_5_precondition 1 4
+#sorts_of_variables
+4 5 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+12 0 1
+22 0 2 1
+21 0 2 3
+9 3
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-send_soil_data_6_precondition 1 3
+#sorts_of_variables
+6 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+18 0 1
+6 2 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-get_soil_data_7_precondition 1 2
+#sorts_of_variables
+7 4
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+10 0 1
+16 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-send_rock_data_8_precondition 1 3
+#sorts_of_variables
+6 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+18 0 1
+6 2 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-get_rock_data_9_precondition 1 2
+#sorts_of_variables
+4 7
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+19 0
+10 1 0
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-send_image_data_10_precondition 1 3
+#sorts_of_variables
+6 5 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+18 0 1
+6 2 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-get_image_data_11_precondition 1 5
+#sorts_of_variables
+4 5 2 0 3
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+4
+1 0
+3 3 0
+25 3 2
+4 4 1
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+SHOP_methodm-calibrate_abs_12_precondition 1 3
+#sorts_of_variables
+0 3 5
+#end_variables
+#preconditions_each_predicate_and_argument_variables
+2
+23 0 1
+4 1 2
+#add_each_predicate_and_argument_variables
+0
+#del_each_predicate_and_argument_variables
+0
+#variable_constaints_first_number_then_individual_constraints
+0
+#end_of_task
+#begin_task_name_costs_number_of_variables
+calibrate_abs 1 2
+#sorts_of_variables
+4 0
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+empty-store 1 2
+#sorts_of_variables
+7 4
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+get_image_data 1 2
+#sorts_of_variables
+3 2
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+get_rock_data 1 1
+#sorts_of_variables
+5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+get_soil_data 1 1
+#sorts_of_variables
+5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+navigate_abs 1 2
+#sorts_of_variables
+4 5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+send_image_data 1 3
+#sorts_of_variables
+4 3 2
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+send_rock_data 1 2
+#sorts_of_variables
+4 5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+send_soil_data 1 2
+#sorts_of_variables
+4 5
+#end_variables
+#end_of_task
+#begin_task_name_costs_number_of_variables
+__artificialTopCompilation__top_1 1 0
+#sorts_of_variables
+#end_variables
+#end_of_task
+#number_of_methods
+14
+#begin_method_name_abstract_task_number_of_variables
+m-empty-store-1 25 2
+#variable_sorts
+7 4
+#parameter_of_abstract_task
+0 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+11 0
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-empty-store-2 25 2
+#variable_sorts
+7 4
+#parameter_of_abstract_task
+0 1
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+3 1 0
+12 0
+#number_of_ordering_constraints_and_ordering
+1
+1 0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-navigate_abs-1 29 3
+#variable_sorts
+4 5 5
+#parameter_of_abstract_task
+0 2
+#number_of_subtasks
+4
+#subtasks_each_with_task_id_and_parameter_variables
+9 1
+0 0 1 2
+10 1
+13 0 1
+#number_of_ordering_constraints_and_ordering
+5
+0 1
+1 2
+3 0
+3 1
+3 2
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-navigate_abs-2 29 2
+#variable_sorts
+4 5
+#parameter_of_abstract_task
+0 1
+#number_of_subtasks
+1
+#subtasks_each_with_task_id_and_parameter_variables
+14 0 1
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-navigate_abs-3 29 3
+#variable_sorts
+5 4 5
+#parameter_of_abstract_task
+1 2
+#number_of_subtasks
+2
+#subtasks_each_with_task_id_and_parameter_variables
+0 1 0 2
+15 1 2 0
+#number_of_ordering_constraints_and_ordering
+1
+1 0
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-navigate_abs-4 29 4
+#variable_sorts
+5 4 5 5
+#parameter_of_abstract_task
+1 3
+#number_of_subtasks
+5
+#subtasks_each_with_task_id_and_parameter_variables
+0 1 2 0
+9 0
+0 1 0 3
+10 0
+16 1 3 2 0
+#number_of_ordering_constraints_and_ordering
+7
+0 1
+1 2
+2 3
+4 0
+4 1
+4 2
+4 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-send_soil_data 32 5
+#variable_sorts
+4 6 5 5 5
+#parameter_of_abstract_task
+0 4
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+29 0 2
+6 0 1 4 2 3
+17 1 3 2
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+2 0
+2 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-get_soil_data 28 3
+#variable_sorts
+7 4 5
+#parameter_of_abstract_task
+2
+#number_of_subtasks
+5
+#subtasks_each_with_task_id_and_parameter_variables
+29 1 2
+25 0 1
+1 1 0 2
+32 1 2
+18 0 1
+#number_of_ordering_constraints_and_ordering
+7
+0 1
+1 2
+2 3
+4 0
+4 1
+4 2
+4 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-send_rock_data 31 5
+#variable_sorts
+5 6 5 5 4
+#parameter_of_abstract_task
+4 0
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+29 4 3
+7 4 1 0 3 2
+19 1 2 3
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+2 0
+2 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-get_rock_data 27 3
+#variable_sorts
+5 4 7
+#parameter_of_abstract_task
+0
+#number_of_subtasks
+5
+#subtasks_each_with_task_id_and_parameter_variables
+29 1 0
+25 2 1
+2 1 2 0
+31 1 0
+20 1 2
+#number_of_ordering_constraints_and_ordering
+7
+0 1
+1 2
+2 3
+4 0
+4 1
+4 2
+4 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-send_image_data 30 6
+#variable_sorts
+6 2 4 3 5 5
+#parameter_of_abstract_task
+2 3 1
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+29 2 4
+8 2 0 3 1 4 5
+21 0 5 4
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+2 0
+2 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-get_image_data 26 5
+#variable_sorts
+4 5 3 2 0
+#parameter_of_abstract_task
+2 3
+#number_of_subtasks
+5
+#subtasks_each_with_task_id_and_parameter_variables
+24 0 4
+29 0 1
+5 0 1 2 4 3
+30 0 2 3
+22 0 1 3 4 2
+#number_of_ordering_constraints_and_ordering
+7
+0 1
+1 2
+2 3
+4 0
+4 1
+4 2
+4 3
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+m-calibrate_abs 24 4
+#variable_sorts
+3 0 5 4
+#parameter_of_abstract_task
+3 1
+#number_of_subtasks
+3
+#subtasks_each_with_task_id_and_parameter_variables
+29 3 2
+4 3 1 0 2
+23 1 0 2
+#number_of_ordering_constraints_and_ordering
+3
+0 1
+2 0
+2 1
+#variable_constraints
+0
+#end_of_method
+#begin_method_name_abstract_task_number_of_variables
+__top_1 33 14
+#variable_sorts
+3 5 5 3 2 5 3 2 5 5 2 5 5 3
+#parameter_of_abstract_task
+#number_of_subtasks
+11
+#subtasks_each_with_task_id_and_parameter_variables
+28 9
+28 11
+27 12
+27 5
+27 2
+27 1
+27 8
+26 6 7
+26 0 10
+26 13 7
+26 3 4
+#number_of_ordering_constraints_and_ordering
+0
+#variable_constraints
+0
+#end_of_method
+#init_and_goal_facts
+2857 0
+22 30 2 0
+22 30 11 2
+22 31 16 16
+22 29 2 13
+22 34 13 4
+22 33 1 19
+22 33 8 5
+22 30 6 0
+22 33 10 14
+22 33 0 5
+22 31 3 19
+22 31 10 15
+22 32 10 13
+22 34 17 4
+22 32 0 6
+22 32 7 14
+22 30 2 15
+22 29 14 3
+22 34 8 16
+22 33 5 5
+22 32 11 4
+22 32 18 4
+22 33 1 11
+22 31 18 0
+22 32 18 6
+22 32 3 10
+22 30 19 15
+22 34 4 6
+22 34 17 0
+22 30 11 3
+22 32 5 8
+22 34 11 11
+22 32 3 19
+22 29 4 3
+22 33 4 2
+22 34 12 13
+22 32 6 15
+22 29 7 6
+22 33 10 17
+22 31 13 4
+22 29 11 6
+22 32 17 3
+22 31 17 17
+22 30 14 9
+22 29 10 19
+22 30 4 12
+22 33 12 0
+22 29 19 10
+22 32 10 0
+22 32 15 16
+22 33 13 7
+22 32 4 2
+22 30 11 12
+22 29 14 4
+22 34 1 16
+22 29 9 14
+22 31 9 16
+22 32 11 14
+22 33 4 18
+22 32 6 19
+22 32 15 19
+22 34 1 9
+22 31 0 10
+22 29 17 3
+22 32 7 8
+22 32 12 14
+22 32 3 0
+22 34 2 18
+22 29 3 1
+22 34 15 13
+22 34 19 2
+22 33 19 13
+22 30 5 1
+12 29 6
+22 34 13 12
+22 32 2 17
+22 34 5 5
+22 34 8 10
+22 34 7 17
+22 34 6 5
+22 33 8 9
+22 31 8 12
+22 33 19 18
+22 32 0 15
+22 30 3 13
+22 33 4 16
+22 34 9 6
+22 31 3 0
+22 33 8 16
+22 33 17 3
+22 33 5 13
+22 30 5 5
+22 30 12 0
+22 34 4 2
+22 30 3 17
+12 29 9
+22 34 2 6
+22 29 2 2
+22 34 1 14
+22 30 1 19
+22 34 5 14
+22 34 11 2
+22 33 0 17
+22 29 5 7
+22 29 13 9
+22 34 7 18
+22 32 17 4
+22 29 4 11
+22 31 11 10
+22 30 8 17
+22 29 1 6
+12 34 9
+22 31 6 4
+22 33 9 1
+22 29 16 0
+22 34 12 10
+22 34 7 13
+22 29 10 4
+22 32 0 11
+22 29 13 1
+22 29 7 7
+22 30 18 2
+22 29 10 0
+22 33 15 16
+22 34 18 17
+22 34 17 11
+22 31 9 4
+22 29 7 18
+22 32 17 17
+22 34 9 11
+22 29 6 1
+22 31 2 14
+22 33 3 18
+22 34 16 5
+22 34 17 8
+12 32 18
+22 33 10 3
+22 29 18 14
+22 31 2 13
+22 33 7 4
+9 6
+22 32 11 18
+22 34 5 6
+22 29 11 8
+22 30 17 4
+22 31 14 10
+22 29 5 12
+22 30 0 4
+9 0
+22 29 18 16
+22 29 13 3
+22 30 6 14
+22 33 4 1
+22 31 10 17
+22 31 2 6
+22 34 7 11
+22 32 15 2
+22 30 1 16
+22 29 15 8
+22 30 4 18
+22 31 1 13
+22 34 14 13
+22 30 7 4
+22 33 15 12
+22 30 4 4
+22 32 2 6
+22 29 0 16
+22 34 0 6
+22 31 5 17
+22 32 19 19
+22 31 4 9
+22 32 15 4
+22 33 19 8
+22 29 2 4
+22 34 13 10
+22 33 17 5
+22 33 2 2
+22 33 8 18
+22 33 4 19
+22 29 7 8
+22 34 7 2
+22 30 6 13
+22 31 12 18
+22 31 11 7
+22 29 1 8
+22 29 15 11
+22 33 18 8
+22 29 19 15
+22 29 12 19
+22 31 3 17
+22 33 9 13
+22 34 14 0
+22 33 1 18
+22 29 2 6
+22 31 14 14
+22 31 0 14
+22 31 13 15
+22 30 17 19
+22 34 0 17
+22 33 15 8
+22 31 14 16
+22 31 5 2
+22 30 18 9
+22 29 16 3
+22 32 1 17
+22 30 12 18
+22 29 6 19
+22 33 11 2
+22 33 8 19
+22 29 14 8
+22 30 6 16
+22 30 7 7
+22 33 7 11
+22 34 7 10
+22 33 17 13
+22 34 7 0
+22 34 2 17
+22 30 11 8
+22 34 17 14
+22 32 13 10
+22 33 14 9
+22 32 11 19
+22 29 15 1
+22 29 2 12
+22 32 3 6
+22 33 1 7
+22 29 8 11
+22 31 15 2
+22 34 3 5
+22 30 15 7
+22 33 1 14
+9 11
+22 29 2 3
+12 29 19
+22 30 11 0
+22 29 17 0
+22 30 14 18
+22 32 6 13
+22 32 1 9
+22 30 5 11
+22 32 1 16
+22 29 15 13
+22 33 11 7
+22 31 5 6
+22 29 3 5
+22 34 2 14
+12 32 6
+22 33 2 8
+22 31 7 12
+22 30 12 4
+22 33 12 11
+22 29 13 13
+22 30 8 15
+22 33 3 6
+22 30 17 11
+22 34 9 0
+22 30 18 14
+22 29 19 13
+22 33 8 11
+9 4
+12 30 10
+22 29 3 13
+22 32 5 16
+22 29 7 13
+22 30 19 3
+22 33 4 5
+22 30 10 10
+22 33 11 10
+22 30 19 5
+22 30 12 6
+22 34 1 11
+22 33 10 19
+22 30 10 19
+22 32 7 4
+22 29 2 16
+22 32 1 15
+22 34 8 2
+22 34 13 15
+22 29 18 12
+22 32 16 13
+22 30 17 1
+22 32 6 2
+22 33 14 11
+22 29 8 7
+22 32 17 0
+22 32 13 12
+22 32 19 18
+22 32 0 10
+22 31 19 2
+22 31 9 1
+22 32 18 3
+22 29 19 4
+22 34 2 2
+22 31 0 17
+22 33 5 8
+22 29 3 10
+22 31 16 9
+22 34 16 3
+22 34 0 18
+22 33 18 12
+22 33 0 1
+22 32 17 12
+22 30 11 7
+22 31 10 2
+22 34 5 1
+22 31 5 5
+22 34 7 3
+22 32 6 7
+22 34 14 11
+22 31 13 5
+22 33 2 19
+22 29 1 1
+22 29 0 2
+22 34 8 14
+22 30 8 1
+22 31 3 1
+22 32 5 2
+22 30 4 8
+22 31 11 6
+22 31 11 2
+12 33 0
+22 31 14 6
+22 34 2 13
+22 29 9 15
+22 34 2 10
+22 29 15 16
+22 32 5 9
+22 30 6 4
+22 33 1 2
+12 34 2
+22 29 5 11
+22 33 9 10
+22 31 11 14
+22 32 8 1
+22 33 5 6
+22 29 10 10
+22 29 16 7
+22 32 11 1
+22 33 16 0
+22 31 14 11
+22 34 11 13
+22 30 16 1
+12 29 4
+22 32 5 18
+22 34 4 12
+22 30 7 15
+22 30 2 16
+22 34 5 18
+12 30 5
+22 29 6 14
+22 33 14 1
+22 30 8 12
+22 30 15 3
+22 31 13 14
+22 29 16 6
+22 34 1 2
+22 33 14 14
+22 31 4 17
+22 31 3 4
+22 31 8 5
+22 31 15 13
+22 33 9 7
+22 29 13 12
+22 33 19 19
+22 34 9 13
+22 29 7 19
+22 29 17 6
+22 33 17 15
+22 29 19 3
+22 32 15 13
+22 32 6 1
+22 29 17 14
+22 33 13 6
+22 30 0 6
+22 34 2 8
+12 31 13
+22 34 8 5
+22 34 10 3
+22 29 19 17
+22 34 16 15
+12 29 17
+22 34 13 11
+22 31 0 8
+22 29 10 15
+22 30 17 15
+22 34 9 19
+22 34 14 4
+22 34 2 7
+12 33 18
+22 30 16 7
+22 29 17 11
+22 34 4 18
+22 31 0 4
+22 33 1 10
+22 31 18 12
+22 32 7 1
+22 30 15 14
+22 31 11 18
+22 32 4 13
+22 33 15 7
+22 29 10 13
+22 31 5 3
+22 34 11 7
+22 32 15 6
+22 32 13 5
+22 32 7 7
+22 29 3 3
+22 29 5 5
+22 33 11 8
+22 33 1 3
+22 32 9 13
+22 30 13 14
+22 33 0 4
+22 34 14 14
+22 30 7 11
+22 31 5 10
+22 34 2 0
+22 33 8 15
+22 31 3 5
+22 31 2 17
+22 29 14 7
+22 34 8 12
+22 32 19 13
+22 32 13 15
+22 32 18 13
+22 30 4 9
+22 34 14 18
+9 1
+22 32 10 3
+22 32 16 19
+22 33 13 17
+9 10
+22 34 11 4
+22 31 8 6
+22 31 4 14
+22 31 8 10
+22 32 6 0
+22 30 3 0
+22 31 11 0
+22 29 14 15
+22 30 9 5
+22 34 8 13
+22 33 12 14
+22 32 14 2
+22 31 8 18
+22 32 0 7
+22 30 3 14
+22 34 12 1
+22 29 12 18
+12 30 18
+22 29 16 12
+22 33 7 17
+22 30 3 6
+22 30 10 3
+22 29 7 3
+22 32 11 2
+22 32 18 19
+22 31 14 0
+22 32 9 9
+22 30 9 13
+22 30 12 3
+22 32 14 15
+22 30 17 6
+22 30 17 2
+22 30 10 18
+22 33 17 14
+22 32 8 12
+22 31 5 4
+22 34 17 17
+22 31 11 17
+22 34 3 7
+22 34 18 7
+22 29 4 7
+22 34 1 17
+22 31 9 18
+22 31 18 19
+22 34 13 19
+22 30 5 9
+12 33 15
+22 31 2 10
+22 30 17 14
+22 30 0 14
+22 29 14 10
+22 29 11 5
+22 34 16 8
+22 29 4 6
+22 29 0 4
+22 30 18 17
+22 33 3 13
+12 30 19
+22 29 5 9
+22 32 9 10
+22 30 14 15
+22 29 2 0
+22 34 10 18
+22 31 17 12
+22 29 0 13
+22 34 4 10
+22 33 16 9
+22 30 0 16
+22 34 5 15
+22 32 15 9
+22 34 17 2
+22 32 10 19
+22 31 7 18
+22 30 4 7
+22 30 8 9
+22 30 10 9
+22 30 8 10
+22 34 0 9
+22 32 17 10
+22 31 4 6
+22 32 19 6
+22 29 12 6
+22 32 7 19
+22 30 14 0
+22 33 15 9
+22 31 18 4
+22 29 3 14
+22 32 7 5
+22 32 9 1
+12 33 10
+22 34 1 10
+22 32 14 8
+22 34 2 19
+22 29 17 15
+22 31 11 16
+22 29 9 1
+22 32 12 13
+22 31 11 4
+22 29 14 19
+22 32 6 17
+22 32 17 1
+22 29 1 17
+22 29 10 18
+22 32 5 15
+9 15
+22 29 10 11
+22 30 8 8
+22 31 9 10
+22 34 17 9
+22 31 10 11
+22 29 19 9
+22 31 6 19
+22 31 16 5
+22 30 10 16
+22 31 6 12
+12 34 3
+22 32 0 13
+22 32 12 4
+22 33 8 14
+22 32 17 5
+22 32 19 5
+12 32 3
+22 32 6 10
+22 31 1 9
+22 33 11 6
+22 33 10 9
+22 33 10 12
+22 31 12 10
+22 30 17 7
+22 34 6 13
+12 30 1
+22 31 6 15
+22 34 9 8
+22 32 0 0
+22 31 7 8
+22 29 2 19
+12 31 17
+22 31 19 0
+22 31 2 8
+22 30 10 8
+22 33 6 6
+22 29 8 17
+22 29 18 9
+22 32 3 18
+12 34 16
+22 29 11 4
+22 34 17 3
+22 30 5 0
+22 32 6 9
+22 33 1 4
+22 32 10 8
+22 33 6 9
+22 30 3 15
+22 34 17 6
+22 31 17 6
+22 33 1 5
+22 31 0 2
+22 29 6 2
+22 32 2 5
+22 30 6 6
+22 31 6 11
+12 29 11
+22 32 7 0
+22 30 5 19
+22 34 6 0
+22 29 4 1
+22 34 9 2
+22 29 5 17
+22 30 16 9
+22 29 15 18
+22 29 17 4
+22 30 10 12
+22 30 4 11
+22 32 16 2
+22 29 18 7
+22 31 3 18
+22 34 19 19
+22 33 18 9
+22 33 17 16
+22 32 13 18
+22 31 5 9
+22 30 6 12
+22 33 13 12
+22 29 18 6
+22 32 11 15
+22 34 0 3
+22 30 15 2
+22 29 6 17
+22 34 11 9
+22 34 7 9
+12 32 12
+22 34 1 19
+22 33 17 18
+22 29 13 6
+22 34 13 7
+12 31 19
+22 33 19 4
+22 31 6 9
+22 31 16 3
+22 31 0 19
+22 29 9 4
+22 31 0 5
+22 29 7 9
+22 29 1 3
+22 29 1 2
+12 34 7
+22 31 12 14
+22 32 11 5
+22 32 15 8
+22 31 5 14
+22 34 19 10
+22 33 5 10
+22 29 6 7
+22 32 1 5
+22 30 6 1
+22 34 14 17
+22 32 5 19
+22 31 17 10
+22 30 19 11
+22 29 9 17
+22 31 0 1
+22 34 0 8
+22 29 0 3
+22 33 5 17
+22 33 4 9
+22 32 5 10
+22 31 1 16
+22 29 2 18
+22 32 13 17
+22 32 19 1
+22 34 13 1
+22 34 6 15
+22 32 8 3
+22 31 10 0
+22 31 8 13
+22 29 15 7
+22 30 18 15
+22 34 3 17
+22 32 1 0
+22 29 15 2
+22 32 11 11
+12 32 19
+22 34 8 0
+12 32 10
+22 29 14 2
+22 29 13 14
+22 32 17 18
+22 33 7 1
+12 29 15
+22 29 18 3
+22 34 19 1
+22 34 12 2
+22 33 9 4
+22 33 11 12
+22 34 7 1
+22 32 4 17
+22 30 2 8
+22 34 3 1
+12 30 9
+22 31 17 5
+22 32 2 16
+22 29 14 12
+22 29 6 13
+22 30 19 6
+22 31 18 14
+22 34 11 8
+22 34 11 0
+22 31 17 15
+22 30 7 8
+22 29 0 17
+22 30 2 10
+22 32 14 11
+22 34 5 3
+22 29 18 13
+22 29 19 14
+22 33 19 2
+22 34 9 18
+22 30 3 8
+22 34 17 1
+22 32 11 17
+22 32 7 2
+22 29 9 12
+22 32 6 18
+22 33 18 1
+22 29 4 0
+22 34 18 10
+22 32 18 18
+22 33 17 8
+22 29 3 9
+22 34 3 14
+22 30 9 1
+22 31 3 8
+22 33 5 18
+22 29 14 14
+22 33 16 8
+22 29 8 1
+22 29 0 8
+22 33 12 6
+22 32 0 17
+22 31 3 11
+22 29 7 1
+12 33 13
+22 34 7 7
+22 34 15 12
+22 29 0 18
+22 29 1 7
+22 33 7 5
+22 29 4 19
+22 32 7 3
+22 32 9 7
+22 32 9 3
+22 30 14 2
+22 29 12 16
+22 32 14 10
+22 32 17 7
+22 32 1 8
+22 29 15 4
+22 29 17 13
+12 31 0
+22 30 6 7
+22 32 14 3
+22 31 2 1
+22 30 12 19
+22 32 6 6
+22 34 16 18
+22 30 3 19
+22 32 14 12
+22 30 8 3
+12 34 13
+22 29 6 18
+22 32 4 14
+22 32 6 3
+22 29 0 9
+22 30 6 5
+12 30 17
+12 31 11
+22 32 9 4
+22 30 17 5
+22 31 4 16
+22 32 9 0
+22 34 16 2
+22 33 13 11
+22 30 19 9
+22 31 5 1
+22 32 4 1
+22 30 6 19
+22 31 17 11
+22 30 15 8
+22 33 2 0
+22 32 15 7
+22 34 13 3
+22 30 18 12
+22 29 10 8
+22 30 7 6
+22 30 2 14
+22 30 15 11
+22 31 19 13
+9 14
+22 33 16 10
+22 33 13 16
+22 34 10 4
+22 30 1 3
+22 32 8 5
+22 33 0 9
+22 34 12 0
+22 32 14 14
+22 34 4 7
+22 33 19 11
+22 29 10 1
+22 30 19 17
+22 33 18 3
+22 33 5 4
+9 16
+12 32 7
+22 30 18 16
+22 29 8 4
+9 8
+22 31 10 13
+22 34 15 3
+22 29 19 11
+22 34 10 15
+22 30 13 18
+22 31 14 7
+22 32 10 14
+22 29 12 4
+22 30 9 16
+22 33 6 13
+22 34 15 18
+22 34 7 4
+22 30 17 8
+22 32 19 3
+22 30 2 19
+22 32 13 9
+22 29 4 18
+22 32 11 16
+22 33 19 16
+22 34 7 8
+22 32 17 2
+22 32 11 10
+22 33 14 16
+22 34 1 1
+22 32 18 0
+22 34 7 19
+22 30 3 12
+22 32 7 17
+22 33 11 17
+22 34 17 19
+22 33 0 3
+22 29 12 9
+22 30 12 12
+22 34 2 1
+22 32 11 6
+22 29 8 14
+22 32 16 1
+22 31 18 17
+22 32 8 8
+22 29 4 5
+22 31 14 18
+22 34 5 12
+22 30 1 17
+22 29 17 18
+22 29 17 2
+22 29 10 7
+22 29 12 17
+22 31 10 12
+22 29 14 9
+22 33 19 7
+22 33 2 1
+22 34 19 15
+22 31 13 19
+22 31 7 19
+12 33 17
+22 33 11 4
+22 34 3 3
+22 29 15 0
+22 33 7 6
+22 31 9 11
+12 30 8
+22 34 13 0
+22 33 18 6
+12 29 10
+22 32 4 0
+22 32 4 9
+22 29 4 13
+22 33 2 14
+22 32 17 9
+22 30 15 18
+22 30 2 4
+22 30 6 2
+12 34 8
+22 32 11 0
+12 32 17
+22 33 2 3
+22 32 7 11
+22 34 5 9
+22 31 6 3
+22 30 9 15
+22 31 10 7
+22 34 1 5
+22 32 6 12
+22 34 1 3
+22 33 1 0
+22 30 13 16
+22 33 16 13
+22 31 8 8
+12 29 2
+22 32 5 14
+22 34 18 3
+22 29 16 18
+22 31 17 1
+22 30 2 6
+22 32 16 16
+22 33 3 7
+22 29 13 19
+22 29 11 17
+22 30 5 7
+12 31 3
+22 34 10 13
+22 30 9 9
+22 33 16 1
+22 34 18 2
+22 34 10 12
+22 34 2 15
+22 31 19 17
+22 33 19 6
+22 29 3 17
+22 33 7 15
+22 32 1 18
+22 31 4 15
+22 34 10 14
+22 34 16 10
+12 30 15
+22 29 8 0
+22 31 12 19
+22 30 5 2
+22 33 10 18
+22 31 4 19
+22 34 4 9
+22 33 6 11
+22 33 16 5
+12 34 17
+22 32 6 11
+22 30 3 9
+22 31 10 1
+22 30 9 6
+22 31 15 0
+22 29 7 0
+22 30 11 15
+22 33 16 7
+22 34 0 2
+22 29 8 8
+12 34 18
+22 34 1 13
+22 30 1 12
+22 33 7 0
+22 29 19 18
+22 30 3 3
+22 30 2 17
+22 33 8 3
+22 33 19 9
+22 32 4 8
+22 34 4 16
+22 34 14 1
+22 31 13 13
+22 29 5 14
+22 32 10 11
+22 29 2 10
+22 32 1 7
+22 34 0 15
+22 32 5 6
+22 31 4 2
+22 33 15 6
+22 29 1 0
+22 34 0 14
+22 32 8 0
+22 32 14 1
+22 30 4 17
+12 32 13
+12 34 1
+22 33 6 15
+22 34 17 18
+22 30 8 7
+22 34 4 8
+12 29 8
+22 32 16 0
+22 34 0 12
+22 33 5 9
+22 34 18 13
+22 34 11 10
+22 29 14 5
+22 29 9 13
+22 29 10 16
+22 32 2 10
+22 29 19 1
+22 33 1 15
+22 31 6 1
+22 34 17 12
+12 32 5
+22 29 2 1
+22 34 10 7
+22 34 15 5
+22 30 16 18
+22 32 0 1
+22 29 8 15
+22 30 16 17
+22 34 3 8
+22 32 0 5
+22 32 2 19
+22 30 19 7
+12 31 14
+22 29 4 14
+12 32 8
+22 34 5 17
+22 31 17 7
+22 34 14 9
+22 29 1 14
+22 33 15 13
+22 32 13 6
+22 30 6 9
+22 34 19 9
+22 29 13 0
+22 34 16 7
+22 30 14 17
+22 32 9 15
+22 34 18 18
+22 29 1 5
+22 31 13 11
+22 33 18 10
+22 33 19 5
+22 30 1 2
+22 29 0 6
+22 31 10 4
+22 31 17 3
+22 34 6 16
+22 34 12 14
+22 31 6 14
+22 34 2 4
+22 32 15 10
+22 32 13 19
+22 31 9 2
+22 32 2 15
+22 30 1 14
+22 32 15 15
+22 34 16 14
+22 31 10 8
+22 31 10 5
+22 30 9 0
+22 33 14 12
+22 32 5 5
+22 29 3 7
+22 30 10 2
+22 34 8 11
+22 31 7 9
+22 30 1 13
+22 31 1 10
+22 31 17 8
+22 34 14 8
+22 30 9 7
+22 32 0 16
+22 30 1 9
+22 34 18 4
+22 30 16 2
+22 33 13 13
+22 34 19 6
+12 34 14
+22 31 13 8
+22 34 16 0
+22 34 2 11
+22 34 3 19
+22 31 4 7
+22 32 3 8
+22 29 15 10
+22 29 18 4
+22 32 16 3
+22 31 4 10
+22 31 7 3
+12 31 15
+22 32 10 15
+9 2
+22 32 15 14
+22 29 7 17
+22 34 17 13
+22 34 0 1
+22 31 11 1
+22 32 4 15
+22 29 2 9
+22 32 1 10
+22 34 9 1
+22 29 16 16
+22 29 9 5
+22 32 13 14
+22 32 1 14
+22 31 18 13
+22 33 15 15
+22 31 1 8
+22 30 18 10
+22 33 15 14
+22 30 4 10
+22 30 5 10
+22 31 3 15
+22 34 6 2
+22 30 15 6
+22 29 6 3
+22 32 14 19
+22 29 7 2
+22 30 5 13
+22 32 5 7
+22 34 9 9
+22 30 19 13
+22 32 2 4
+22 33 2 10
+12 31 5
+22 30 7 0
+22 33 15 18
+22 31 3 10
+22 34 4 14
+22 33 8 10
+12 29 1
+22 33 10 5
+22 33 4 10
+22 31 12 8
+22 31 12 12
+22 34 1 4
+22 30 15 9
+12 29 3
+22 34 9 15
+22 29 11 18
+22 33 0 10
+22 30 10 15
+22 30 7 2
+22 34 18 12
+22 29 0 15
+22 33 7 13
+22 31 19 3
+22 34 8 3
+22 30 13 8
+22 33 8 12
+22 31 9 17
+22 31 3 3
+22 29 1 10
+22 33 7 8
+12 32 9
+22 33 6 19
+22 31 13 2
+22 31 0 16
+12 30 11
+22 29 0 7
+22 31 2 11
+22 29 12 5
+22 31 4 18
+22 29 18 5
+22 33 18 16
+22 33 7 14
+22 31 9 5
+22 33 0 7
+22 29 13 18
+22 29 17 8
+22 34 6 1
+22 31 19 11
+22 29 6 12
+22 29 18 1
+22 33 6 7
+22 31 0 18
+22 33 12 7
+22 32 13 3
+22 29 18 11
+22 31 13 18
+22 31 18 1
+22 29 13 17
+22 29 16 5
+22 34 1 6
+22 33 0 16
+22 30 1 6
+22 33 15 0
+22 34 13 6
+22 32 4 4
+12 34 10
+22 32 18 16
+22 31 18 9
+22 32 14 4
+22 31 9 7
+22 31 7 16
+22 29 10 12
+22 29 12 1
+22 30 16 5
+22 29 0 19
+22 29 19 5
+22 32 1 2
+22 29 10 6
+22 29 13 11
+22 32 16 11
+22 30 19 12
+22 31 16 18
+22 29 6 4
+22 31 11 13
+22 32 10 9
+22 34 8 9
+22 31 2 19
+22 34 6 11
+22 33 5 12
+22 31 8 2
+22 32 2 1
+22 30 5 12
+22 30 13 15
+12 29 14
+22 30 2 9
+22 33 9 9
+22 30 3 7
+22 34 1 0
+22 32 0 3
+22 34 17 7
+22 34 3 11
+22 30 7 18
+22 34 0 16
+22 32 3 2
+22 33 14 7
+22 34 18 11
+22 33 11 13
+22 31 5 19
+22 30 18 1
+22 31 5 16
+22 31 1 2
+22 33 9 18
+22 29 3 6
+22 30 4 2
+22 31 0 3
+22 33 4 8
+22 33 17 12
+22 33 16 18
+22 30 11 4
+22 30 3 18
+22 30 1 4
+22 31 3 6
+22 33 11 0
+22 32 2 3
+22 31 9 19
+22 29 3 0
+12 33 1
+22 30 17 0
+22 30 0 17
+22 32 5 13
+22 30 11 19
+22 31 13 6
+22 29 12 2
+22 31 15 5
+22 34 0 5
+22 30 6 10
+12 33 8
+22 30 16 0
+22 33 8 2
+22 33 9 3
+22 33 0 6
+12 33 12
+22 30 2 7
+22 31 19 18
+22 31 8 19
+22 30 18 19
+22 32 18 1
+22 30 4 6
+22 31 0 7
+22 34 11 12
+22 31 15 15
+12 34 6
+22 30 15 16
+22 31 19 14
+22 33 11 15
+22 30 15 17
+12 30 13
+22 30 0 7
+22 34 10 2
+22 31 18 8
+22 31 17 9
+22 34 5 11
+22 30 11 10
+22 30 1 10
+22 34 17 5
+22 30 14 12
+22 31 13 16
+22 33 5 0
+22 33 14 18
+12 31 6
+22 32 18 11
+22 30 9 11
+22 31 1 1
+22 31 4 11
+22 34 12 18
+22 30 2 13
+22 34 13 9
+22 29 18 0
+22 30 14 13
+22 31 7 13
+22 33 9 6
+22 31 14 8
+22 30 9 10
+12 33 4
+22 30 18 7
+22 32 4 10
+22 31 4 0
+22 33 4 14
+22 30 5 3
+22 34 10 11
+22 33 10 16
+22 33 16 15
+22 34 11 1
+22 33 0 15
+22 34 12 6
+22 29 7 15
+22 32 19 15
+9 3
+12 31 16
+22 29 15 15
+22 29 14 18
+22 31 7 6
+12 31 18
+22 34 4 0
+22 34 12 11
+22 32 8 10
+22 32 0 14
+22 33 14 5
+22 31 15 7
+22 31 12 7
+22 33 3 0
+12 29 7
+22 31 2 9
+22 32 4 6
+22 30 0 8
+22 31 6 10
+22 30 12 13
+22 29 1 16
+22 30 9 8
+22 32 10 17
+22 32 3 11
+22 31 10 18
+22 31 15 11
+22 34 10 19
+22 30 9 19
+22 34 12 16
+22 29 18 17
+22 33 5 7
+22 29 16 1
+22 34 8 7
+22 32 14 9
+22 33 1 13
+22 32 17 14
+22 34 15 8
+22 30 3 10
+22 30 0 13
+22 29 8 2
+22 30 5 4
+22 31 14 4
+22 32 16 9
+22 31 3 7
+22 34 12 12
+22 31 14 17
+22 31 3 16
+22 34 1 8
+22 29 14 17
+22 34 14 3
+22 32 18 17
+22 31 9 3
+22 33 19 10
+22 34 4 3
+22 29 15 9
+22 32 13 13
+22 29 8 3
+22 31 11 9
+22 29 0 1
+22 34 4 5
+22 33 1 1
+22 29 11 14
+22 29 11 15
+22 30 15 12
+22 30 15 13
+22 31 1 15
+22 32 6 5
+22 31 12 17
+22 31 17 18
+22 34 19 3
+22 34 6 14
+22 30 6 17
+22 32 5 4
+22 29 12 14
+22 31 19 10
+22 31 14 3
+22 29 10 3
+22 30 10 4
+22 30 1 8
+22 34 8 17
+22 31 13 12
+22 32 7 13
+22 30 4 5
+22 32 15 0
+22 34 19 11
+22 33 6 16
+22 31 19 19
+22 32 1 3
+22 32 18 10
+22 34 4 17
+22 33 6 12
+12 29 12
+22 33 10 4
+22 29 7 5
+22 30 0 5
+22 31 15 14
+22 29 9 16
+22 31 15 3
+22 31 3 2
+22 31 16 15
+22 34 7 5
+22 30 18 3
+22 30 7 5
+12 32 14
+22 32 6 14
+22 30 0 18
+22 34 13 13
+22 29 9 19
+22 29 14 0
+22 34 3 9
+22 29 7 4
+22 32 12 8
+22 30 17 13
+22 32 10 10
+22 33 10 8
+22 32 14 13
+22 33 4 15
+9 5
+22 32 12 6
+22 33 3 8
+22 33 12 13
+22 29 9 7
+22 29 12 7
+22 31 8 3
+22 31 8 7
+22 31 18 7
+22 33 1 6
+22 33 12 12
+22 32 4 12
+22 32 13 16
+22 29 0 5
+22 29 3 12
+22 30 3 11
+22 31 4 8
+22 32 5 3
+22 31 19 7
+22 34 13 18
+22 30 1 5
+22 33 2 4
+22 30 1 18
+22 29 13 16
+22 32 12 10
+22 34 5 16
+22 32 1 13
+22 33 18 17
+22 31 6 8
+22 33 11 19
+22 30 13 9
+22 29 15 19
+22 31 5 13
+22 31 5 8
+22 29 5 0
+22 33 12 15
+22 29 17 5
+22 31 0 0
+22 33 18 4
+22 29 11 2
+22 34 15 11
+22 29 12 12
+22 31 1 11
+22 30 8 4
+22 34 9 3
+22 34 18 14
+22 29 3 19
+22 33 6 14
+22 33 15 19
+22 31 8 15
+22 33 4 17
+22 34 16 9
+22 29 14 11
+22 31 15 17
+12 32 11
+22 31 8 4
+22 30 4 0
+22 31 7 17
+22 33 16 19
+22 32 7 18
+22 31 1 18
+22 31 16 11
+22 30 13 12
+22 29 13 4
+22 33 2 9
+22 32 12 12
+22 32 16 6
+22 32 19 0
+22 30 10 7
+9 7
+22 34 3 10
+22 29 16 9
+22 32 4 3
+22 30 15 19
+22 31 9 9
+22 29 5 4
+22 30 12 14
+22 32 3 15
+22 31 1 0
+22 33 7 10
+22 34 19 17
+22 32 2 11
+22 33 8 17
+22 33 18 15
+22 32 8 4
+12 31 7
+22 30 16 6
+22 31 17 14
+22 30 8 19
+22 29 4 15
+22 31 19 5
+22 34 19 14
+22 33 8 7
+22 29 12 15
+22 34 15 10
+22 30 14 7
+22 30 7 16
+22 29 11 19
+22 31 7 11
+22 31 14 2
+22 30 19 4
+22 33 6 3
+22 29 18 19
+22 31 3 14
+22 30 7 17
+22 34 10 10
+22 29 17 7
+22 34 0 11
+22 29 17 1
+22 33 0 14
+22 32 9 14
+22 30 9 14
+22 33 6 10
+22 29 5 18
+22 34 16 13
+22 31 1 17
+22 31 8 9
+22 30 18 11
+22 30 19 8
+22 30 13 1
+22 31 13 17
+22 34 15 1
+22 32 19 2
+22 34 15 17
+22 30 13 19
+22 33 8 8
+22 34 16 16
+22 34 5 0
+22 29 13 2
+22 32 15 11
+22 29 11 13
+22 34 3 16
+22 34 1 15
+22 33 9 0
+22 31 15 6
+22 29 12 10
+22 30 7 10
+22 32 14 0
+12 29 5
+22 29 4 4
+22 29 4 8
+22 30 6 11
+22 31 2 2
+22 31 7 0
+22 32 11 12
+22 34 6 6
+22 34 15 14
+22 29 6 10
+22 34 12 5
+22 32 11 13
+22 31 15 19
+22 32 2 13
+22 32 12 17
+22 29 18 2
+22 34 11 5
+22 32 2 0
+22 34 9 7
+22 33 18 19
+22 30 12 11
+22 32 6 4
+12 31 10
+22 33 6 5
+22 32 19 9
+22 34 5 10
+22 33 16 6
+22 34 16 6
+22 32 3 13
+22 33 9 17
+22 29 3 2
+12 31 2
+22 33 12 4
+12 33 9
+22 32 1 11
+22 33 13 15
+22 32 18 5
+22 30 7 1
+22 31 0 15
+22 32 13 7
+22 33 8 0
+22 34 19 13
+22 31 8 0
+22 33 19 15
+22 32 13 2
+22 32 17 8
+22 33 13 18
+22 29 10 14
+22 30 13 3
+22 32 4 19
+22 30 19 19
+22 31 18 11
+22 30 7 13
+22 33 10 6
+22 30 15 0
+22 31 16 4
+22 29 9 10
+22 31 16 7
+22 33 16 16
+22 32 2 9
+9 9
+22 32 17 11
+22 30 4 14
+22 33 10 13
+22 32 19 14
+22 29 6 11
+22 31 14 13
+22 33 16 2
+22 33 9 15
+22 30 14 11
+22 31 14 9
+22 34 12 8
+12 32 15
+22 32 2 7
+22 32 9 18
+22 31 15 18
+22 33 18 18
+22 31 19 12
+22 30 6 15
+22 31 18 6
+12 30 14
+22 31 6 7
+22 30 6 18
+22 33 18 5
+22 29 9 18
+12 34 4
+22 30 14 6
+22 33 17 19
+22 32 1 6
+12 30 16
+22 32 13 1
+22 30 18 4
+22 33 14 15
+22 30 14 14
+22 29 4 17
+12 33 19
+22 31 5 11
+22 31 6 6
+22 32 14 6
+22 34 19 7
+22 33 9 16
+22 34 5 4
+22 29 0 12
+22 33 4 12
+22 29 2 8
+22 29 7 10
+12 34 12
+22 29 17 19
+22 29 3 16
+22 33 10 1
+22 32 16 7
+22 30 19 2
+22 30 17 16
+22 34 15 0
+22 31 7 2
+22 34 17 15
+22 33 17 11
+22 32 17 13
+22 29 1 15
+22 29 9 6
+12 34 11
+22 34 3 2
+22 34 18 9
+22 34 13 8
+22 32 0 4
+22 29 2 14
+22 29 19 12
+22 29 6 9
+22 33 12 18
+22 29 0 14
+22 29 13 5
+22 31 10 9
+22 34 0 7
+22 34 2 12
+22 29 11 10
+22 33 16 3
+22 31 1 19
+22 30 2 5
+22 32 0 8
+22 29 9 8
+22 34 8 15
+22 33 7 16
+22 32 1 4
+22 30 17 17
+22 29 3 8
+22 30 2 1
+22 30 13 2
+22 33 15 3
+22 32 13 4
+22 30 0 1
+22 32 10 1
+22 29 5 3
+22 30 0 10
+22 29 9 9
+12 32 4
+22 33 19 12
+12 31 9
+22 32 13 0
+22 29 8 12
+22 30 14 19
+22 30 8 14
+22 32 3 16
+22 33 0 12
+22 30 12 10
+22 33 3 19
+12 33 14
+22 31 17 0
+22 33 0 11
+22 31 8 16
+22 34 6 17
+22 33 14 8
+22 29 5 6
+22 29 16 10
+22 31 16 1
+22 31 18 5
+22 34 13 17
+22 31 11 15
+22 33 4 0
+22 32 4 5
+12 30 0
+22 30 2 3
+22 31 7 15
+22 30 11 9
+22 31 1 3
+22 31 11 5
+22 34 18 16
+12 31 4
+22 30 12 15
+12 30 3
+22 33 18 14
+22 29 12 3
+22 30 6 3
+22 30 16 3
+22 29 18 18
+22 33 5 11
+22 33 13 8
+22 34 0 10
+22 34 9 4
+22 29 1 19
+22 33 13 3
+22 33 6 0
+22 29 9 3
+12 31 1
+22 30 14 1
+22 30 11 5
+22 33 12 8
+22 31 12 9
+22 32 7 15
+22 30 17 12
+12 29 13
+22 33 7 19
+22 30 13 13
+22 30 16 13
+22 33 6 1
+22 30 13 11
+22 34 0 4
+22 33 0 2
+22 30 19 14
+22 29 5 10
+22 33 8 4
+22 34 4 15
+12 30 2
+22 34 18 0
+22 31 19 6
+22 34 4 1
+12 32 2
+22 34 19 8
+22 30 13 0
+22 34 4 13
+22 31 18 16
+22 34 11 14
+22 30 3 5
+22 31 9 12
+22 31 6 5
+22 32 11 7
+22 29 19 19
+22 30 0 9
+22 32 8 7
+22 34 2 16
+22 33 12 10
+22 32 0 18
+22 30 16 16
+22 29 16 13
+22 29 3 18
+12 31 8
+22 31 18 10
+22 34 6 9
+22 34 1 12
+22 31 7 14
+22 30 17 3
+22 32 14 5
+22 34 8 1
+22 33 11 3
+22 31 2 0
+22 30 15 10
+22 34 6 4
+22 30 9 3
+22 29 13 15
+22 33 2 7
+22 29 9 0
+22 33 4 6
+22 29 7 16
+22 30 13 5
+22 32 9 6
+22 32 10 2
+22 32 9 17
+22 32 1 1
+22 29 7 12
+22 31 11 11
+22 32 18 9
+22 29 6 6
+22 29 2 17
+22 29 10 5
+22 32 14 7
+22 32 11 9
+22 29 16 19
+22 32 3 3
+22 33 6 4
+22 33 14 17
+22 33 16 17
+22 34 9 14
+22 34 10 1
+22 29 19 2
+22 32 15 18
+22 34 12 15
+22 30 17 18
+22 32 13 11
+22 30 0 3
+22 29 17 12
+22 31 19 1
+22 34 7 16
+22 29 4 10
+22 34 14 15
+22 29 5 13
+22 34 6 7
+22 29 12 0
+22 32 4 11
+22 34 11 19
+22 31 2 4
+22 33 12 17
+22 31 6 17
+22 33 6 17
+22 33 9 2
+22 34 3 18
+22 32 2 18
+22 34 18 5
+22 32 15 3
+22 32 9 5
+22 29 1 13
+22 33 17 7
+22 29 19 0
+22 32 3 17
+22 29 1 12
+22 33 7 9
+22 31 8 1
+22 33 7 12
+22 33 15 1
+22 34 5 7
+22 32 15 1
+22 31 13 9
+22 30 3 16
+22 30 14 5
+22 30 3 2
+22 34 8 19
+22 31 6 16
+22 30 18 5
+22 32 7 10
+22 34 15 15
+22 31 11 19
+22 32 12 19
+22 29 9 2
+22 29 5 19
+22 33 19 3
+22 30 5 6
+22 29 2 7
+22 33 13 10
+22 29 13 10
+22 29 16 15
+22 30 10 14
+22 31 9 0
+22 31 2 7
+22 31 19 4
+12 33 11
+22 30 13 17
+22 32 15 5
+22 30 9 2
+22 33 10 11
+22 34 6 19
+22 30 16 15
+22 30 18 18
+22 34 8 4
+22 31 13 10
+22 32 9 2
+22 30 4 15
+22 31 14 15
+22 31 5 15
+22 34 3 4
+22 30 15 15
+22 33 6 18
+22 29 0 0
+22 29 3 15
+12 29 18
+22 32 4 7
+22 34 10 5
+22 32 18 14
+22 33 3 5
+22 30 10 5
+22 29 3 4
+22 30 19 1
+22 34 14 12
+22 32 2 8
+22 33 14 10
+22 33 15 17
+22 32 10 5
+22 29 5 1
+22 33 10 0
+22 31 13 0
+22 34 14 6
+22 29 15 14
+22 34 18 15
+22 31 1 7
+22 33 3 3
+22 32 10 6
+12 33 6
+22 31 12 6
+22 29 8 9
+22 30 14 10
+22 31 8 14
+22 31 17 4
+22 32 8 15
+22 34 14 16
+22 33 10 7
+22 30 5 16
+22 30 16 10
+22 31 10 14
+22 33 9 14
+22 34 9 10
+22 33 15 5
+12 34 15
+22 29 10 9
+22 30 15 1
+22 31 8 17
+22 30 5 18
+22 31 15 16
+22 32 0 2
+22 30 4 1
+22 33 7 3
+22 32 3 5
+22 33 17 17
+22 31 1 6
+22 34 10 8
+9 12
+22 31 13 1
+22 34 15 2
+22 31 12 13
+22 33 5 1
+22 34 16 1
+22 30 15 4
+22 32 3 7
+22 30 1 0
+22 29 6 16
+22 30 2 11
+22 34 2 9
+22 33 14 2
+22 34 16 4
+12 29 0
+22 34 3 15
+22 32 17 6
+22 33 1 8
+12 34 0
+22 31 16 0
+22 32 10 12
+22 34 9 17
+22 31 9 13
+22 31 0 13
+22 29 18 15
+12 30 12
+22 31 1 5
+22 30 7 14
+22 34 6 3
+22 30 13 7
+22 31 14 12
+22 32 19 10
+22 32 9 19
+22 30 1 1
+22 33 15 11
+12 32 0
+22 29 15 17
+22 29 17 17
+22 32 15 17
+12 34 5
+22 34 2 3
+22 33 13 9
+22 33 9 11
+22 30 14 3
+22 32 3 1
+22 32 8 9
+22 32 0 19
+22 32 8 2
+22 33 17 0
+22 34 13 2
+22 31 6 18
+22 31 14 19
+22 32 18 7
+22 34 0 0
+22 30 18 13
+22 32 19 16
+22 32 17 15
+22 32 18 12
+22 31 7 4
+22 31 19 15
+22 34 4 4
+22 31 15 10
+9 17
+22 34 6 8
+22 34 14 5
+22 29 16 2
+22 34 5 8
+22 31 4 5
+22 30 0 15
+22 33 14 19
+22 31 16 14
+22 30 12 5
+22 31 7 10
+22 30 7 3
+22 32 8 14
+22 31 15 8
+22 31 9 8
+22 31 15 1
+22 34 3 6
+22 33 3 14
+22 33 3 16
+22 29 19 16
+22 29 5 16
+22 32 10 4
+22 31 1 4
+22 34 7 6
+22 30 1 7
+22 33 10 2
+22 33 11 14
+22 33 16 11
+22 29 12 13
+22 34 11 3
+22 34 13 14
+22 29 6 5
+22 31 14 5
+22 32 16 18
+22 33 15 4
+22 33 9 5
+22 34 6 12
+22 31 16 6
+22 30 17 9
+22 29 14 1
+22 34 7 14
+22 32 5 1
+22 32 12 18
+22 33 9 19
+22 32 7 9
+22 33 11 5
+22 34 12 17
+22 33 3 11
+22 33 9 8
+22 34 14 2
+22 30 0 11
+22 31 17 13
+22 32 9 8
+22 32 2 14
+22 33 5 14
+22 30 1 15
+22 31 16 8
+22 30 12 17
+22 31 10 3
+22 31 2 16
+22 29 1 18
+22 32 5 11
+22 29 2 15
+22 31 4 1
+22 30 8 11
+22 32 19 4
+22 32 16 15
+22 30 12 1
+22 33 3 1
+22 32 14 18
+22 31 2 3
+22 31 9 14
+22 34 12 4
+22 31 19 8
+22 30 10 6
+22 32 19 12
+22 30 2 18
+22 29 15 6
+22 29 7 14
+22 30 10 11
+22 30 14 8
+22 33 4 11
+22 33 13 19
+22 33 19 1
+22 29 6 15
+22 31 3 9
+22 30 7 9
+22 33 13 0
+22 30 4 19
+22 30 18 6
+22 29 10 2
+22 29 14 13
+22 29 12 8
+22 30 19 10
+22 34 10 6
+22 32 14 17
+12 33 16
+22 33 3 4
+22 33 4 7
+22 33 19 17
+22 32 6 16
+22 34 11 18
+22 29 4 9
+22 33 0 0
+22 32 0 9
+22 30 8 0
+22 34 1 7
+22 31 0 9
+22 32 2 2
+22 29 2 11
+22 32 17 19
+22 31 18 15
+22 33 5 19
+22 32 7 6
+22 30 11 11
+22 29 18 10
+22 34 15 4
+22 33 17 6
+22 32 9 16
+22 33 13 1
+22 31 10 19
+22 29 4 12
+22 34 4 11
+12 30 7
+22 33 14 6
+22 29 6 0
+22 29 11 11
+22 34 8 6
+22 30 19 18
+22 33 12 19
+22 29 15 3
+22 31 7 1
+22 31 13 7
+22 29 14 6
+22 30 7 19
+9 13
+22 30 0 0
+22 33 14 3
+22 31 10 10
+22 31 2 15
+22 31 4 13
+22 30 14 4
+22 34 13 16
+22 34 14 19
+22 33 3 10
+22 31 5 0
+22 33 5 15
+22 30 11 14
+22 34 16 12
+22 30 9 4
+22 33 3 17
+22 31 15 4
+22 33 17 4
+9 18
+22 33 3 15
+22 30 18 0
+22 29 13 7
+22 34 10 9
+12 32 1
+22 33 11 11
+22 34 15 16
+22 32 12 11
+22 33 16 4
+22 34 15 6
+12 33 5
+22 34 11 17
+22 30 11 17
+22 34 15 9
+22 31 10 6
+12 33 3
+12 33 7
+22 31 17 2
+22 29 19 6
+22 31 19 9
+22 30 5 14
+12 30 6
+22 33 11 9
+22 33 10 10
+22 32 7 16
+22 30 8 13
+22 30 5 17
+22 33 3 2
+22 31 18 3
+22 30 2 2
+22 33 4 3
+22 31 0 11
+22 31 6 2
+22 29 15 12
+22 33 12 5
+22 34 15 19
+22 33 3 9
+22 30 12 8
+22 33 1 17
+22 33 14 0
+22 34 11 15
+22 33 7 2
+22 31 4 4
+22 31 5 18
+22 33 8 13
+22 31 17 19
+22 33 1 9
+22 31 16 13
+22 32 3 14
+22 32 10 18
+22 30 11 13
+22 30 0 12
+22 30 9 17
+22 31 7 7
+22 32 12 9
+22 33 5 16
+22 32 19 7
+22 32 19 11
+22 34 9 16
+22 33 1 16
+22 32 18 2
+22 32 9 12
+22 32 16 5
+22 33 13 5
+22 34 3 13
+22 31 6 13
+22 32 8 17
+22 32 9 11
+22 33 7 7
+22 33 19 14
+22 29 1 9
+22 30 11 18
+22 34 14 7
+22 32 5 0
+22 34 3 0
+22 29 17 9
+22 33 17 10
+22 33 17 9
+22 33 0 8
+22 32 3 9
+22 33 11 1
+22 33 14 4
+22 30 0 2
+22 32 1 19
+22 32 5 17
+22 34 6 10
+22 29 8 10
+22 30 3 1
+22 32 19 17
+9 19
+22 32 3 4
+22 30 11 6
+22 33 5 3
+22 33 17 1
+22 29 0 10
+22 33 16 14
+22 33 18 13
+22 31 2 5
+22 30 10 0
+22 30 8 2
+22 34 9 5
+22 34 8 8
+22 31 18 18
+22 31 4 3
+22 32 11 3
+22 34 11 6
+22 32 18 15
+22 33 0 13
+22 33 8 1
+22 30 9 18
+22 33 11 16
+22 32 10 7
+22 33 4 4
+22 34 10 0
+22 29 19 7
+22 29 1 4
+22 33 2 16
+22 33 2 11
+22 34 0 13
+22 31 11 3
+22 30 13 6
+22 31 9 6
+22 34 14 10
+22 31 16 2
+22 34 10 16
+22 29 4 2
+22 32 4 18
+22 30 10 1
+6 16 8
+6 8 16
+6 16 19
+6 19 16
+6 16 11
+6 11 16
+6 16 17
+6 17 16
+6 8 19
+6 19 8
+6 8 18
+6 18 8
+6 8 13
+6 13 8
+6 8 6
+6 6 8
+6 19 18
+6 18 19
+6 19 12
+6 12 19
+6 19 0
+6 0 19
+6 19 10
+6 10 19
+6 19 4
+6 4 19
+6 2 5
+6 5 2
+6 2 13
+6 13 2
+6 2 17
+6 17 2
+6 2 6
+6 6 2
+6 3 7
+6 7 3
+6 3 12
+6 12 3
+6 3 11
+6 11 3
+6 3 4
+6 4 3
+6 7 18
+6 18 7
+6 7 15
+6 15 7
+6 7 11
+6 11 7
+6 7 0
+6 0 7
+6 18 2
+6 2 18
+6 18 11
+6 11 18
+6 18 17
+6 17 18
+6 18 0
+6 0 18
+6 18 1
+6 1 18
+6 5 8
+6 8 5
+6 5 19
+6 19 5
+6 5 7
+6 7 5
+6 5 12
+6 12 5
+6 9 0
+6 0 9
+6 12 16
+6 16 12
+6 12 2
+6 2 12
+6 12 7
+6 7 12
+6 12 18
+6 18 12
+6 12 9
+6 9 12
+6 12 11
+6 11 12
+6 15 2
+6 2 15
+6 15 5
+6 5 15
+6 15 9
+6 9 15
+6 15 12
+6 12 15
+6 15 10
+6 10 15
+6 13 3
+6 3 13
+6 13 7
+6 7 13
+6 13 5
+6 5 13
+6 13 11
+6 11 13
+6 13 10
+6 10 13
+6 11 8
+6 8 11
+6 11 9
+6 9 11
+6 11 0
+6 0 11
+6 11 1
+6 1 11
+6 17 3
+6 3 17
+6 17 1
+6 1 17
+6 0 12
+6 12 0
+6 0 6
+6 6 0
+6 6 18
+6 18 6
+6 10 16
+6 16 10
+6 10 11
+6 11 10
+6 10 17
+6 17 10
+6 14 16
+6 16 14
+6 14 13
+6 13 14
+6 4 16
+6 16 4
+6 4 12
+6 12 4
+6 4 13
+6 13 4
+6 1 12
+6 12 1
+6 1 0
+6 0 1
+6 1 6
+6 6 1
+6 1 10
+6 10 1
+6 1 14
+6 14 1
+5 16
+20 8
+20 19
+5 2
+20 3
+20 7
+20 18
+20 5
+5 9
+5 12
+20 12
+5 15
+5 13
+5 11
+20 11
+5 17
+20 17
+5 0
+5 6
+5 14
+20 14
+5 4
+20 4
+5 1
+18 42 14
+13 42
+11 34 19
+17 34
+10 26 34
+14 26
+16 34
+19 34
+1 34
+21 34 19 16
+21 34 16 19
+21 34 19 18
+21 34 18 19
+21 34 19 5
+21 34 5 19
+21 34 19 12
+21 34 12 19
+21 34 19 0
+21 34 0 19
+21 34 19 4
+21 34 4 19
+21 34 16 11
+21 34 11 16
+21 34 16 17
+21 34 17 16
+21 34 18 8
+21 34 8 18
+21 34 18 6
+21 34 6 18
+21 34 18 1
+21 34 1 18
+21 34 5 2
+21 34 2 5
+21 34 5 13
+21 34 13 5
+21 34 12 3
+21 34 3 12
+21 34 12 7
+21 34 7 12
+21 34 12 9
+21 34 9 12
+21 34 17 10
+21 34 10 17
+21 34 7 15
+21 34 15 7
+11 31 12
+17 31
+10 23 31
+14 23
+19 31
+1 31
+21 31 12 16
+21 31 16 12
+21 31 12 2
+21 31 2 12
+21 31 12 3
+21 31 3 12
+21 31 12 5
+21 31 5 12
+21 31 12 15
+21 31 15 12
+21 31 12 11
+21 31 11 12
+21 31 12 0
+21 31 0 12
+21 31 12 4
+21 31 4 12
+21 31 12 1
+21 31 1 12
+21 31 16 19
+21 31 19 16
+21 31 16 17
+21 31 17 16
+21 31 16 10
+21 31 10 16
+21 31 2 18
+21 31 18 2
+21 31 3 13
+21 31 13 3
+21 31 5 7
+21 31 7 5
+21 31 15 9
+21 31 9 15
+21 31 11 8
+21 31 8 11
+21 31 0 6
+21 31 6 0
+21 31 1 14
+21 31 14 1
+11 32 16
+17 32
+10 28 32
+14 28
+16 32
+1 32
+21 32 16 8
+21 32 8 16
+21 32 16 12
+21 32 12 16
+21 32 16 17
+21 32 17 16
+21 32 16 10
+21 32 10 16
+21 32 16 14
+21 32 14 16
+21 32 16 4
+21 32 4 16
+21 32 8 19
+21 32 19 8
+21 32 8 18
+21 32 18 8
+21 32 8 13
+21 32 13 8
+21 32 8 11
+21 32 11 8
+21 32 8 6
+21 32 6 8
+21 32 12 2
+21 32 2 12
+21 32 12 3
+21 32 3 12
+21 32 12 7
+21 32 7 12
+21 32 12 5
+21 32 5 12
+21 32 12 15
+21 32 15 12
+21 32 12 0
+21 32 0 12
+21 32 12 1
+21 32 1 12
+11 30 4
+17 30
+10 25 30
+14 25
+19 30
+1 30
+21 30 4 16
+21 30 16 4
+21 30 4 3
+21 30 3 4
+21 30 4 13
+21 30 13 4
+21 30 16 8
+21 30 8 16
+21 30 16 19
+21 30 19 16
+21 30 16 12
+21 30 12 16
+21 30 16 11
+21 30 11 16
+21 30 16 14
+21 30 14 16
+21 30 13 10
+21 30 10 13
+21 30 8 18
+21 30 18 8
+21 30 8 5
+21 30 5 8
+21 30 8 6
+21 30 6 8
+21 30 19 0
+21 30 0 19
+21 30 12 2
+21 30 2 12
+21 30 12 7
+21 30 7 12
+21 30 12 9
+21 30 9 12
+21 30 11 1
+21 30 1 11
+21 30 10 17
+21 30 17 10
+21 30 5 15
+21 30 15 5
+11 33 2
+17 33
+10 27 33
+14 27
+16 33
+1 33
+21 33 2 18
+21 33 18 2
+21 33 2 5
+21 33 5 2
+21 33 2 12
+21 33 12 2
+21 33 2 15
+21 33 15 2
+21 33 2 13
+21 33 13 2
+21 33 2 17
+21 33 17 2
+21 33 2 6
+21 33 6 2
+21 33 18 7
+21 33 7 18
+21 33 18 11
+21 33 11 18
+21 33 18 0
+21 33 0 18
+21 33 12 16
+21 33 16 12
+21 33 12 3
+21 33 3 12
+21 33 12 9
+21 33 9 12
+21 33 12 1
+21 33 1 12
+21 33 15 10
+21 33 10 15
+21 33 13 14
+21 33 14 13
+21 33 13 4
+21 33 4 13
+21 33 6 8
+21 33 8 6
+21 33 0 19
+21 33 19 0
+11 29 16
+17 29
+10 24 29
+14 24
+19 29
+1 29
+21 29 16 8
+21 29 8 16
+21 29 16 11
+21 29 11 16
+21 29 16 17
+21 29 17 16
+21 29 16 14
+21 29 14 16
+21 29 16 4
+21 29 4 16
+21 29 8 19
+21 29 19 8
+21 29 8 18
+21 29 18 8
+21 29 8 5
+21 29 5 8
+21 29 8 13
+21 29 13 8
+21 29 8 6
+21 29 6 8
+21 29 11 3
+21 29 3 11
+21 29 11 7
+21 29 7 11
+21 29 11 9
+21 29 9 11
+21 29 11 12
+21 29 12 11
+21 29 11 0
+21 29 0 11
+21 29 11 1
+21 29 1 11
+21 29 17 10
+21 29 10 17
+21 29 5 2
+21 29 2 5
+21 29 5 15
+21 29 15 5
+3 40 31
+23 40 43
+25 40 21
+3 37 32
+23 37 44
+25 37 20
+25 37 22
+3 38 33
+23 38 48
+25 38 20
+25 38 21
+3 41 30
+23 41 44
+25 41 20
+3 39 30
+23 39 43
+25 39 21
+25 39 22
+3 35 34
+23 35 45
+25 35 20
+3 36 29
+23 36 44
+25 36 21
+25 36 22
+4 48 16
+4 48 8
+4 48 19
+4 48 2
+4 48 3
+4 48 7
+4 48 18
+4 48 5
+4 48 9
+4 48 12
+4 48 15
+4 49 16
+4 49 8
+4 49 19
+4 49 2
+4 49 3
+4 49 7
+4 49 18
+4 49 5
+4 49 9
+4 49 12
+4 49 15
+4 49 13
+4 49 11
+4 45 16
+4 45 8
+4 45 19
+4 45 2
+4 45 3
+4 45 7
+4 45 18
+4 45 5
+4 45 9
+4 45 12
+4 45 15
+4 45 13
+4 45 11
+4 45 17
+4 45 0
+4 46 16
+4 46 8
+4 46 19
+4 46 2
+4 46 3
+4 46 7
+4 46 18
+4 46 5
+4 46 9
+4 46 12
+4 46 15
+4 46 13
+4 46 11
+4 46 17
+4 46 0
+4 46 6
+4 46 10
+4 46 14
+4 46 4
+4 46 1
+4 43 16
+4 43 8
+4 43 19
+4 43 2
+4 43 3
+4 43 7
+4 43 18
+4 43 5
+4 43 9
+4 43 12
+4 43 15
+4 43 13
+4 43 11
+4 43 17
+4 43 0
+4 43 6
+4 47 16
+4 47 8
+4 47 19
+4 44 16
+4 44 8
+4 44 19
+4 44 2
+4 44 3
+4 44 7
+4 44 18
+4 44 5
+4 44 9
+4 44 12
+4 44 15
+#end_init
+#end_goal
+#initial_task
+33
