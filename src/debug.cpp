@@ -14,6 +14,18 @@ std::string color (Color color, std::string text)
 	;
 }
 
+void printFact (Domain & domain, Fact & fact)
+{
+	Predicate & predicate = domain.predicates[fact.predicateNo];
+	std::cerr << "    " << color (CYAN, predicate.name);
+
+	for (size_t argumentIdx = 0; argumentIdx < fact.arguments.size (); ++argumentIdx)
+	{
+		std::cerr << " <" << color (YELLOW, domain.constants[fact.arguments[argumentIdx]]) << ">";
+	}
+	std::cerr << std::endl;
+}
+
 void printDomain (Domain & domain)
 {
 	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
@@ -64,6 +76,22 @@ void printDomain (Domain & domain)
 				std::cerr << std::endl;
 			}
 		}
+	}
+
+	std::cerr << std::endl;
+	std::cerr << "Initial state:" << std::endl;
+	for (size_t factIdx = 0; factIdx < domain.initFacts.size (); ++factIdx)
+	{
+		Fact & fact = domain.initFacts[factIdx];
+		printFact (domain, fact);
+	}
+
+	std::cerr << std::endl;
+	std::cerr << "Goal state:" << std::endl;
+	for (size_t factIdx = 0; factIdx < domain.goalFacts.size (); ++factIdx)
+	{
+		Fact & fact = domain.goalFacts[factIdx];
+		printFact (domain, fact);
 	}
 }
 

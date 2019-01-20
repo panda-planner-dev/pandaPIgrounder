@@ -48,6 +48,18 @@ struct PredicateWithArguments
 };
 
 /**
+ * @brief A fact is a predicate with constants assigned to the predicate's arguments.
+ */
+struct Fact
+{
+	/// The index of the predicate in the Domain.predicates vector.
+	int predicateNo;
+
+	/// Vector of arguments. This means that the i-th argument to this predicate is the arguments[i]-th constant from the Domain.constants vector.
+	std::vector<int> arguments;
+};
+
+/**
  * @brief A task where a method's variables are used as arguments to the task.
  */
 struct TaskWithArguments
@@ -168,6 +180,12 @@ struct Domain
 
 	/// All tasks. Primitive tasks have indices in [0; nPrimitiveTasks); abstract tasks have indices in [nPrimitiveTasks; nPrimitiveTasks + nAbstractTasks).
 	std::vector<Task> tasks;
+
+	/// List of facts that are known in the initial state.
+	std::vector<Fact> initFacts;
+
+	/// List of facts that should be in the goal state. (Not currently processed in any way, but these facts need to be part of the output)
+	std::vector<Fact> goalFacts;
 };
 
 struct BadInputException : public std::exception

@@ -160,6 +160,14 @@ void readDecompositionMethod (const Domain & state, std::istream & input, Domain
 	task.decompositionMethods.push_back (method);
 }
 
+void readFact (const Domain & state, std::istream & input, Fact & outputFact)
+{
+	input >> outputFact.predicateNo;
+
+	size_t nArguments = state.predicates[outputFact.predicateNo].argumentSorts.size ();
+	readN (state, input, outputFact.arguments, readPrimitive, nArguments);
+}
+
 void parseInput (std::istream & input, Domain & output)
 {
 	// Helper alias that we can pass to other functions
@@ -207,7 +215,13 @@ void parseInput (std::istream & input, Domain & output)
 	for (int methodIdx = 0; methodIdx < nMethods; ++methodIdx)
 		readDecompositionMethod (state, input, output);
 
-	// TODO: read init + goal facts
+	// Read facts for initial and goal state
+	int nInitFacts;
+	int nGoalFacts;
+	input >> nInitFacts >> nGoalFacts;
+	DEBUG (std::cerr << "Reading [" << nInitFacts << "] initial and [" << nGoalFacts << "] goal facts." << std::endl);
+	readN (state, input, output.initFacts, readFact, nInitFacts);
+	readN (state, input, output.goalFacts, readFact, nGoalFacts);
 
 	// TODO: read initial task
 
