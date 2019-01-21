@@ -113,11 +113,11 @@ void readPrimitiveTask (const Domain & state, std::istream & input, Task & outpu
 	// Preconditions
 	readMultiple (state, input, outputTask.preconditions, readPredicateWithArguments);
 
-	// Delete effects
-	readMultiple (state, input, outputTask.effectsDel, readPredicateWithArguments);
-
 	// Add effects
 	readMultiple (state, input, outputTask.effectsAdd, readPredicateWithArguments);
+	
+	// Delete effects
+	readMultiple (state, input, outputTask.effectsDel, readPredicateWithArguments);
 
 	// Variable constraints
 	readMultiple (state, input, outputTask.variableConstraints, readVariableConstraint);
