@@ -69,6 +69,14 @@ void readPredicateWithArguments (const Domain & state, std::istream & input, Pre
 	readN (state, input, outputPredicate.arguments, readPrimitive, nArguments);
 }
 
+void readFact (const Domain & state, std::istream & input, Fact & fact)
+{
+	input >> fact.predicateNo;
+
+	size_t nArguments = state.predicates[fact.predicateNo].argumentSorts.size ();
+	readN (state, input, fact.arguments, readPrimitive, nArguments);
+}
+
 void readTaskWithArguments (const Domain & state, std::istream & input, TaskWithArguments & outputTaskWithArguments)
 {
 	input >> outputTaskWithArguments.taskNo;
@@ -207,9 +215,17 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	for (int methodIdx = 0; methodIdx < nMethods; ++methodIdx)
 		readDecompositionMethod (state, input, output);
 
-	// TODO: read init + goal facts
+	// read init + goal facts
+	int nInit, nGoal;
+	input >> nInit >> nGoal;
+	DEBUG (std::cerr << "Reading [" << nInit << "] initial state facts." << std::endl);
+	readN (state, input, outputProblem.init, readFact , nInit);
 
-	// TODO: read initial task
+	DEBUG (std::cerr << "Reading [" << nGoal << "] goal facts." << std::endl);
+	readN (state, input, outputProblem.goal, readFact , nGoal);
+
+	// read initial task
+	input >> outputProblem.initialAbstractTask;
 
 	// Reset exception mask
 	input.exceptions (exceptionMask);

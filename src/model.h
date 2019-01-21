@@ -182,10 +182,10 @@ struct Fact {
 struct Problem
 {
 	/// The initial state
-	Fact init;
+	std::vector<Fact> init;
 
 	/// The goal state
-	Fact goal;
+	std::vector<Fact> goal;
 
 	/// the initial abstract task, identified by its number
 	int initialAbstractTask;

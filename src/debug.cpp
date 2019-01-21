@@ -14,7 +14,7 @@ std::string color (Color color, std::string text)
 	;
 }
 
-void printDomain (Domain & domain)
+void printDomainAndProbem (Domain & domain, Problem & problem)
 {
 	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
 	DEBUG (std::cerr << "Domain has [" << domain.nPrimitiveTasks << "] primitive and [" << domain.nAbstractTasks << "] abstract tasks." << std::endl);
@@ -64,6 +64,27 @@ void printDomain (Domain & domain)
 				std::cerr << std::endl;
 			}
 		}
+	}
+
+	std::cerr << "The initial abstract task: " << color (RED, domain.tasks[problem.initialAbstractTask].name) << std::endl;
+	std::cerr << "The initial state:" << std::endl;
+	for (unsigned int initC = 0; initC < problem.init.size(); initC++){
+		std::cerr << "  " << color (YELLOW, domain.predicates[problem.init[initC].predicateNo].name);
+
+		for (unsigned int argC = 0; argC < problem.init[initC].arguments.size(); argC++){
+			std::cerr << "  " << color (CYAN, domain.constants[problem.init[initC].arguments[argC]]);
+		}
+		std::cerr << std::endl;
+	}
+
+	std::cerr << "The goal:" << std::endl;
+	for (unsigned int goalC = 0; goalC < problem.goal.size(); goalC++){
+		std::cerr << "  " << color (RED, domain.predicates[problem.goal[goalC].predicateNo].name);
+
+		for (unsigned int argC = 0; argC < problem.goal[goalC].arguments.size(); argC++){
+			std::cerr << "  " << color (CYAN, domain.constants[problem.goal[goalC].arguments[argC]]);
+		}
+		std::cerr << std::endl;
 	}
 }
 

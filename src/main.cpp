@@ -99,6 +99,6 @@ int main (int argc, char * argv[])
 		}
 
 		if (printDomainMode)
-			printDomain (data);
+			printDomainAndProbem (data, problem);
 	}
 }

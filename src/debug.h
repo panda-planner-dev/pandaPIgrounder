@@ -30,9 +30,9 @@ enum Color
 std::string color (Color color, std::string text);
 
 /**
- * @brief Prints a Domain for debugging.
+ * @brief Prints a Domain and a Problem for debugging.
  */
-void printDomain (Domain & domain);
+void printDomainAndProbem (Domain & domain, Problem & problem);
 
 /**
  * @brief Returns true if debug mode is enabled.
