@@ -160,7 +160,7 @@ void readDecompositionMethod (const Domain & state, std::istream & input, Domain
 	task.decompositionMethods.push_back (method);
 }
 
-void parseInput (std::istream & input, Domain & output)
+void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 {
 	// Helper alias that we can pass to other functions
 	const Domain & state = output;
@@ -215,7 +215,7 @@ void parseInput (std::istream & input, Domain & output)
 	input.exceptions (exceptionMask);
 }
 
-bool readInput (std::istream & is, Domain & output)
+bool readInput (std::istream & is, Domain & output, Problem & outputProblem)
 {
 	// Read the entire stream and remove comments
 	std::stringstream dataStream;
@@ -231,7 +231,7 @@ bool readInput (std::istream & is, Domain & output)
 
 	try
 	{
-		parseInput (dataStream, output);
+		parseInput (dataStream, output, outputProblem);
 	}
 	catch (std::ifstream::failure & e)
 	{

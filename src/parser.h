@@ -19,7 +19,7 @@
  * @param[out] output The Domain object to write to.
  * @return Returns true if successful, or false if there was an error while reading.
  */
-bool readInput (std::istream & is, Domain & output);
+bool readInput (std::istream & is, Domain & output, Problem & outputProblem);
 
 /**
  * @}

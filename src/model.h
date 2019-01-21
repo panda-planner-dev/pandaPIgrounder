@@ -170,6 +170,28 @@ struct Domain
 	std::vector<Task> tasks;
 };
 
+
+struct Fact {
+	/// The index of the predicate in the Domain.predicates vector.
+	int predicateNo;
+
+	/// Vector of arguments. This means that the i-th argument to this predicate is the arguments[i]th constant in the domain.
+	std::vector<int> arguments;
+};
+
+struct Problem
+{
+	/// The initial state
+	Fact init;
+
+	/// The goal state
+	Fact goal;
+
+	/// the initial abstract task, identified by its number
+	int initialAbstractTask;
+};
+
+
 struct BadInputException : public std::exception
 {
 	std::string message;

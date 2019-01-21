@@ -89,7 +89,8 @@ int main (int argc, char * argv[])
 		}
 
 		Domain data;
-		bool success = readInput (*inputStream, data);
+		Problem problem;
+		bool success = readInput (*inputStream, data, problem);
 
 		if (!success)
 		{
