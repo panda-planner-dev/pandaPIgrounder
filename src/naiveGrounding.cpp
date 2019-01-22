@@ -160,7 +160,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 		for (unsigned int g = 0; g < gs.size(); g++)
 			allInst.push_back(gs[g]), tti[gs[g]] = tti.size();
 	}
-	cout << allInst.size() << endl;
+	//cout << allInst.size() << endl;
 
 
 	map<GroundFact,int> fti;
@@ -193,6 +193,8 @@ void naiveGrounding(Domain & domain, Problem & problem){
 	}
 
 
+	cerr << "Primitive Instantiation done" << endl;
+
 
 	// run PG in very slow time
 	vector<bool> appli (int(allInst.size()));
@@ -219,8 +221,9 @@ void naiveGrounding(Domain & domain, Problem & problem){
 			}
 		}
 	}
+	
+	cerr << "PG done" << endl;
 
-	cout << cappli << " " << state.size() << endl;
 	/*for (int gt = 0; gt < int(allInst.size()); gt++){
 		if (!appli[gt]) continue;
 		//if (appli[gt]) cout << "!  ";
@@ -250,7 +253,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 		for (unsigned int g = 0; g < gs.size(); g++)
 			allAT.push_back(gs[g]), tti[gs[g]] = tti.size(); 
 	}
-	cout << "AT groundings: " << allAT.size() << endl;
+	//cout << "AT groundings: " << allAT.size() << endl;
 
 	// instantiate all methods
 	vector<MethodGroundInstance> allM;
@@ -261,7 +264,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 				allM.push_back(gs[g]);
 		}
 	}
-	cout << "Method groundings: " << allM.size() << endl;
+	//cout << "Method groundings: " << allM.size() << endl;
 
 
 
@@ -282,10 +285,12 @@ void naiveGrounding(Domain & domain, Problem & problem){
 			allM[gm].subtasks.push_back(tti[stg]);
 		}
 	}
-	
+
+	cerr << "AT and method instantiation done" << endl;
+
 	// run bottom up reachability
-	vector<bool> aappli (int(allAT.size()));
-	vector<bool> mappli (int(allM.size()));
+	vector<bool> aappli (int(allAT.size())); int caappli = 0;
+	vector<bool> mappli (int(allM.size())); int cmappli = 0;
 	changed = true;
 	while(changed){
 		changed = false;
@@ -295,15 +300,16 @@ void naiveGrounding(Domain & domain, Problem & problem){
 				if (allM[gm].subtasks[st] < int(allInst.size())) allOK &= appli[allM[gm].subtasks[st]];
 				else allOK &= aappli[allM[gm].subtasks[st] - allInst.size()];
 			if (!allOK) continue;
-			mappli[gm] = true;
+			mappli[gm] = true; cmappli++;
 			if (aappli[allM[gm].at - allInst.size()]) continue;
 			aappli[allM[gm].at - allInst.size()] = true;
-			changed = true;
+			changed = true; caappli++;
 		}
 	}
+	cerr << "TDG done" << endl;
 
 
-	for (int gt = 0; gt < int(allAT.size()); gt++){
+	/*for (int gt = 0; gt < int(allAT.size()); gt++){
 		if (!aappli[gt]) continue;
 		cout << domain.tasks[allAT[gt].task].name;
 		for (unsigned int arg = 0; arg < allAT[gt].args.size(); arg++)
@@ -322,7 +328,10 @@ void naiveGrounding(Domain & domain, Problem & problem){
 			cout << " " << allM[gm].subtasks[st];
 		
 		cout << endl;
-	}
+	}*/
+	
+	cout << "Prim (task, fact): " << cappli << " " << state.size() << " of " << allInst.size() << endl;
+	cout << "HTN (at, method): " << caappli << " " << cmappli << " of " << allAT.size() << " " << allM.size() << endl;
 
 	return;
 }
