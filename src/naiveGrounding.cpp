@@ -46,95 +46,69 @@ bool operator <(const TaskGroundInstance& x, const TaskGroundInstance& y) {
 	return false;
 }
 
-vector<TaskGroundInstance> naivelyGroundTask(Domain & domain, int task, int vPos){
+int cur_naive_args[50];
+
+void naivelyGroundTask(Domain & domain, int task, int vPos, vector<TaskGroundInstance> & ret){
 	if (vPos == int(domain.tasks[task].variableSorts.size())){
 		TaskGroundInstance inst;
 		inst.task = task;
-		vector<TaskGroundInstance> ret;
+		for (int a = 0; a < vPos; a++) inst.args.push_back(cur_naive_args[a]);
+		
+		bool failed = false;
+		for (unsigned constr = 0; constr < domain.tasks[task].variableConstraints.size(); constr++){
+			VariableConstraint con = domain.tasks[task].variableConstraints[constr];
+			int c1 = inst.args[con.var1];
+			int c2 = inst.args[con.var2];
+			if (con.type == VariableConstraint::Type::EQUAL && c1 != c2) failed = true;
+			if (con.type == VariableConstraint::Type::NOT_EQUAL && c1 == c2) failed = true;
+		}
+		if (failed) return;
+		
 		ret.push_back(inst);
-		return ret;
+		return;
 	}
-
-	// get instances of next layer
-	vector<TaskGroundInstance> nextG = naivelyGroundTask (domain, task, vPos+1);
 
 	// iterate through constants for that variable
 	int vSort = domain.tasks[task].variableSorts[vPos];
-	vector<TaskGroundInstance> ret;
 	for (unsigned int inSortIndex = 0; inSortIndex < domain.sorts[vSort].members.size(); inSortIndex++){
 		int c = domain.sorts[vSort].members[inSortIndex];
-		for (unsigned int og = 0; og < nextG.size(); og++){
-			TaskGroundInstance inst;
-			inst.task = task;
-			inst.args.push_back(c);
-			for (unsigned int arg = 0; arg < nextG[og].args.size(); arg++)
-				inst.args.push_back(nextG[og].args[arg]);
-			
-			// if we are root check constraint consistency
-			if (vPos == 0){
-				bool failed = false;
-				for (unsigned constr = 0; constr < domain.tasks[task].variableConstraints.size(); constr++){
-					VariableConstraint con = domain.tasks[task].variableConstraints[constr];
-					int c1 = inst.args[con.var1];
-					int c2 = inst.args[con.var2];
-					if (con.type == VariableConstraint::Type::EQUAL && c1 != c2) failed = true;
-					if (con.type == VariableConstraint::Type::NOT_EQUAL && c1 == c2) failed = true;
-				}
-				if (failed) continue;
-			
-			}
-			ret.push_back(inst);
-		}
+		cur_naive_args[vPos] = c;
+		naivelyGroundTask(domain, task, vPos+1, ret);
 	}
-	return ret;
 }
 
 
 
-vector<MethodGroundInstance> naivelyGroundMethod(Domain & domain, int at, int method, int vPos){
+void naivelyGroundMethod(Domain & domain, int at, int method, int vPos,vector<MethodGroundInstance> & ret){
 	if (vPos == int(domain.tasks[at].decompositionMethods[method].variableSorts.size())){
 		MethodGroundInstance inst;
 		inst.task = at;
 		inst.method = method;
-		vector<MethodGroundInstance> ret;
+		for (int a = 0; a < vPos; a++) inst.args.push_back(cur_naive_args[a]);
+		
+		// check variable constraints
+		bool failed = false;
+		for (unsigned constr = 0; constr < domain.tasks[at].decompositionMethods[method].variableConstraints.size(); constr++){
+			VariableConstraint con = domain.tasks[at].decompositionMethods[method].variableConstraints[constr];
+			int c1 = inst.args[con.var1];
+			int c2 = inst.args[con.var2];
+			if (con.type == VariableConstraint::Type::EQUAL && c1 != c2) failed = true;
+			if (con.type == VariableConstraint::Type::NOT_EQUAL && c1 == c2) failed = true;
+		}
+		if (failed)
+			return;
+		
 		ret.push_back(inst);
-		return ret;
+		return;
 	}
-
-	// get instances of next layer
-	vector<MethodGroundInstance> nextG = naivelyGroundMethod (domain, at, method, vPos+1);
 
 	// iterate through constants for that variable
 	int vSort = domain.tasks[at].decompositionMethods[method].variableSorts[vPos];
-	vector<MethodGroundInstance> ret;
 	for (unsigned int inSortIndex = 0; inSortIndex < domain.sorts[vSort].members.size(); inSortIndex++){
 		int c = domain.sorts[vSort].members[inSortIndex];
-		for (unsigned int og = 0; og < nextG.size(); og++){
-			MethodGroundInstance inst;
-			inst.task = at;
-			inst.method = method;
-			inst.args.push_back(c);
-			for (unsigned int arg = 0; arg < nextG[og].args.size(); arg++)
-				inst.args.push_back(nextG[og].args[arg]);
-			
-			// if we are root check constraint consistency
-			if (vPos == 0){
-				bool failed = false;
-				for (unsigned constr = 0; constr < domain.tasks[at].decompositionMethods[method].variableConstraints.size(); constr++){
-					VariableConstraint con = domain.tasks[at].decompositionMethods[method].variableConstraints[constr];
-					int c1 = inst.args[con.var1];
-					int c2 = inst.args[con.var2];
-					if (con.type == VariableConstraint::Type::EQUAL && c1 != c2) failed = true;
-					if (con.type == VariableConstraint::Type::NOT_EQUAL && c1 == c2) failed = true;
-				}
-				if (failed) continue;
-			
-			}
-			ret.push_back(inst);
-		}
+		cur_naive_args[vPos] = c;
+		naivelyGroundMethod(domain, at, method, vPos+1, ret);
 	}
-
-	return ret;
 }
 
 
@@ -156,9 +130,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 	
 	map<TaskGroundInstance,int> tti;
 	for (int t = 0; t < domain.nPrimitiveTasks; t++){
-		vector<TaskGroundInstance> gs = naivelyGroundTask(domain,t,0);
-		for (unsigned int g = 0; g < gs.size(); g++)
-			allInst.push_back(gs[g]), tti[gs[g]] = tti.size();
+		naivelyGroundTask(domain,t,0, allInst);
 	}
 	//cout << allInst.size() << endl;
 
@@ -166,6 +138,8 @@ void naiveGrounding(Domain & domain, Problem & problem){
 	map<GroundFact,int> fti;
 	// compute all ground facts
 	for (int gt = 0; gt < int(allInst.size()); gt++){
+		tti[allInst[gt]] = gt;
+
 		for (int pre = 0; pre < int(domain.tasks[allInst[gt].task].preconditions.size()); pre++)
 			allInst[gt].pre.push_back(numForFact(fti, domain, allInst[gt], domain.tasks[allInst[gt].task].preconditions[pre]));
 		for (int add = 0; add < int(domain.tasks[allInst[gt].task].effectsAdd.size()); add++)
@@ -249,9 +223,10 @@ void naiveGrounding(Domain & domain, Problem & problem){
 	// 2. Instantiate all abstract tasks
 	vector<TaskGroundInstance> allAT;
 	for (int t = domain.nPrimitiveTasks; t < domain.nPrimitiveTasks + domain.nAbstractTasks; t++){
-		vector<TaskGroundInstance> gs = naivelyGroundTask(domain,t,0);
-		for (unsigned int g = 0; g < gs.size(); g++)
-			allAT.push_back(gs[g]), tti[gs[g]] = tti.size(); 
+		naivelyGroundTask(domain,t,0, allAT);
+	}
+	for (int gt = 0; gt < int(allAT.size()); gt++){
+		tti[allAT[gt]] = gt + allInst.size();
 	}
 	//cout << "AT groundings: " << allAT.size() << endl;
 
@@ -259,9 +234,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 	vector<MethodGroundInstance> allM;
 	for (int t = domain.nPrimitiveTasks; t < domain.nPrimitiveTasks + domain.nAbstractTasks; t++){
 		for (int m = 0; m < int(domain.tasks[t].decompositionMethods.size()); m++){
-			vector<MethodGroundInstance> gs = naivelyGroundMethod(domain,t,m,0);
-			for (unsigned int g = 0; g < gs.size(); g++)
-				allM.push_back(gs[g]);
+			naivelyGroundMethod(domain,t,m,0, allM);
 		}
 	}
 	//cout << "Method groundings: " << allM.size() << endl;
