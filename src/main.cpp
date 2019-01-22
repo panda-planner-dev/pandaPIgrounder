@@ -10,21 +10,24 @@
 #include "debug.h"
 #include "model.h"
 #include "parser.h"
+#include "naiveGrounding.h"
 
 int main (int argc, char * argv[])
 {
 	struct option options[] = {
 		{"debug",           no_argument,    NULL,   'd'},
 		{"print-domain",    no_argument,    NULL,   'p'},
+		{"naive-grounding", no_argument,    NULL,   'n'},
 		{NULL,              0,              NULL,   0},
 	};
 
 	bool debugMode = false;
 	bool printDomainMode = false;
+	bool doNaiveGrounding = false;
 	bool optionsValid = true;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "dp", options, NULL);
+		int c = getopt_long (argc, argv, "dpn", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -38,6 +41,8 @@ int main (int argc, char * argv[])
 			debugMode = true;
 		else if (c == 'p')
 			printDomainMode = true;
+		else if (c == 'n')
+			doNaiveGrounding   = true;
 	}
 	int nArgs = argc - optind;
 
@@ -89,7 +94,8 @@ int main (int argc, char * argv[])
 		}
 
 		Domain data;
-		bool success = readInput (*inputStream, data);
+		Problem problem;
+		bool success = readInput (*inputStream, data, problem);
 
 		if (!success)
 		{
@@ -98,6 +104,8 @@ int main (int argc, char * argv[])
 		}
 
 		if (printDomainMode)
-			printDomain (data);
+			printDomainAndProbem (data, problem);
+		if (doNaiveGrounding)
+			naiveGrounding(data,problem);
 	}
 }

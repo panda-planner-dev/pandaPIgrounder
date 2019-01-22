@@ -69,6 +69,14 @@ void readPredicateWithArguments (const Domain & state, std::istream & input, Pre
 	readN (state, input, outputPredicate.arguments, readPrimitive, nArguments);
 }
 
+void readFact (const Domain & state, std::istream & input, Fact & fact)
+{
+	input >> fact.predicateNo;
+
+	size_t nArguments = state.predicates[fact.predicateNo].argumentSorts.size ();
+	readN (state, input, fact.arguments, readPrimitive, nArguments);
+}
+
 void readTaskWithArguments (const Domain & state, std::istream & input, TaskWithArguments & outputTaskWithArguments)
 {
 	input >> outputTaskWithArguments.taskNo;
@@ -105,11 +113,11 @@ void readPrimitiveTask (const Domain & state, std::istream & input, Task & outpu
 	// Preconditions
 	readMultiple (state, input, outputTask.preconditions, readPredicateWithArguments);
 
-	// Delete effects
-	readMultiple (state, input, outputTask.effectsDel, readPredicateWithArguments);
-
 	// Add effects
 	readMultiple (state, input, outputTask.effectsAdd, readPredicateWithArguments);
+
+	// Delete effects
+	readMultiple (state, input, outputTask.effectsDel, readPredicateWithArguments);
 
 	// Variable constraints
 	readMultiple (state, input, outputTask.variableConstraints, readVariableConstraint);
@@ -160,15 +168,7 @@ void readDecompositionMethod (const Domain & state, std::istream & input, Domain
 	task.decompositionMethods.push_back (method);
 }
 
-void readFact (const Domain & state, std::istream & input, Fact & outputFact)
-{
-	input >> outputFact.predicateNo;
-
-	size_t nArguments = state.predicates[outputFact.predicateNo].argumentSorts.size ();
-	readN (state, input, outputFact.arguments, readPrimitive, nArguments);
-}
-
-void parseInput (std::istream & input, Domain & output)
+void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 {
 	// Helper alias that we can pass to other functions
 	const Domain & state = output;
@@ -220,16 +220,17 @@ void parseInput (std::istream & input, Domain & output)
 	int nGoalFacts;
 	input >> nInitFacts >> nGoalFacts;
 	DEBUG (std::cerr << "Reading [" << nInitFacts << "] initial and [" << nGoalFacts << "] goal facts." << std::endl);
-	readN (state, input, output.initFacts, readFact, nInitFacts);
-	readN (state, input, output.goalFacts, readFact, nGoalFacts);
+	readN (state, input, outputProblem.init, readFact, nInitFacts);
+	readN (state, input, outputProblem.goal, readFact, nGoalFacts);
 
-	// TODO: read initial task
+	// Read initial task
+	input >> outputProblem.initialAbstractTask;
 
 	// Reset exception mask
 	input.exceptions (exceptionMask);
 }
 
-bool readInput (std::istream & is, Domain & output)
+bool readInput (std::istream & is, Domain & output, Problem & outputProblem)
 {
 	// Read the entire stream and remove comments
 	std::stringstream dataStream;
@@ -245,7 +246,7 @@ bool readInput (std::istream & is, Domain & output)
 
 	try
 	{
-		parseInput (dataStream, output);
+		parseInput (dataStream, output, outputProblem);
 	}
 	catch (std::ifstream::failure & e)
 	{

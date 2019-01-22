@@ -180,13 +180,20 @@ struct Domain
 
 	/// All tasks. Primitive tasks have indices in [0; nPrimitiveTasks); abstract tasks have indices in [nPrimitiveTasks; nPrimitiveTasks + nAbstractTasks).
 	std::vector<Task> tasks;
+};
 
+struct Problem
+{
 	/// List of facts that are known in the initial state.
-	std::vector<Fact> initFacts;
+	std::vector<Fact> init;
 
 	/// List of facts that should be in the goal state. (Not currently processed in any way, but these facts need to be part of the output)
-	std::vector<Fact> goalFacts;
+	std::vector<Fact> goal;
+
+	/// The initial abstract task, identified by its number.
+	int initialAbstractTask;
 };
+
 
 struct BadInputException : public std::exception
 {

@@ -26,7 +26,7 @@ void printFact (Domain & domain, Fact & fact)
 	std::cerr << std::endl;
 }
 
-void printDomain (Domain & domain)
+void printDomainAndProbem (Domain & domain, Problem & problem)
 {
 	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
 	DEBUG (std::cerr << "Domain has [" << domain.nPrimitiveTasks << "] primitive and [" << domain.nAbstractTasks << "] abstract tasks." << std::endl);
@@ -80,19 +80,22 @@ void printDomain (Domain & domain)
 
 	std::cerr << std::endl;
 	std::cerr << "Initial state:" << std::endl;
-	for (size_t factIdx = 0; factIdx < domain.initFacts.size (); ++factIdx)
+	for (size_t factIdx = 0; factIdx < problem.init.size (); ++factIdx)
 	{
-		Fact & fact = domain.initFacts[factIdx];
+		Fact & fact = problem.init[factIdx];
 		printFact (domain, fact);
 	}
 
 	std::cerr << std::endl;
 	std::cerr << "Goal state:" << std::endl;
-	for (size_t factIdx = 0; factIdx < domain.goalFacts.size (); ++factIdx)
+	for (size_t factIdx = 0; factIdx < problem.goal.size (); ++factIdx)
 	{
-		Fact & fact = domain.goalFacts[factIdx];
+		Fact & fact = problem.goal[factIdx];
 		printFact (domain, fact);
 	}
+
+	std::cerr << std::endl;
+	std::cerr << "Initial abstract task: " << color (BLUE, domain.tasks[problem.initialAbstractTask].name) << std::endl;
 }
 
 bool getDebugMode (void)
