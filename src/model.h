@@ -170,8 +170,8 @@ struct Domain
 	std::vector<Task> tasks;
 };
 
-
-struct Fact {
+struct Fact
+{
 	/// The index of the predicate in the Domain.predicates vector.
 	int predicateNo;
 
