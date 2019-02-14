@@ -26,24 +26,19 @@ void printFact (Domain & domain, Fact & fact)
 	std::cerr << std::endl;
 }
 
-void printDomainAndProbem (Domain & domain, Problem & problem)
+void printTask (Domain & domain, Task & task, bool printDecompositionMethods)
 {
-	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
-	DEBUG (std::cerr << "Domain has [" << domain.nPrimitiveTasks << "] primitive and [" << domain.nAbstractTasks << "] abstract tasks." << std::endl);
-
-	std::cerr << "Tasks with methods:" << std::endl;
-	for (int taskIdx = 0; taskIdx < domain.nPrimitiveTasks + domain.nAbstractTasks; ++taskIdx)
+	// Print task name and variable sorts
+	std::cerr << "    " << color (BLUE, task.name);
+	int nVariables = task.variableSorts.size ();
+	for (int variableIdx = 0; variableIdx < nVariables; ++variableIdx)
 	{
-		// Print task name and variable sorts
-		Task & task = domain.tasks[taskIdx];
-		std::cerr << "    " << color (BLUE, task.name);
-		int nVariables = task.variableSorts.size ();
-		for (int variableIdx = 0; variableIdx < nVariables; ++variableIdx)
-		{
-			std::cerr << " <" << color (YELLOW, domain.sorts[task.variableSorts[variableIdx]].name) << ">";
-		}
-		std::cerr << std::endl;
+		std::cerr << " <" << color (YELLOW, domain.sorts[task.variableSorts[variableIdx]].name) << ">";
+	}
+	std::cerr << std::endl;
 
+	if (printDecompositionMethods)
+	{
 		// Print all decomposition methods
 		int nMethods = task.decompositionMethods.size ();
 		for (int methodIdx = 0; methodIdx < nMethods; ++methodIdx)
@@ -77,22 +72,26 @@ void printDomainAndProbem (Domain & domain, Problem & problem)
 			}
 		}
 	}
+}
+
+void printDomainAndProbem (Domain & domain, Problem & problem)
+{
+	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
+	DEBUG (std::cerr << "Domain has [" << domain.nPrimitiveTasks << "] primitive and [" << domain.nAbstractTasks << "] abstract tasks." << std::endl);
+
+	std::cerr << "Tasks with methods:" << std::endl;
+	for (int taskIdx = 0; taskIdx < domain.nPrimitiveTasks + domain.nAbstractTasks; ++taskIdx)
+		printTask (domain, domain.tasks[taskIdx], true);
 
 	std::cerr << std::endl;
 	std::cerr << "Initial state:" << std::endl;
 	for (size_t factIdx = 0; factIdx < problem.init.size (); ++factIdx)
-	{
-		Fact & fact = problem.init[factIdx];
-		printFact (domain, fact);
-	}
+		printFact (domain, problem.init[factIdx]);
 
 	std::cerr << std::endl;
 	std::cerr << "Goal state:" << std::endl;
 	for (size_t factIdx = 0; factIdx < problem.goal.size (); ++factIdx)
-	{
-		Fact & fact = problem.goal[factIdx];
-		printFact (domain, fact);
-	}
+		printFact (domain, problem.goal[factIdx]);
 
 	std::cerr << std::endl;
 	std::cerr << "Initial abstract task: " << color (BLUE, domain.tasks[problem.initialAbstractTask].name) << std::endl;

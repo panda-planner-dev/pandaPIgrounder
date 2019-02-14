@@ -30,6 +30,11 @@ enum Color
 std::string color (Color color, std::string text);
 
 /**
+ * @brief Prints a Task for debugging.
+ */
+void printTask (Domain & domain, Task & task, bool printDecompositionMethods = false);
+
+/**
  * @brief Prints a Domain and a Problem for debugging.
  */
 void printDomainAndProbem (Domain & domain, Problem & problem);
