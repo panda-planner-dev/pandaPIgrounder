@@ -32,17 +32,17 @@ std::string color (Color color, std::string text);
 /**
  * @brief Prints a Fact for debugging.
  */
-void printFact (Domain & domain, Fact & fact);
+void printFact (const Domain & domain, const Fact & fact);
 
 /**
  * @brief Prints a Task for debugging.
  */
-void printTask (Domain & domain, Task & task, bool printDecompositionMethods = false);
+void printTask (const Domain & domain, const Task & task, bool printDecompositionMethods = false);
 
 /**
  * @brief Prints a Domain and a Problem for debugging.
  */
-void printDomainAndProbem (Domain & domain, Problem & problem);
+void printDomainAndProbem (const Domain & domain, const Problem & problem);
 
 /**
  * @brief Returns true if debug mode is enabled.

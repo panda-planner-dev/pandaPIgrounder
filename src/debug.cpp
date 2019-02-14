@@ -14,9 +14,9 @@ std::string color (Color color, std::string text)
 	;
 }
 
-void printFact (Domain & domain, Fact & fact)
+void printFact (const Domain & domain, const Fact & fact)
 {
-	Predicate & predicate = domain.predicates[fact.predicateNo];
+	const Predicate & predicate = domain.predicates[fact.predicateNo];
 	std::cerr << "    " << color (CYAN, predicate.name);
 
 	for (size_t argumentIdx = 0; argumentIdx < fact.arguments.size (); ++argumentIdx)
@@ -26,7 +26,7 @@ void printFact (Domain & domain, Fact & fact)
 	std::cerr << std::endl;
 }
 
-void printTask (Domain & domain, Task & task, bool printDecompositionMethods)
+void printTask (const Domain & domain, const Task & task, bool printDecompositionMethods)
 {
 	// Print task name and variable sorts
 	std::cerr << "    " << color (BLUE, task.name);
@@ -44,7 +44,7 @@ void printTask (Domain & domain, Task & task, bool printDecompositionMethods)
 		for (int methodIdx = 0; methodIdx < nMethods; ++methodIdx)
 		{
 			// Print method name and variable sorts
-			DecompositionMethod & method = task.decompositionMethods[methodIdx];
+			const DecompositionMethod & method = task.decompositionMethods[methodIdx];
 			std::cerr << "        " << color (GREEN, method.name);
 			int nVariables = method.variableSorts.size ();
 			for (int variableIdx = 0; variableIdx < nVariables; ++variableIdx)
@@ -58,10 +58,10 @@ void printTask (Domain & domain, Task & task, bool printDecompositionMethods)
 			int nSubtasks = method.subtasks.size ();
 			for (int subtaskIdx = 0; subtaskIdx < nSubtasks; ++subtaskIdx)
 			{
-				TaskWithArguments & taskWithArguments = method.subtasks[subtaskIdx];
+				const TaskWithArguments & taskWithArguments = method.subtasks[subtaskIdx];
 				std::cerr << "            " << color (CYAN, domain.tasks[taskWithArguments.taskNo].name);
 
-				Task & subtask = domain.tasks[taskWithArguments.taskNo];
+				const Task & subtask = domain.tasks[taskWithArguments.taskNo];
 				int nSubtaskVariables = subtask.variableSorts.size ();
 				for (int variableIdx = 0; variableIdx < nSubtaskVariables; ++variableIdx)
 				{
@@ -74,7 +74,7 @@ void printTask (Domain & domain, Task & task, bool printDecompositionMethods)
 	}
 }
 
-void printDomainAndProbem (Domain & domain, Problem & problem)
+void printDomainAndProbem (const Domain & domain, const Problem & problem)
 {
 	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
 	DEBUG (std::cerr << "Domain has [" << domain.nPrimitiveTasks << "] primitive and [" << domain.nAbstractTasks << "] abstract tasks." << std::endl);
