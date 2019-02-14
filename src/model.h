@@ -8,6 +8,7 @@
  * @{
  */
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,7 @@ struct Sort
 	std::string name;
 
 	/// Vector of members of this sort. Every element of this vector is the index of a constant in the Domain.constants vector.
-	std::vector<int> members;
+	std::set<int> members;
 };
 
 /**
@@ -57,6 +58,8 @@ struct Fact
 
 	/// Vector of arguments. This means that the i-th argument to this predicate is the arguments[i]-th constant from the Domain.constants vector.
 	std::vector<int> arguments;
+
+	bool operator < (const Fact & other) const;
 };
 
 /**

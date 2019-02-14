@@ -52,7 +52,15 @@ void failIfNotSatisfied (bool condition, std::string message)
 void readSort (const Domain & state, std::istream & input, Sort & outputSort)
 {
 	input >> outputSort.name;
-	readMultiple (state, input, outputSort.members, readPrimitive);
+
+	size_t count;
+	input >> count;
+	for (size_t i = 0; i < count; ++i)
+	{
+		int member;
+		input >> member;
+		outputSort.members.insert (member);
+	}
 }
 
 void readPredicate (const Domain & state, std::istream & input, Predicate & outputPredicate)

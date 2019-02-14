@@ -10,7 +10,7 @@ using namespace std;
 struct TaskGroundInstance{
 	int task;
 	vector<int> args;
-	
+
 	vector<int> pre,add,del;
 };
 
@@ -53,7 +53,7 @@ void naivelyGroundTask(Domain & domain, int task, int vPos, vector<TaskGroundIns
 		TaskGroundInstance inst;
 		inst.task = task;
 		for (int a = 0; a < vPos; a++) inst.args.push_back(cur_naive_args[a]);
-		
+
 		bool failed = false;
 		for (unsigned constr = 0; constr < domain.tasks[task].variableConstraints.size(); constr++){
 			VariableConstraint con = domain.tasks[task].variableConstraints[constr];
@@ -63,15 +63,15 @@ void naivelyGroundTask(Domain & domain, int task, int vPos, vector<TaskGroundIns
 			if (con.type == VariableConstraint::Type::NOT_EQUAL && c1 == c2) failed = true;
 		}
 		if (failed) return;
-		
+
 		ret.push_back(inst);
 		return;
 	}
 
 	// iterate through constants for that variable
 	int vSort = domain.tasks[task].variableSorts[vPos];
-	for (unsigned int inSortIndex = 0; inSortIndex < domain.sorts[vSort].members.size(); inSortIndex++){
-		int c = domain.sorts[vSort].members[inSortIndex];
+	for (int c : domain.sorts[vSort].members)
+	{
 		cur_naive_args[vPos] = c;
 		naivelyGroundTask(domain, task, vPos+1, ret);
 	}
@@ -85,7 +85,7 @@ void naivelyGroundMethod(Domain & domain, int at, int method, int vPos,vector<Me
 		inst.task = at;
 		inst.method = method;
 		for (int a = 0; a < vPos; a++) inst.args.push_back(cur_naive_args[a]);
-		
+
 		// check variable constraints
 		bool failed = false;
 		for (unsigned constr = 0; constr < domain.tasks[at].decompositionMethods[method].variableConstraints.size(); constr++){
@@ -97,15 +97,15 @@ void naivelyGroundMethod(Domain & domain, int at, int method, int vPos,vector<Me
 		}
 		if (failed)
 			return;
-		
+
 		ret.push_back(inst);
 		return;
 	}
 
 	// iterate through constants for that variable
 	int vSort = domain.tasks[at].decompositionMethods[method].variableSorts[vPos];
-	for (unsigned int inSortIndex = 0; inSortIndex < domain.sorts[vSort].members.size(); inSortIndex++){
-		int c = domain.sorts[vSort].members[inSortIndex];
+	for (int c : domain.sorts[vSort].members)
+	{
 		cur_naive_args[vPos] = c;
 		naivelyGroundMethod(domain, at, method, vPos+1, ret);
 	}
@@ -117,7 +117,7 @@ int numForFact(map<GroundFact,int> & fti, Domain & domain, TaskGroundInstance & 
 	gf.pred = arg.predicateNo;
 	for (unsigned int argc = 0;  argc < arg.arguments.size(); argc++)
 		gf.args.push_back(gt.args[arg.arguments[argc]]);
-  
+
 	if (!fti.count(gf)) fti[gf] = fti.size();
 	return fti[gf];
 }
@@ -127,7 +127,7 @@ int numForFact(map<GroundFact,int> & fti, Domain & domain, TaskGroundInstance & 
 void naiveGrounding(Domain & domain, Problem & problem){
 	// 1. fully instantiate all primitive tasks
 	vector<TaskGroundInstance> allInst;
-	
+
 	map<TaskGroundInstance,int> tti;
 	for (int t = 0; t < domain.nPrimitiveTasks; t++){
 		naivelyGroundTask(domain,t,0, allInst);
@@ -156,7 +156,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 		GroundFact gf;
 		gf.pred = problem.init[init].predicateNo;
 		gf.args = problem.init[init].arguments;
-		
+
 		if (!fti.count(gf)) fti[gf] = fti.size();
 
 		state.insert(fti[gf]);
@@ -172,7 +172,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 
 	// run PG in very slow time
 	vector<bool> appli (int(allInst.size()));
-	for (int gt = 0; gt < int(allInst.size()); gt++) appli[gt] = false; 
+	for (int gt = 0; gt < int(allInst.size()); gt++) appli[gt] = false;
 	int cappli = 0;
 
 	bool changed = true;
@@ -185,7 +185,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 			bool all = true;
 			for (int p : allInst[gt].pre) all &= state.count(p) != 0;
 			if (!all) continue;
-			
+
 			appli[gt] = true;
 			cappli++;
 			for (int p : allInst[gt].add){
@@ -195,7 +195,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 			}
 		}
 	}
-	
+
 	cerr << "PG done" << endl;
 
 	/*for (int gt = 0; gt < int(allInst.size()); gt++){
@@ -204,7 +204,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 		cout << domain.tasks[allInst[gt].task].name;
 		for (unsigned int arg = 0; arg < allInst[gt].args.size(); arg++)
 			cout << " " << domain.constants[allInst[gt].args[arg]];
-		
+
 		//for (int pp : allInst[gt].pre) cout << " " << pp;
 		//for (int pp : allInst[gt].add) cout << " +" << pp;
 
@@ -217,7 +217,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 		cout << domain.predicates[e.first.pred].name;
 		for (int a : e.first.args) cout << " " << domain.constants[a];
 		cout << endl;
-	}*/	
+	}*/
 
 
 	// 2. Instantiate all abstract tasks
@@ -249,7 +249,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 		for (int a = 0; a < int(m.taskParameters.size()); a++)
 			atg.args.push_back(allM[gm].args[m.taskParameters[a]]);
 		allM[gm].at = tti[atg];
-		
+
 		for (int s = 0; s < int(m.subtasks.size()); s++){
 			TaskGroundInstance stg;
 			stg.task = m.subtasks[s].taskNo;
@@ -299,10 +299,10 @@ void naiveGrounding(Domain & domain, Problem & problem){
 		cout << ": " << allM[gm].at << " ->";
 		for (unsigned int st = 0; st < allM[gm].subtasks.size(); st++)
 			cout << " " << allM[gm].subtasks[st];
-		
+
 		cout << endl;
 	}*/
-	
+
 	cout << "Prim (task, fact): " << cappli << " " << state.size() << " of " << allInst.size() << endl;
 	cout << "HTN (at, method): " << caappli << " " << cmappli << " of " << allAT.size() << " " << allM.size() << endl;
 
