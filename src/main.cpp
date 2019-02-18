@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "model.h"
 #include "parser.h"
+#include "planning-graph.h"
 #include "naiveGrounding.h"
 
 int main (int argc, char * argv[])
@@ -18,16 +19,19 @@ int main (int argc, char * argv[])
 		{"debug",           no_argument,    NULL,   'd'},
 		{"print-domain",    no_argument,    NULL,   'p'},
 		{"naive-grounding", no_argument,    NULL,   'n'},
+		{"planning-graph",  no_argument,    NULL,   'r'},
 		{NULL,              0,              NULL,   0},
 	};
 
 	bool debugMode = false;
 	bool printDomainMode = false;
 	bool doNaiveGrounding = false;
+	bool doPlanningGraph = false;
+
 	bool optionsValid = true;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "dpn", options, NULL);
+		int c = getopt_long (argc, argv, "dpnr", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -42,7 +46,9 @@ int main (int argc, char * argv[])
 		else if (c == 'p')
 			printDomainMode = true;
 		else if (c == 'n')
-			doNaiveGrounding   = true;
+			doNaiveGrounding = true;
+		else if (c == 'r')
+			doPlanningGraph = true;
 	}
 	int nArgs = argc - optind;
 
@@ -102,10 +108,13 @@ int main (int argc, char * argv[])
 			std::cerr << "Failed to read input data!" << std::endl;
 			return 1;
 		}
+		std::cerr << "Parsing done." << std::endl;
 
 		if (printDomainMode)
 			printDomainAndProbem (data, problem);
 		if (doNaiveGrounding)
-			naiveGrounding(data,problem);
+			naiveGrounding(data, problem);
+		if (doPlanningGraph)
+			doAndPrintPlanningGraph (data, problem);
 	}
 }

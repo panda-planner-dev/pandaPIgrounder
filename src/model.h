@@ -8,9 +8,12 @@
  * @{
  */
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
+
+using VariableAssignment = std::map<int, int>;
 
 /**
  * @brief Sort (aka type) of a variable.
@@ -60,6 +63,8 @@ struct Fact
 	std::vector<int> arguments;
 
 	bool operator < (const Fact & other) const;
+
+	bool operator == (const Fact & other) const;
 };
 
 /**
@@ -156,6 +161,15 @@ struct Task
 
 	/// Decomposition methods for abstract tasks
 	std::vector<DecompositionMethod> decompositionMethods;
+
+	/**
+	 * @brief Check whether the given Fact fulfils the given precondition.
+	 *
+	 * This will also check whether the fact arguments match the task's variable sorts.
+	 *
+	 * If a VariableAssignmentVariableAssignment pointer is given, the variables assigned by using this fact to fulfil this precondition will be returned.
+	 */
+	bool doesFactFulfilPrecondition (VariableAssignment * outputVariableAssignment, const struct Domain & domain, const Fact & fact, int preconditionIdx) const;
 };
 
 /**
