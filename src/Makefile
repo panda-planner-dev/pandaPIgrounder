@@ -28,7 +28,7 @@ LDFLAGS=
 LDFLAGS_DEBUG=-fsanitize=address
 
 # Libs
-LIBS=-lm
+LIBS=
 
 # Files
 HFILES=$(wildcard *.h)
