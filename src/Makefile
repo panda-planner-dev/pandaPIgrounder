@@ -19,7 +19,7 @@ CXXFLAGS_LIBS=
 
 # CFlags for production and for debugging
 CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++14 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS)
-OPTIMIZER_PROD=-O2
+OPTIMIZER_PROD=-O3
 OPTIMIZER_DEBUG=-Og
 CXXFLAGS_PROD=$(OPTIMIZER_PROD) -g -DNDEBUG -flto
 CXXFLAGS_DEBUG=$(OPTIMIZER_DEBUG) -ggdb3 -fsanitize=address -DDEBUG_MODE -flto
