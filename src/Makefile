@@ -19,7 +19,7 @@ CXXFLAGS_LIBS=
 
 # CFlags for production and for debugging
 CXXFLAGS_GENERAL=-c -pipe -Wall -Wextra -pedantic -std=gnu++14 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS)
-CXXFLAGS_PROD=-g -O2
+CXXFLAGS_PROD=-g -O2 -DNDEBUG
 CXXFLAGS_DEBUG=-ggdb3 -O0 -fsanitize=address -DDEBUG_MODE
 CXXFLAGS=$(CXXFLAGS_GENERAL) $(CXXFLAGS_PROD)
 
