@@ -18,14 +18,18 @@ CERROR=-Werror=implicit-function-declaration
 CXXFLAGS_LIBS=
 
 # CFlags for production and for debugging
-CXXFLAGS_GENERAL=-c -pipe -Wall -Wextra -pedantic -std=gnu++14 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS)
-CXXFLAGS_PROD=-g -O2 -DNDEBUG
-CXXFLAGS_DEBUG=-ggdb3 -O0 -fsanitize=address -DDEBUG_MODE
+CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++14 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS)
+OPTIMIZER_PROD=-O2
+OPTIMIZER_DEBUG=-Og
+CXXFLAGS_PROD=$(OPTIMIZER_PROD) -g -DNDEBUG -flto
+CXXFLAGS_DEBUG=$(OPTIMIZER_DEBUG) -ggdb3 -fsanitize=address -DDEBUG_MODE -flto
 CXXFLAGS=$(CXXFLAGS_GENERAL) $(CXXFLAGS_PROD)
 
 # LDFlags
-LDFLAGS=
-LDFLAGS_DEBUG=-fsanitize=address
+LDFLAGS_GENERAL=
+LDFLAGS_PROD=$(OPTIMIZER_PROD) -flto
+LDFLAGS_DEBUG=$(OPTIMIZER_DEBUG) -fsanitize=address -flto
+LDFLAGS=$(LDFLAGS_GENERAL) $(LDFLAGS_PROD)
 
 # Libs
 LIBS=
@@ -49,7 +53,7 @@ $(PROGNAME): $(OBJFILES) $(DEPENDENCIES_LD)
 
 # All object files depend on the source file and all header files
 %.o: %.cpp $(DEPENDENCIES) $(HFILES)
-	$(CXX) $(CXXFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
 clean:
 	rm -f $(PROGNAME) $(OBJFILES)
@@ -58,5 +62,5 @@ clean:
 .SUFFIXES:
 
 debug: CXXFLAGS = $(CXXFLAGS_GENERAL) $(CXXFLAGS_DEBUG)
-debug: LDFLAGS = $(LDFLAGS_DEBUG)
+debug: LDFLAGS = $(LDFLAGS_GENERAL) $(LDFLAGS_DEBUG)
 debug: all
