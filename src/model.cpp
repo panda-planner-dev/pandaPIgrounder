@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <string>
 #include <tuple>
 
@@ -35,7 +36,7 @@ bool Task::doesFactFulfilPrecondition (VariableAssignment * outputVariableAssign
 	assert (fact.arguments.size () == domain.predicates[fact.predicateNo].argumentSorts.size ());
 	assert (fact.arguments.size () == precondition.arguments.size ());
 
-	VariableAssignment assignedVariables;
+	VariableAssignment assignedVariables (variableSorts.size ());
 	for (size_t argIdx = 0; argIdx < precondition.arguments.size (); ++argIdx)
 	{
 		int taskVarIdx = precondition.arguments[argIdx];
@@ -54,4 +55,54 @@ bool Task::doesFactFulfilPrecondition (VariableAssignment * outputVariableAssign
 		*outputVariableAssignment = assignedVariables;
 
 	return true;
+}
+
+VariableAssignment::VariableAssignment (size_t nVariables) : assignments (nVariables, NOT_ASSIGNED)
+{
+}
+
+int & VariableAssignment::operator [] (int varIdx)
+{
+	assert (varIdx >= 0 && varIdx < nVariables);
+
+	return assignments[varIdx];
+}
+
+int VariableAssignment::operator[] (int varIdx) const
+{
+	assert (varIdx >= 0 && varIdx < nVariables);
+
+	return assignments[varIdx];
+}
+
+void VariableAssignment::assign (int varIdx, int value)
+{
+	assert (varIdx >= 0 && varIdx < nVariables);
+	assert (value >= 0);
+
+	assignments[varIdx] = value;
+}
+
+bool VariableAssignment::isAssigned (int varIdx) const
+{
+	assert (varIdx >= 0 && varIdx < nVariables);
+
+	return assignments[varIdx] != NOT_ASSIGNED;
+}
+
+size_t VariableAssignment::size (void) const
+{
+	return assignments.size () - std::count (assignments.begin (), assignments.end (), NOT_ASSIGNED);
+}
+
+void VariableAssignment::erase (int varIdx)
+{
+	assert (varIdx >= 0 && varIdx < nVariables);
+
+	assignments[varIdx] = NOT_ASSIGNED;
+}
+
+VariableAssignment::operator std::vector<int> (void) const
+{
+	return assignments;
 }

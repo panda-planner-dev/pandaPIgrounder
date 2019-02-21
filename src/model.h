@@ -8,12 +8,9 @@
  * @{
  */
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
-
-using VariableAssignment = std::map<int, int>;
 
 /**
  * @brief Sort (aka type) of a variable.
@@ -169,7 +166,7 @@ struct Task
 	 *
 	 * If a VariableAssignmentVariableAssignment pointer is given, the variables assigned by using this fact to fulfil this precondition will be returned.
 	 */
-	bool doesFactFulfilPrecondition (VariableAssignment * outputVariableAssignment, const struct Domain & domain, const Fact & fact, int preconditionIdx) const;
+	bool doesFactFulfilPrecondition (struct VariableAssignment * outputVariableAssignment, const struct Domain & domain, const Fact & fact, int preconditionIdx) const;
 };
 
 /**
@@ -209,6 +206,58 @@ struct Problem
 
 	/// The initial abstract task, identified by its number.
 	int initialAbstractTask;
+};
+
+/**
+ * @brief A structure that stores values assigned to task variables, offering a std::map-like interface.
+ *
+ * Basically a wrapper for an std::vector with convenience functions for checking whether a variable is assigned or not, and counting the number of assigned variables.
+ */
+struct VariableAssignment
+{
+	/// Magic value that marks a variable as not assigned yet.
+	constexpr static int NOT_ASSIGNED = -1;
+
+	/**
+	 * @brief Vector that stores the variable assignments, indexed by variable index.
+	 *
+	 * If a variable has the special VariableAssignment::NOT_ASSIGNED value, the variable must be considered to not be assigned yet.
+	 */
+	std::vector<int> assignments;
+
+	/**
+	 * @brief Initializes the VariableAssignment.
+	 *
+	 * The nVariables argument is the number of supported variables. It is used as the size of the internal assignments vector.
+	 *
+	 * It is an error to call any other function with an index smaller than 0, or greater than or equal to nVariables.
+	 */
+	VariableAssignment (size_t nVariables);
+
+	/// Convenience read/write access to an assigned variable.
+	int & operator[] (int varIdx);
+
+	/// Convenience read-only access to an assigned variable.
+	int operator[] (int varIdx) const;
+
+	/// Assigns a value to a variable.
+	void assign (int varIdx, int value);
+
+	/// Returns true if the variable with the given index is assigned.
+	bool isAssigned (int varIdx) const;
+
+	/**
+	 * @brief Returns the number of assigned variables.
+	 *
+	 * Has a complexity of O(n), but seems to be fast enough in practice.
+	 */
+	size_t size (void) const;
+
+	/// Removes the assigned value (if any) for the variable with the given index.
+	void erase (int varIdx);
+
+	/// Operator that allows for easy conversion from VariableAssignment to std::vector<int>.
+	operator std::vector<int> (void) const;
 };
 
 

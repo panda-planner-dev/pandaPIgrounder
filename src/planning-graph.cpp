@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <iostream>
-#include <map>
 #include <queue>
 #include <set>
 #include <sstream>
@@ -12,7 +11,7 @@
 #include "model.h"
 #include "planning-graph.h"
 
-static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const std::set<Fact> & knownFacts, const Domain & domain, int taskNo, std::map<int, int> & assignedVariables, size_t variableIdx = 0)
+static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const std::set<Fact> & knownFacts, const Domain & domain, int taskNo, VariableAssignment & assignedVariables, size_t variableIdx = 0)
 {
 	const Task & task = domain.tasks[taskNo];
 
@@ -24,18 +23,6 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 	if (assignedVariables.size () == task.variableSorts.size ())
 	{
 		// All variables assigned!
-
-		DEBUG (
-			// Count unassigned variables
-			size_t unassigned = 0;
-			for (size_t varIdx = 0; varIdx < task.variableSorts.size (); ++varIdx)
-			{
-				if (assignedVariables.count (varIdx) == 0)
-					++unassigned;
-			}
-			assert (unassigned == task.variableSorts.size () - assignedVariables.size ());
-			assert (unassigned == 0);
-		);
 
 		// Check variable constraints
 		for (const VariableConstraint & constraint : domain.tasks[taskNo].variableConstraints)
@@ -55,7 +42,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 		}
 
 		DEBUG (
-			std::cerr << "Found grounded task for task [" << task.name << "] with [" << unassigned << "] unassigned variables." << std::endl;
+			std::cerr << "Found grounded task for task [" << task.name << "]." << std::endl;
 			/*
 			std::cerr << "Assigned variables:" << std::endl;
 			for (auto assignedVar : assignedVariables)
@@ -68,12 +55,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 		// Create and return grounded task
 		GroundedTask groundedTask;
 		groundedTask.taskNo = taskNo;
-		groundedTask.arguments.resize (task.variableSorts.size ());
-		for (size_t varIdx = 0; varIdx < task.variableSorts.size (); ++varIdx)
-		{
-			assert (assignedVariables.count (varIdx) > 0);
-			groundedTask.arguments[varIdx] = assignedVariables[varIdx];
-		}
+		groundedTask.arguments = assignedVariables;
 		output.push_back (groundedTask);
 
 		// Add "add" effects from this task to our known facts
@@ -83,7 +65,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 			addFact.predicateNo = addEffect.predicateNo;
 			for (int varIdx : addEffect.arguments)
 			{
-				assert (assignedVariables.count (varIdx) > 0);
+				assert (assignedVariables.isAssigned (varIdx));
 				addFact.arguments.push_back (assignedVariables[varIdx]);
 			}
 
@@ -95,7 +77,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 		return;
 	}
 
-	if (assignedVariables.count (variableIdx) > 0)
+	if (assignedVariables.isAssigned (variableIdx))
 	{
 		// Variable is already assigned
 		assignVariables (output, newFacts, knownFacts, domain, taskNo, assignedVariables, variableIdx + 1);
@@ -111,7 +93,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 	assignedVariables.erase (variableIdx);
 }
 
-static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const std::set<Fact> & knownFacts, const Domain & domain, size_t taskNo, std::map<int, int> & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
+static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const std::set<Fact> & knownFacts, const Domain & domain, size_t taskNo, VariableAssignment & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
 {
 	const Task & task = domain.tasks[taskNo];
 
@@ -153,7 +135,7 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 			int taskVarIdx = precondition.arguments[argIdx];
 			int factArgument = fact.arguments[argIdx];
 
-			if (assignedVariables.count (taskVarIdx) == 0)
+			if (!assignedVariables.isAssigned (taskVarIdx))
 			{
 				// Variable is not assigned yet
 				int taskArgIdx = precondition.arguments[argIdx];
@@ -212,7 +194,7 @@ void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> &
 		if (task.preconditions.size () != 0)
 			continue;
 
-		VariableAssignment assignedVariables;
+		VariableAssignment assignedVariables (task.variableSorts.size ());
 		Fact f;
 		matchPrecondition (outputTasks, toBeProcessed, processedFacts, domain, taskIdx, assignedVariables, 0, f);
 	}
@@ -234,7 +216,7 @@ void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> &
 			const Task & task = domain.tasks[taskIdx];
 			for (size_t preconditionIdx = 0; preconditionIdx < task.preconditions.size (); ++preconditionIdx)
 			{
-				VariableAssignment assignedVariables;
+				VariableAssignment assignedVariables (task.variableSorts.size ());
 				if (!task.doesFactFulfilPrecondition (&assignedVariables, domain, fact, preconditionIdx))
 					continue;
 
