@@ -128,7 +128,7 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 			continue;
 
 		assert (fact.arguments.size () == precondition.arguments.size ());
-		VariableAssignment assignedVariablesBefore = assignedVariables;
+		std::set<int> newlyAssigned;
 		bool factMatches = true;
 		for (size_t argIdx = 0; argIdx < precondition.arguments.size (); ++argIdx)
 		{
@@ -146,6 +146,7 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 					break;
 				}
 
+				newlyAssigned.insert (taskVarIdx);
 				assignedVariables[taskVarIdx] = factArgument;
 			}
 			else if (assignedVariables[taskVarIdx] == factArgument)
@@ -166,7 +167,8 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 			matchPrecondition (output, newFacts, knownFacts, domain, taskNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedFact, preconditionIdx + 1);
 		}
 
-		assignedVariables = assignedVariablesBefore;
+		for (int newlyAssignedVar : newlyAssigned)
+			assignedVariables.erase (newlyAssignedVar);
 	}
 
 	if (!foundMatchingFact)
