@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <numeric>
 #include <string>
 #include <tuple>
 
@@ -105,4 +106,42 @@ void VariableAssignment::erase (int varIdx)
 VariableAssignment::operator std::vector<int> (void) const
 {
 	return assignments;
+}
+
+FactSet::FactSet (size_t nPredicates) : factsByPredicate (nPredicates)
+{
+}
+
+size_t FactSet::size (void) const
+{
+	return std::accumulate (factsByPredicate.begin (), factsByPredicate.end (), 0, [](const int & acc, const auto & factSet) { return acc + factSet.size (); });
+}
+
+size_t FactSet::count (const Fact & fact) const
+{
+	assert (fact.predicateNo < factsByPredicate.size ());
+
+	return factsByPredicate[fact.predicateNo].count (fact);
+}
+
+void FactSet::insert (const Fact & fact)
+{
+	assert (fact.predicateNo < factsByPredicate.size ());
+
+	factsByPredicate[fact.predicateNo].insert (fact);
+}
+
+const std::set<Fact> & FactSet::getFactsForPredicate (int predicateNo) const
+{
+	assert (predicateNo < factsByPredicate.size ());
+
+	return factsByPredicate[predicateNo];
+}
+
+FactSet::operator std::set<Fact> (void) const
+{
+	std::set<Fact> result;
+	for (auto predicateFacts : factsByPredicate)
+		result.insert (predicateFacts.begin (), predicateFacts.end ());
+	return result;
 }

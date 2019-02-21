@@ -260,6 +260,55 @@ struct VariableAssignment
 	operator std::vector<int> (void) const;
 };
 
+/**
+ * @brief Like a std::set<Fact>, but faster!
+ *
+ * This works by grouping the Facts by their predicate number.
+ */
+struct FactSet
+{
+	/// Contains a std::set<Fact> for each predicate.
+	std::vector<std::set<Fact>> factsByPredicate;
+
+	/**
+	 * @brief Initializes the FactSet.
+	 *
+	 * The nPredicates argument is the number of supported predicates. It is used as the size of the internal fact set vector.
+	 */
+	FactSet (size_t nPredicates);
+
+	/**
+	 * @brief Returns the number of all facts in the set.
+	 *
+	 * Has a complexity of O(n) where n is the number of predicates, but seems to be fast enough in practice.
+	 */
+	size_t size (void) const;
+
+	/**
+	 * @brief Returns 1 if the given fact is in the set, or 0 if not.
+	 *
+	 * It is an error to call this function with a fact where Fact.predicateNo is greater than or equal to nPredicates as passed to the constructor of this FactSet.
+	 */
+	size_t count (const Fact & fact) const;
+
+	/**
+	 * @brief Inserts the given fact into the FactSet.
+	 *
+	 * It is an error to call this function with a fact where Fact.predicateNo is greater than or equal to nPredicates as passed to the constructor of this FactSet.
+	 */
+	void insert (const Fact & fact);
+
+	/**
+	 * @brief Returns the set of facts for the given predicate.
+	 *
+	 * It is an error to call this function with a predicateNo which is greater than or equal to nPredicates as passed to the constructor of this FactSet.
+	 */
+	const std::set<Fact> & getFactsForPredicate (int predicateNo) const;
+
+	/// Returns a std::set containing all facts in this FactSet.
+	operator std::set<Fact> (void) const;
+};
+
 
 struct BadInputException : public std::exception
 {

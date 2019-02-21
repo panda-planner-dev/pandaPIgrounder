@@ -11,7 +11,7 @@
 #include "model.h"
 #include "planning-graph.h"
 
-static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const std::set<Fact> & knownFacts, const Domain & domain, int taskNo, VariableAssignment & assignedVariables, size_t variableIdx = 0)
+static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const Domain & domain, int taskNo, VariableAssignment & assignedVariables, size_t variableIdx = 0)
 {
 	const Task & task = domain.tasks[taskNo];
 
@@ -93,7 +93,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 	assignedVariables.erase (variableIdx);
 }
 
-static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const std::set<Fact> & knownFacts, const Domain & domain, size_t taskNo, VariableAssignment & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
+static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const Domain & domain, size_t taskNo, VariableAssignment & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
 {
 	const Task & task = domain.tasks[taskNo];
 
@@ -117,14 +117,11 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 
 	// Try to find a fact that fulfills this precondition
 	bool foundMatchingFact = false;
-	for (const Fact & fact : knownFacts)
+	for (const Fact & fact : knownFacts.getFactsForPredicate (precondition.predicateNo))
 	{
 		// Necessary for duplicate elemination. If an action has two preconditions to which the initiallyMatchedFact can be matched, we would generate some groundings twice.
 		// The currently *new* initiallyMatchedFact can only be matched to preconditions before the precondition to which it was matched to start this grounding.
 		if (preconditionIdx >= initiallyMatchedPrecondition && fact == initiallyMatchedFact)
-			continue;
-
-		if (fact.predicateNo != precondition.predicateNo)
 			continue;
 
 		assert (fact.arguments.size () == precondition.arguments.size ());
@@ -180,9 +177,8 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> & outputFacts, const Domain & domain, const Problem & problem)
 {
 	outputTasks.clear ();
-	outputFacts.clear ();
 
-	std::set<Fact> processedFacts;
+	FactSet processedFacts (domain.predicates.size ());
 	std::set<Fact> toBeProcessed;
 
 	// Consider all facts from the initial state as not processed yet
