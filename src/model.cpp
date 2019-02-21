@@ -64,21 +64,21 @@ VariableAssignment::VariableAssignment (size_t nVariables) : assignments (nVaria
 
 int & VariableAssignment::operator [] (int varIdx)
 {
-	assert (varIdx >= 0 && varIdx < nVariables);
+	assert (varIdx >= 0 && varIdx < assignments.size ());
 
 	return assignments[varIdx];
 }
 
 int VariableAssignment::operator[] (int varIdx) const
 {
-	assert (varIdx >= 0 && varIdx < nVariables);
+	assert (varIdx >= 0 && varIdx < assignments.size ());
 
 	return assignments[varIdx];
 }
 
 void VariableAssignment::assign (int varIdx, int value)
 {
-	assert (varIdx >= 0 && varIdx < nVariables);
+	assert (varIdx >= 0 && varIdx < assignments.size ());
 	assert (value >= 0);
 
 	assignments[varIdx] = value;
@@ -86,7 +86,7 @@ void VariableAssignment::assign (int varIdx, int value)
 
 bool VariableAssignment::isAssigned (int varIdx) const
 {
-	assert (varIdx >= 0 && varIdx < nVariables);
+	assert (varIdx >= 0 && varIdx < assignments.size ());
 
 	return assignments[varIdx] != NOT_ASSIGNED;
 }
@@ -98,7 +98,7 @@ size_t VariableAssignment::size (void) const
 
 void VariableAssignment::erase (int varIdx)
 {
-	assert (varIdx >= 0 && varIdx < nVariables);
+	assert (varIdx >= 0 && varIdx < assignments.size ());
 
 	assignments[varIdx] = NOT_ASSIGNED;
 }
