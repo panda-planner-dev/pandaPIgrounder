@@ -19,10 +19,12 @@ int main (int argc, char * argv[])
 		{"debug",           no_argument,    NULL,   'd'},
 		{"print-domain",    no_argument,    NULL,   'p'},
 		{"naive-grounding", no_argument,    NULL,   'n'},
+		{"quiet",           no_argument,    NULL,   'q'},
 		{"planning-graph",  no_argument,    NULL,   'r'},
 		{NULL,              0,              NULL,   0},
 	};
 
+	bool quietMode = false;
 	bool debugMode = false;
 	bool printDomainMode = false;
 	bool doNaiveGrounding = false;
@@ -31,7 +33,7 @@ int main (int argc, char * argv[])
 	bool optionsValid = true;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "dpnr", options, NULL);
+		int c = getopt_long (argc, argv, "dpnqr", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -47,6 +49,8 @@ int main (int argc, char * argv[])
 			printDomainMode = true;
 		else if (c == 'n')
 			doNaiveGrounding = true;
+		else if (c == 'q')
+			quietMode = true;
 		else if (c == 'r')
 			doPlanningGraph = true;
 	}
@@ -80,13 +84,15 @@ int main (int argc, char * argv[])
 		std::ifstream fileInput;
 		if (inputFilename == "-")
 		{
-			std::cerr << "Reading input from standard input." << std::endl;
+			if (!quietMode)
+				std::cerr << "Reading input from standard input." << std::endl;
 
 			inputStream = &std::cin;
 		}
 		else
 		{
-			std::cerr << "Reading input from " << inputFilename << "." << std::endl;
+			if (!quietMode)
+				std::cerr << "Reading input from " << inputFilename << "." << std::endl;
 
 			fileInput.open (inputFilename);
 
@@ -108,7 +114,8 @@ int main (int argc, char * argv[])
 			std::cerr << "Failed to read input data!" << std::endl;
 			return 1;
 		}
-		std::cerr << "Parsing done." << std::endl;
+		if (!quietMode)
+			std::cerr << "Parsing done." << std::endl;
 
 		if (printDomainMode)
 			printDomainAndProbem (data, problem);
