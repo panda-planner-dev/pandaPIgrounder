@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <queue>
 #include <set>
 #include <sstream>
@@ -10,6 +11,161 @@
 #include "debug.h"
 #include "model.h"
 #include "planning-graph.h"
+
+/**
+ * @brief Contains a reference to a domain, and other useful information that speeds up the grounding process.
+ */
+struct PreprocessedDomain
+{
+	/**
+	 * @brief The original domain.
+	 */
+	const Domain & domain;
+
+	/**
+	 * @brief A set containing all variables that are already assigned when a precondition is processed.
+	 *
+	 * Preconditions are processed in order by matchPrecondition(). This means that when we are looking for
+	 * a Fact to fulfill precondition \f$i\f$, the variables used in preconditions \f$[0; i)\f$ have already been assigned.
+	 *
+	 * This allows us to efficiently find Facts that could potentially satisfy a precondition.
+	 */
+	std::vector<std::vector<std::set<int>>> assignedVariablesByTaskAndPrecondition;
+
+	/**
+	 * @brief A list of tasks and preconditions for each predicate.
+	 *
+	 * For each predicate, we have a list of pairs. In the pair, the first member is the number of the task,
+	 * and the second member is the index of the precondition that uses the corresponding predicate.
+	 */
+	std::vector<std::vector<std::pair<int, int>>> preconditionsByPredicate;
+
+	/**
+	 * @brief Preprocesses the given Domain.
+	 */
+	PreprocessedDomain (const Domain & domain);
+};
+
+PreprocessedDomain::PreprocessedDomain (const Domain & domain) : domain (domain)
+{
+	assignedVariablesByTaskAndPrecondition.resize (domain.nPrimitiveTasks);
+	preconditionsByPredicate.resize (domain.predicates.size ());
+
+	for (size_t taskIdx = 0; taskIdx < domain.nPrimitiveTasks; ++taskIdx)
+	{
+		const Task & task = domain.tasks[taskIdx];
+
+		assignedVariablesByTaskAndPrecondition[taskIdx].resize (task.preconditions.size ());
+
+		std::set<int> alreadyAssignedVariables;
+		for (size_t preconditionIdx = 0; preconditionIdx < task.preconditions.size (); ++preconditionIdx)
+		{
+			// Calculate which variables are assigned when a precondition is matched
+			assignedVariablesByTaskAndPrecondition[taskIdx][preconditionIdx].insert (alreadyAssignedVariables.begin (), alreadyAssignedVariables.end ());
+			const PredicateWithArguments & precondition = task.preconditions[preconditionIdx];
+			for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
+			{
+				int variable = precondition.arguments[argumentIdx];
+				alreadyAssignedVariables.insert (variable);
+			}
+
+			// Group preconditions by predicate
+			preconditionsByPredicate[precondition.predicateNo].push_back (std::make_pair (taskIdx, preconditionIdx));
+		}
+	}
+}
+
+/**
+ * @brief Allows efficient access to Facts that could potentially satisfy a precondition.
+ */
+struct PreconditionFactMap
+{
+	using VariablesToFactListMap = std::map<std::vector<int>, std::vector<Fact>>;
+
+	/**
+	 * @brief The preprocessed domain.
+	 */
+	const PreprocessedDomain & preprocessedDomain;
+
+	/**
+	 * @brief A list of Facts for each task, precondition and set of assigned variables.
+	 */
+	std::vector<std::vector<VariablesToFactListMap>> factMap;
+
+	/**
+	 * @brief Initializes the factMap.
+	 */
+	PreconditionFactMap (const PreprocessedDomain & preprocessedDomain);
+
+	/**
+	 * @brief Inserts a Fact into the maps of all preconditions with the same predicate as the Fact.
+	 */
+	void insertFact (const Fact & fact);
+
+	/**
+	 * @brief Returns all Facts for the given precondition in the given task that are compatible with the given variable assignment.
+	 */
+	std::vector<Fact> getFacts (size_t taskNo, size_t preconditionIdx, const VariableAssignment & assignedVariables) const;
+};
+
+PreconditionFactMap::PreconditionFactMap (const PreprocessedDomain & preprocessedDomain) : preprocessedDomain (preprocessedDomain)
+{
+	factMap.resize (preprocessedDomain.domain.nPrimitiveTasks);
+
+	for (size_t taskIdx = 0; taskIdx < preprocessedDomain.domain.nPrimitiveTasks; ++taskIdx)
+	{
+		const Task & task = preprocessedDomain.domain.tasks[taskIdx];
+		factMap[taskIdx].resize (task.preconditions.size ());
+	}
+}
+
+void PreconditionFactMap::insertFact (const Fact & fact)
+{
+	DEBUG (std::cerr << "Inserting fact:" << std::endl; printFact (preprocessedDomain.domain, fact));
+
+	for (const auto & [taskNo, preconditionIdx] : preprocessedDomain.preconditionsByPredicate[fact.predicateNo])
+	{
+		const Task & task = preprocessedDomain.domain.tasks[taskNo];
+		const PredicateWithArguments & precondition = task.preconditions[preconditionIdx];
+
+		assert (precondition.arguments.size () == fact.arguments.size ());
+
+		std::vector<int> values;
+		for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
+		{
+			int var = precondition.arguments[argumentIdx];
+			if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[taskNo][preconditionIdx].count (var) > 0)
+			{
+				values.push_back (fact.arguments[argumentIdx]);
+			}
+		}
+
+		factMap[taskNo][preconditionIdx][values].push_back (fact);
+	}
+}
+
+std::vector<Fact> PreconditionFactMap::getFacts (size_t taskNo, size_t preconditionIdx, const VariableAssignment & assignedVariables) const
+{
+	const PredicateWithArguments & precondition = preprocessedDomain.domain.tasks[taskNo].preconditions[preconditionIdx];
+
+	// Build the vector which is used as the key in the map
+	std::vector<int> assignedVariableValues;
+	for (size_t argIdx = 0; argIdx < precondition.arguments.size (); ++argIdx)
+	{
+		int var = precondition.arguments[argIdx];
+		if (!(preprocessedDomain.assignedVariablesByTaskAndPrecondition[taskNo][preconditionIdx].count (var) > 0))
+			continue;
+
+		assert (assignedVariables.isAssigned (var));
+		assignedVariableValues.push_back (assignedVariables[var]);
+	}
+
+	// The map itself is guaranteed to exist (it was created in the constructor), but the entry matching the assigned variables may not exist.
+	const auto & map = factMap.at (taskNo).at (preconditionIdx);
+	if (map.count (assignedVariableValues) == 0)
+		return std::vector<Fact> ();
+	return map.at (assignedVariableValues);
+}
 
 static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const Domain & domain, int taskNo, VariableAssignment & assignedVariables, size_t variableIdx = 0)
 {
@@ -93,15 +249,15 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 	assignedVariables.erase (variableIdx);
 }
 
-static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const Domain & domain, size_t taskNo, VariableAssignment & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
+static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const PreconditionFactMap & factMap, const PreprocessedDomain & preprocessedDomain, size_t taskNo, VariableAssignment & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
 {
-	const Task & task = domain.tasks[taskNo];
+	const Task & task = preprocessedDomain.domain.tasks[taskNo];
 
 	if (preconditionIdx >= task.preconditions.size ())
 	{
 		// Processed all preconditions. This is a potentially reachable ground instance.
 		// Now we only need to assign all unassigned variables.
-		assignVariables (output, newFacts, knownFacts, domain, taskNo, assignedVariables);
+		assignVariables (output, newFacts, knownFacts, preprocessedDomain.domain, taskNo, assignedVariables);
 
 		return;
 	}
@@ -109,7 +265,7 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 	// Skip initially matched precondition
 	if (preconditionIdx == initiallyMatchedPrecondition)
 	{
-		matchPrecondition (output, newFacts, knownFacts, domain, taskNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedFact, preconditionIdx + 1);
+		matchPrecondition (output, newFacts, knownFacts, factMap, preprocessedDomain, taskNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedFact, preconditionIdx + 1);
 		return;
 	}
 
@@ -117,13 +273,14 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 
 	// Try to find a fact that fulfills this precondition
 	bool foundMatchingFact = false;
-	for (const Fact & fact : knownFacts.getFactsForPredicate (precondition.predicateNo))
+	for (const Fact & fact : factMap.getFacts (taskNo, preconditionIdx, assignedVariables))
 	{
 		// Necessary for duplicate elemination. If an action has two preconditions to which the initiallyMatchedFact can be matched, we would generate some groundings twice.
 		// The currently *new* initiallyMatchedFact can only be matched to preconditions before the precondition to which it was matched to start this grounding.
 		if (preconditionIdx >= initiallyMatchedPrecondition && fact == initiallyMatchedFact)
 			continue;
 
+		assert (fact.predicateNo == precondition.predicateNo);
 		assert (fact.arguments.size () == precondition.arguments.size ());
 		std::set<int> newlyAssigned;
 		bool factMatches = true;
@@ -137,7 +294,7 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 				// Variable is not assigned yet
 				int taskArgIdx = precondition.arguments[argIdx];
 				int argumentSort = task.variableSorts[taskArgIdx];
-				if (domain.sorts[argumentSort].members.count (fact.arguments[argIdx]) == 0)
+				if (preprocessedDomain.domain.sorts[argumentSort].members.count (fact.arguments[argIdx]) == 0)
 				{
 					factMatches = false;
 					break;
@@ -161,7 +318,7 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 		if (factMatches)
 		{
 			foundMatchingFact = true;
-			matchPrecondition (output, newFacts, knownFacts, domain, taskNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedFact, preconditionIdx + 1);
+			matchPrecondition (output, newFacts, knownFacts, factMap, preprocessedDomain, taskNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedFact, preconditionIdx + 1);
 		}
 
 		for (int newlyAssignedVar : newlyAssigned)
@@ -178,8 +335,11 @@ void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> &
 {
 	outputTasks.clear ();
 
+	PreprocessedDomain preprocessedDomain (domain);
+
 	FactSet processedFacts (domain.predicates.size ());
 	std::set<Fact> toBeProcessed;
+	PreconditionFactMap factMap (preprocessedDomain);
 
 	// Consider all facts from the initial state as not processed yet
 	for (const Fact & initFact : problem.init)
@@ -194,7 +354,7 @@ void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> &
 
 		VariableAssignment assignedVariables (task.variableSorts.size ());
 		Fact f;
-		matchPrecondition (outputTasks, toBeProcessed, processedFacts, domain, taskIdx, assignedVariables, 0, f);
+		matchPrecondition (outputTasks, toBeProcessed, processedFacts, factMap, preprocessedDomain, taskIdx, assignedVariables, 0, f);
 	}
 
 	while (!toBeProcessed.empty ())
@@ -203,6 +363,7 @@ void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> &
 		auto it = toBeProcessed.begin ();
 		const Fact fact = *it;
 		toBeProcessed.erase (it);
+		factMap.insertFact (fact);
 		processedFacts.insert (fact);
 
 		DEBUG (std::cerr << "Processing fact:" << std::endl);
@@ -221,7 +382,7 @@ void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> &
 				DEBUG (std::cerr << "Fact fulfils precondition " << preconditionIdx << " of task:" << std::endl);
 				DEBUG (printTask (domain, task));
 
-				matchPrecondition (outputTasks, toBeProcessed, processedFacts, domain, taskIdx, assignedVariables, preconditionIdx, fact);
+				matchPrecondition (outputTasks, toBeProcessed, processedFacts, factMap, preprocessedDomain, taskIdx, assignedVariables, preconditionIdx, fact);
 			}
 		}
 
