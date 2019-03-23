@@ -109,9 +109,9 @@ int main (int argc, char * argv[])
 			inputStream = &fileInput;
 		}
 
-		Domain data;
+		Domain domain;
 		Problem problem;
-		bool success = readInput (*inputStream, data, problem);
+		bool success = readInput (*inputStream, domain, problem);
 
 		if (!success)
 		{
@@ -122,9 +122,9 @@ int main (int argc, char * argv[])
 			std::cerr << "Parsing done." << std::endl;
 
 		if (printDomainMode)
-			printDomainAndProbem (data, problem);
+			printDomainAndProbem (domain, problem);
 		if (doNaiveGrounding)
-			naiveGrounding(data, problem);
+			naiveGrounding(domain, problem);
 
 		if (doPlanningGraph)
 		{
@@ -133,11 +133,11 @@ int main (int argc, char * argv[])
 				// Run PG without printing output
 				std::vector<GroundedTask> groundedTasks;
 				std::set<Fact> reachableFacts;
-				runPlanningGraph (groundedTasks, reachableFacts, data, problem);
+				runPlanningGraph (groundedTasks, reachableFacts, domain, problem);
 			}
 			else
 			{
-				doAndPrintPlanningGraph (data, problem);
+				doAndPrintPlanningGraph (domain, problem);
 			}
 		}
 	}
