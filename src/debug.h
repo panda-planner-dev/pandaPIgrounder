@@ -42,7 +42,7 @@ void printTask (const Domain & domain, const Task & task, bool printDecompositio
 /**
  * @brief Prints a Domain and a Problem for debugging.
  */
-void printDomainAndProbem (const Domain & domain, const Problem & problem);
+void printDomainAndProblem (const Domain & domain, const Problem & problem);
 
 /**
  * @brief Returns true if debug mode is enabled.

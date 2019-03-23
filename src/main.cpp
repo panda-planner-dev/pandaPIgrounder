@@ -122,7 +122,7 @@ int main (int argc, char * argv[])
 			std::cerr << "Parsing done." << std::endl;
 
 		if (printDomainMode)
-			printDomainAndProbem (domain, problem);
+			printDomainAndProblem (domain, problem);
 		if (doNaiveGrounding)
 			naiveGrounding(domain, problem);
 

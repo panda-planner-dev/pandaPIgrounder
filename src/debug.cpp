@@ -74,7 +74,7 @@ void printTask (const Domain & domain, const Task & task, bool printDecompositio
 	}
 }
 
-void printDomainAndProbem (const Domain & domain, const Problem & problem)
+void printDomainAndProblem (const Domain & domain, const Problem & problem)
 {
 	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
 	DEBUG (std::cerr << "Domain has [" << domain.nPrimitiveTasks << "] primitive and [" << domain.nAbstractTasks << "] abstract tasks." << std::endl);
