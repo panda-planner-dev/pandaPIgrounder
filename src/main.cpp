@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <map>
 
 #include <cerrno>
 #include <cstring>
@@ -13,13 +14,30 @@
 #include "planning-graph.h"
 #include "naiveGrounding.h"
 
+enum RunMode
+{
+	RUN_MODE_PLANNING_GRAPH,
+	RUN_MODE_NAIVE_GROUNDING,
+	RUN_MODE_PRINT_DOMAIN,
+
+	RUN_MODE_DEFAULT = RUN_MODE_PLANNING_GRAPH,
+};
+
+const std::map<RunMode, std::string> runModes =
+	{
+		{RUN_MODE_PRINT_DOMAIN,     "Print Domain"},
+		{RUN_MODE_NAIVE_GROUNDING,  "Naive Grounding"},
+		{RUN_MODE_PLANNING_GRAPH,   "Planning Graph"},
+	}
+;
+
 int main (int argc, char * argv[])
 {
 	struct option options[] = {
 		{"benchmark",       no_argument,    NULL,   'b'},
 		{"debug",           no_argument,    NULL,   'd'},
-		{"print-domain",    no_argument,    NULL,   'p'},
 		{"naive-grounding", no_argument,    NULL,   'n'},
+		{"print-domain",    no_argument,    NULL,   'p'},
 		{"quiet",           no_argument,    NULL,   'q'},
 		{"planning-graph",  no_argument,    NULL,   'r'},
 		{NULL,              0,              NULL,   0},
@@ -28,14 +46,12 @@ int main (int argc, char * argv[])
 	bool benchmarkMode = false;
 	bool quietMode = false;
 	bool debugMode = false;
-	bool printDomainMode = false;
-	bool doNaiveGrounding = false;
-	bool doPlanningGraph = false;
 
 	bool optionsValid = true;
+	std::set<RunMode> selectedModes;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "bdpnqr", options, NULL);
+		int c = getopt_long (argc, argv, "bdnpqr", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -50,13 +66,13 @@ int main (int argc, char * argv[])
 		else if (c == 'd')
 			debugMode = true;
 		else if (c == 'p')
-			printDomainMode = true;
+			selectedModes.insert (RUN_MODE_PRINT_DOMAIN);
 		else if (c == 'n')
-			doNaiveGrounding = true;
+			selectedModes.insert (RUN_MODE_NAIVE_GROUNDING);
 		else if (c == 'q')
 			quietMode = true;
 		else if (c == 'r')
-			doPlanningGraph = true;
+			selectedModes.insert (RUN_MODE_PLANNING_GRAPH);
 	}
 	int nArgs = argc - optind;
 
@@ -66,8 +82,37 @@ int main (int argc, char * argv[])
 		return 1;
 	}
 
+	// Check if mutually exclusive modes were selected
+	RunMode runMode = RUN_MODE_DEFAULT;
+	if (selectedModes.size () > 1)
+	{
+		std::cout << "Cannot enable mutually exclusive run modes: ";
+		size_t printed = 0;
+		for (const auto runMode : selectedModes)
+		{
+			if (printed > 0)
+				std::cout << ", ";
+			std::cout << runModes.at (runMode);
+			++printed;
+		}
+		std::cout << std::endl;
+		return 1;
+	}
+	else if (selectedModes.size () == 0)
+	{
+		if (!quietMode)
+			std::cerr << "No run mode selected; selecting \"" << runModes.at (RUN_MODE_DEFAULT) << "\" mode." << std::endl;
+	}
+	else
+	{
+		runMode = *selectedModes.begin ();
+	}
+
 	if (debugMode)
 		setDebugMode (debugMode);
+
+	if (benchmarkMode && !quietMode)
+		std::cerr << "Note: Running in benchmark mode; grounding results will not be printed." << std::endl;
 
 	std::vector<std::string> inputFiles;
 	if (nArgs < 1)
@@ -121,12 +166,15 @@ int main (int argc, char * argv[])
 		if (!quietMode)
 			std::cerr << "Parsing done." << std::endl;
 
-		if (printDomainMode)
+		if (runMode == RUN_MODE_PRINT_DOMAIN)
+		{
 			printDomainAndProblem (domain, problem);
-		if (doNaiveGrounding)
-			naiveGrounding(domain, problem);
-
-		if (doPlanningGraph)
+		}
+		else if (runMode == RUN_MODE_NAIVE_GROUNDING)
+		{
+			naiveGrounding (domain, problem);
+		}
+		else if (runMode == RUN_MODE_PLANNING_GRAPH)
 		{
 			if (benchmarkMode)
 			{
