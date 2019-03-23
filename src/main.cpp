@@ -16,6 +16,7 @@
 int main (int argc, char * argv[])
 {
 	struct option options[] = {
+		{"benchmark",       no_argument,    NULL,   'b'},
 		{"debug",           no_argument,    NULL,   'd'},
 		{"print-domain",    no_argument,    NULL,   'p'},
 		{"naive-grounding", no_argument,    NULL,   'n'},
@@ -24,6 +25,7 @@ int main (int argc, char * argv[])
 		{NULL,              0,              NULL,   0},
 	};
 
+	bool benchmarkMode = false;
 	bool quietMode = false;
 	bool debugMode = false;
 	bool printDomainMode = false;
@@ -33,7 +35,7 @@ int main (int argc, char * argv[])
 	bool optionsValid = true;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "dpnqr", options, NULL);
+		int c = getopt_long (argc, argv, "bdpnqr", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -43,7 +45,9 @@ int main (int argc, char * argv[])
 			continue;
 		}
 
-		if (c == 'd')
+		if (c == 'b')
+			benchmarkMode = true;
+		else if (c == 'd')
 			debugMode = true;
 		else if (c == 'p')
 			printDomainMode = true;
@@ -121,7 +125,20 @@ int main (int argc, char * argv[])
 			printDomainAndProbem (data, problem);
 		if (doNaiveGrounding)
 			naiveGrounding(data, problem);
+
 		if (doPlanningGraph)
-			doAndPrintPlanningGraph (data, problem);
+		{
+			if (benchmarkMode)
+			{
+				// Run PG without printing output
+				std::vector<GroundedTask> groundedTasks;
+				std::set<Fact> reachableFacts;
+				runPlanningGraph (groundedTasks, reachableFacts, data, problem);
+			}
+			else
+			{
+				doAndPrintPlanningGraph (data, problem);
+			}
+		}
 	}
 }
