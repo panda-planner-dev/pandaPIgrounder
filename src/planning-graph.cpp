@@ -104,8 +104,11 @@ struct PreconditionFactMap
 
 	/**
 	 * @brief Returns all Facts for the given precondition in the given task that are compatible with the given variable assignment.
+	 *
+	 * For performance reasons, we want to return the Fact vector by reference. This means that we may have to instantiate a new
+	 * Fact vector if there is none for the given variable assignment. As a result, this method cannot be declared to be const.
 	 */
-	std::vector<Fact> getFacts (size_t taskNo, size_t preconditionIdx, const VariableAssignment & assignedVariables) const;
+	std::vector<Fact> & getFacts (size_t taskNo, size_t preconditionIdx, const VariableAssignment & assignedVariables);
 };
 
 PreconditionFactMap::PreconditionFactMap (const PreprocessedDomain & preprocessedDomain) : preprocessedDomain (preprocessedDomain)
@@ -144,7 +147,7 @@ void PreconditionFactMap::insertFact (const Fact & fact)
 	}
 }
 
-std::vector<Fact> PreconditionFactMap::getFacts (size_t taskNo, size_t preconditionIdx, const VariableAssignment & assignedVariables) const
+std::vector<Fact> & PreconditionFactMap::getFacts (size_t taskNo, size_t preconditionIdx, const VariableAssignment & assignedVariables)
 {
 	const PredicateWithArguments & precondition = preprocessedDomain.domain.tasks[taskNo].preconditions[preconditionIdx];
 
@@ -160,11 +163,7 @@ std::vector<Fact> PreconditionFactMap::getFacts (size_t taskNo, size_t precondit
 		assignedVariableValues.push_back (assignedVariables[var]);
 	}
 
-	// The map itself is guaranteed to exist (it was created in the constructor), but the entry matching the assigned variables may not exist.
-	const auto & map = factMap.at (taskNo).at (preconditionIdx);
-	if (map.count (assignedVariableValues) == 0)
-		return std::vector<Fact> ();
-	return map.at (assignedVariableValues);
+	return factMap[taskNo][preconditionIdx][assignedVariableValues];
 }
 
 static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const Domain & domain, int taskNo, VariableAssignment & assignedVariables, size_t variableIdx = 0)
@@ -249,7 +248,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 	assignedVariables.erase (variableIdx);
 }
 
-static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const PreconditionFactMap & factMap, const PreprocessedDomain & preprocessedDomain, size_t taskNo, VariableAssignment & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
+static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, PreconditionFactMap & factMap, const PreprocessedDomain & preprocessedDomain, size_t taskNo, VariableAssignment & assignedVariables, size_t initiallyMatchedPrecondition, const Fact & initiallyMatchedFact, size_t preconditionIdx = 0)
 {
 	const Task & task = preprocessedDomain.domain.tasks[taskNo];
 
