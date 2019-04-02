@@ -40,6 +40,11 @@ void printFact (const Domain & domain, const Fact & fact);
 void printTask (const Domain & domain, const Task & task, bool printDecompositionMethods = false);
 
 /**
+ * @brief Prints a Sort for debugging.
+ */
+void printSort (const Domain & domain, const Sort & sort);
+
+/**
  * @brief Prints a Domain and a Problem for debugging.
  */
 void printDomainAndProblem (const Domain & domain, const Problem & problem);

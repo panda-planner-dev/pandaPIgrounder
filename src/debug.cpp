@@ -29,7 +29,7 @@ void printFact (const Domain & domain, const Fact & fact)
 void printTask (const Domain & domain, const Task & task, bool printDecompositionMethods)
 {
 	// Print task name and variable sorts
-	std::cerr << "    " << color (BLUE, task.name);
+	std::cerr << color (BLUE, task.name);
 	int nVariables = task.variableSorts.size ();
 	for (int variableIdx = 0; variableIdx < nVariables; ++variableIdx)
 	{
@@ -74,14 +74,45 @@ void printTask (const Domain & domain, const Task & task, bool printDecompositio
 	}
 }
 
+void printSort (const Domain & domain, const Sort & sort)
+{
+	std::cerr << color (BLUE, sort.name) << " = [";
+	size_t printed = 0;
+	for (const auto & sortMember : sort.members)
+	{
+		if (printed > 0)
+			std::cerr << ", ";
+		std::cerr << color (YELLOW, domain.constants[sortMember]);
+		++printed;
+	}
+	std::cerr << "]" << std::endl;
+}
+
 void printDomainAndProblem (const Domain & domain, const Problem & problem)
 {
 	DEBUG (std::cerr << "Domain has [" << domain.constants.size () << "] constants and [" << domain.sorts.size () << "] sorts." << std::endl);
 	DEBUG (std::cerr << "Domain has [" << domain.nPrimitiveTasks << "] primitive and [" << domain.nAbstractTasks << "] abstract tasks." << std::endl);
 
+	std::cerr << "Constants:" << std::endl;
+	for (size_t constantIdx = 0; constantIdx < domain.constants.size (); ++constantIdx)
+		std::cerr << "    " << color (CYAN, std::to_string (constantIdx)) << " = " << color (YELLOW, domain.constants[constantIdx]) << std::endl;
+	std::cerr << std::endl;
+
+	std::cerr << "Sorts:" << std::endl;
+	for (size_t sortIdx = 0; sortIdx < domain.sorts.size (); ++sortIdx)
+	{
+		const Sort & sort = domain.sorts[sortIdx];
+		std::cerr << "    " << color (CYAN, std::to_string (sortIdx)) << " = ";
+		printSort (domain, sort);
+	}
+	std::cerr << std::endl;
+
 	std::cerr << "Tasks with methods:" << std::endl;
 	for (int taskIdx = 0; taskIdx < domain.nPrimitiveTasks + domain.nAbstractTasks; ++taskIdx)
+	{
+		std::cerr << "    " << color (CYAN, std::to_string (taskIdx)) << " = ";
 		printTask (domain, domain.tasks[taskIdx], true);
+	}
 
 	std::cerr << std::endl;
 	std::cerr << "Initial state:" << std::endl;
