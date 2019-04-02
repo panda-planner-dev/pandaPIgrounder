@@ -217,16 +217,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 		if (preprocessedDomain.hierarchyTyping && !preprocessedDomain.hierarchyTyping->isAssignmentCompatible (taskNo, assignedVariables))
 			return;
 
-		DEBUG (
-			std::cerr << "Found grounded task for task [" << task.name << "]." << std::endl;
-			/*
-			std::cerr << "Assigned variables:" << std::endl;
-			for (auto assignedVar : assignedVariables)
-			{
-				std::cerr << "Variable " << assignedVar.first << " (" << domain.sorts[task.variableSorts[assignedVar.first]].name << ") = " << assignedVar.second << " (" << domain.constants[assignedVar.second] << ")" << std::endl;
-			}
-			*/
-		);
+		DEBUG (std::cerr << "Found grounded task for task [" << task.name << "]." << std::endl);
 
 		// Create and return grounded task
 		GroundedTask groundedTask;
