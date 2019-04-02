@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <optional>
 #include <queue>
 #include <set>
 #include <sstream>
@@ -9,6 +10,7 @@
 #include <cassert>
 
 #include "debug.h"
+#include "hierarchy-typing.h"
 #include "model.h"
 #include "planning-graph.h"
 
@@ -41,12 +43,23 @@ struct PreprocessedDomain
 	std::vector<std::vector<std::pair<int, int>>> preconditionsByPredicate;
 
 	/**
-	 * @brief Preprocesses the given Domain.
+	 * @brief Hierarchy Typing
+	 *
+	 * If Hierarchy Typing is enabled, the result is stored here.
+	 * See the Hierarchy Typing documentation for more details.
 	 */
-	PreprocessedDomain (const Domain & domain);
+	std::optional<HierarchyTyping> hierarchyTyping;
+
+	/**
+	 * @brief Preprocesses the given Domain.
+	 *
+	 * If enableHierarchyTyping is given, the Hierarchy Typing will be calculated using the given Domain and Problem,
+	 * and can then be used by the Planning Graph.
+	 */
+	PreprocessedDomain (const Domain & domain, const Problem & problem, bool enableHierarchyTyping);
 };
 
-PreprocessedDomain::PreprocessedDomain (const Domain & domain) : domain (domain)
+PreprocessedDomain::PreprocessedDomain (const Domain & domain, const Problem & problem, bool enableHierarchyTyping) : domain (domain)
 {
 	assignedVariablesByTaskAndPrecondition.resize (domain.nPrimitiveTasks);
 	preconditionsByPredicate.resize (domain.predicates.size ());
@@ -73,6 +86,9 @@ PreprocessedDomain::PreprocessedDomain (const Domain & domain) : domain (domain)
 			preconditionsByPredicate[precondition.predicateNo].push_back (std::make_pair (taskIdx, preconditionIdx));
 		}
 	}
+
+	if (enableHierarchyTyping)
+		hierarchyTyping = HierarchyTyping (domain, problem);
 }
 
 /**
@@ -166,8 +182,9 @@ std::vector<Fact> & PreconditionFactMap::getFacts (size_t taskNo, size_t precond
 	return factMap[taskNo][preconditionIdx][assignedVariableValues];
 }
 
-static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const Domain & domain, int taskNo, VariableAssignment & assignedVariables, size_t variableIdx = 0)
+static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> & newFacts, const FactSet & knownFacts, const PreprocessedDomain & preprocessedDomain, int taskNo, VariableAssignment & assignedVariables, size_t variableIdx = 0)
 {
+	const Domain & domain = preprocessedDomain.domain;
 	const Task & task = domain.tasks[taskNo];
 
 	assert (taskNo < domain.nPrimitiveTasks);
@@ -195,6 +212,10 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 					return;
 			}
 		}
+
+		// Abort if the assigned variables are not compatible with the hierarchy typing
+		if (preprocessedDomain.hierarchyTyping && !preprocessedDomain.hierarchyTyping->isAssignmentCompatible (taskNo, assignedVariables))
+			return;
 
 		DEBUG (
 			std::cerr << "Found grounded task for task [" << task.name << "]." << std::endl;
@@ -235,7 +256,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 	if (assignedVariables.isAssigned (variableIdx))
 	{
 		// Variable is already assigned
-		assignVariables (output, newFacts, knownFacts, domain, taskNo, assignedVariables, variableIdx + 1);
+		assignVariables (output, newFacts, knownFacts, preprocessedDomain, taskNo, assignedVariables, variableIdx + 1);
 		return;
 	}
 
@@ -243,7 +264,7 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 	for (int sortMember : domain.sorts[variableSort].members)
 	{
 		assignedVariables[variableIdx] = sortMember;
-		assignVariables (output, newFacts, knownFacts, domain, taskNo, assignedVariables, variableIdx + 1);
+		assignVariables (output, newFacts, knownFacts, preprocessedDomain, taskNo, assignedVariables, variableIdx + 1);
 	}
 	assignedVariables.erase (variableIdx);
 }
@@ -256,7 +277,7 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 	{
 		// Processed all preconditions. This is a potentially reachable ground instance.
 		// Now we only need to assign all unassigned variables.
-		assignVariables (output, newFacts, knownFacts, preprocessedDomain.domain, taskNo, assignedVariables);
+		assignVariables (output, newFacts, knownFacts, preprocessedDomain, taskNo, assignedVariables);
 
 		return;
 	}
@@ -326,15 +347,15 @@ static void matchPrecondition (std::vector<GroundedTask> & output, std::set<Fact
 
 	if (!foundMatchingFact)
 	{
-		DEBUG (std::cerr << "Unable to satisfy precondition [" << domain.predicates[precondition.predicateNo].name << "]." << std::endl);
+		DEBUG (std::cerr << "Unable to satisfy precondition [" << preprocessedDomain.domain.predicates[precondition.predicateNo].name << "]." << std::endl);
 	}
 }
 
-void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> & outputFacts, const Domain & domain, const Problem & problem)
+void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> & outputFacts, const Domain & domain, const Problem & problem, bool enableHierarchyTyping)
 {
 	outputTasks.clear ();
 
-	PreprocessedDomain preprocessedDomain (domain);
+	PreprocessedDomain preprocessedDomain (domain, problem, enableHierarchyTyping);
 
 	FactSet processedFacts (domain.predicates.size ());
 	std::set<Fact> toBeProcessed;
@@ -393,11 +414,11 @@ void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> &
 	DEBUG (std::cerr << "[" << processedFacts.size () << "] facts are potentially reachable." << std::endl);
 }
 
-void doAndPrintPlanningGraph (const Domain & domain, const Problem & problem)
+void doAndPrintPlanningGraph (const Domain & domain, const Problem & problem, bool enableHierarchyTyping)
 {
 	std::vector<GroundedTask> groundedTasks;
 	std::set<Fact> reachableFacts;
-	runPlanningGraph (groundedTasks, reachableFacts, domain, problem);
+	runPlanningGraph (groundedTasks, reachableFacts, domain, problem, enableHierarchyTyping);
 	DEBUG (std::cerr << "Calculated [" << groundedTasks.size () << "] grounded tasks." << std::endl);
 
 	// Output

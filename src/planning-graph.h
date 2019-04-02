@@ -25,12 +25,12 @@ struct GroundedTask
 /**
  * Runs the planning graph and returns the grounded tasks and facts in the given output arguments.
  */
-void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> & outputFacts, const Domain & domain, const Problem & problem);
+void runPlanningGraph (std::vector<GroundedTask> & outputTasks, std::set<Fact> & outputFacts, const Domain & domain, const Problem & problem, bool enableHierarchyTyping);
 
 /**
  * Runs the planning graph and prints the output in the correct output format.
  */
-void doAndPrintPlanningGraph (const Domain & domain, const Problem & problem);
+void doAndPrintPlanningGraph (const Domain & domain, const Problem & problem, bool enableHierarchyTyping);
 
 /**
  * @}

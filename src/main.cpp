@@ -9,10 +9,11 @@
 #include <getopt.h>
 
 #include "debug.h"
+#include "hierarchy-typing.h"
 #include "model.h"
+#include "naiveGrounding.h"
 #include "parser.h"
 #include "planning-graph.h"
-#include "naiveGrounding.h"
 
 enum RunMode
 {
@@ -34,24 +35,26 @@ const std::map<RunMode, std::string> runModes =
 int main (int argc, char * argv[])
 {
 	struct option options[] = {
-		{"benchmark",       no_argument,    NULL,   'b'},
-		{"debug",           no_argument,    NULL,   'd'},
-		{"naive-grounding", no_argument,    NULL,   'n'},
-		{"print-domain",    no_argument,    NULL,   'p'},
-		{"quiet",           no_argument,    NULL,   'q'},
-		{"planning-graph",  no_argument,    NULL,   'r'},
-		{NULL,              0,              NULL,   0},
+		{"benchmark",           no_argument,    NULL,   'b'},
+		{"debug",               no_argument,    NULL,   'd'},
+		{"hierarchy-typing",    no_argument,    NULL,   'h'},
+		{"naive-grounding",     no_argument,    NULL,   'n'},
+		{"print-domain",        no_argument,    NULL,   'p'},
+		{"quiet",               no_argument,    NULL,   'q'},
+		{"planning-graph",      no_argument,    NULL,   'r'},
+		{NULL,                  0,              NULL,   0},
 	};
 
 	bool benchmarkMode = false;
 	bool quietMode = false;
 	bool debugMode = false;
+	bool enableHierarchyTyping = false;
 
 	bool optionsValid = true;
 	std::set<RunMode> selectedModes;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "bdnpqr", options, NULL);
+		int c = getopt_long (argc, argv, "bdhnpqr", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -65,10 +68,12 @@ int main (int argc, char * argv[])
 			benchmarkMode = true;
 		else if (c == 'd')
 			debugMode = true;
-		else if (c == 'p')
-			selectedModes.insert (RUN_MODE_PRINT_DOMAIN);
+		else if (c == 'h')
+			enableHierarchyTyping = true;
 		else if (c == 'n')
 			selectedModes.insert (RUN_MODE_NAIVE_GROUNDING);
+		else if (c == 'p')
+			selectedModes.insert (RUN_MODE_PRINT_DOMAIN);
 		else if (c == 'q')
 			quietMode = true;
 		else if (c == 'r')
@@ -181,11 +186,11 @@ int main (int argc, char * argv[])
 				// Run PG without printing output
 				std::vector<GroundedTask> groundedTasks;
 				std::set<Fact> reachableFacts;
-				runPlanningGraph (groundedTasks, reachableFacts, domain, problem);
+				runPlanningGraph (groundedTasks, reachableFacts, domain, problem, enableHierarchyTyping);
 			}
 			else
 			{
-				doAndPrintPlanningGraph (domain, problem);
+				doAndPrintPlanningGraph (domain, problem, enableHierarchyTyping);
 			}
 		}
 	}
