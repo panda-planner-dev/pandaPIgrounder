@@ -2,6 +2,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <sstream>
 
 #include "debug.h"
@@ -236,6 +237,17 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 
 	// Reset exception mask
 	input.exceptions (exceptionMask);
+	
+
+	// sort preconditions by descending number of ground instances in the initial state
+	std::map<int,int> init_preciate_count;
+	for (auto & fact : outputProblem.init) init_preciate_count[fact.predicateNo]++;
+
+	std::for_each (output.tasks.begin (), output.tasks.end (), [&](Task & task) {
+		std::sort(task.preconditions.begin(), task.preconditions.end(), [&](auto const &a, auto const &b) {
+			return (init_preciate_count[a.predicateNo] < init_preciate_count[b.predicateNo]);
+		});
+	});
 }
 
 bool readInput (std::istream & is, Domain & output, Problem & outputProblem)
