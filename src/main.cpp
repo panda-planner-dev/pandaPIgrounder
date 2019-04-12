@@ -14,6 +14,7 @@
 #include "naiveGrounding.h"
 #include "parser.h"
 #include "planning-graph.h"
+#include "sasinvariants.h"
 
 enum RunMode
 {
@@ -42,6 +43,7 @@ int main (int argc, char * argv[])
 		{"print-domain",        no_argument,    NULL,   'p'},
 		{"quiet",               no_argument,    NULL,   'q'},
 		{"planning-graph",      no_argument,    NULL,   'r'},
+		{"invariants",          no_argument,    NULL,   'i'},
 		{NULL,                  0,              NULL,   0},
 	};
 
@@ -49,12 +51,13 @@ int main (int argc, char * argv[])
 	bool quietMode = false;
 	bool debugMode = false;
 	bool enableHierarchyTyping = false;
+	bool computeInvariants = false;
 
 	bool optionsValid = true;
 	std::set<RunMode> selectedModes;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "bdhnpqr", options, NULL);
+		int c = getopt_long (argc, argv, "bdhnpqri", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -78,6 +81,8 @@ int main (int argc, char * argv[])
 			quietMode = true;
 		else if (c == 'r')
 			selectedModes.insert (RUN_MODE_PLANNING_GRAPH);
+		else if (c == 'i')
+			computeInvariants = true;
 	}
 	int nArgs = argc - optind;
 
@@ -170,6 +175,14 @@ int main (int argc, char * argv[])
 		}
 		if (!quietMode)
 			std::cerr << "Parsing done." << std::endl;
+
+		
+		std::vector<invariant> invariants;
+		if (computeInvariants)
+		{
+			invariants = computeSASPlusInvariants(domain, problem);
+		}
+
 
 		if (runMode == RUN_MODE_PRINT_DOMAIN)
 		{
