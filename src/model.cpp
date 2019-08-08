@@ -16,6 +16,16 @@ const char * BadInputException::what () const throw ()
 	return message.c_str ();
 }
 
+void Fact::setHeadNo (int headNo)
+{
+	predicateNo = headNo;
+}
+
+int Fact::getHeadNo (void) const
+{
+	return predicateNo;
+}
+
 bool Fact::operator < (const Fact & other) const
 {
 	return std::tie (predicateNo, arguments) < std::tie (other.predicateNo, other.arguments);
@@ -24,6 +34,26 @@ bool Fact::operator < (const Fact & other) const
 bool Fact::operator == (const Fact & other) const
 {
 	return std::tie (predicateNo, arguments) == std::tie (other.predicateNo, other.arguments);
+}
+
+void PredicateWithArguments::setHeadNo (int headNo)
+{
+	predicateNo = headNo;
+}
+
+int PredicateWithArguments::getHeadNo (void) const
+{
+	return predicateNo;
+}
+
+void TaskWithArguments::setHeadNo (int headNo)
+{
+	taskNo = headNo;
+}
+
+int TaskWithArguments::getHeadNo (void) const
+{
+	return taskNo;
 }
 
 bool Task::doesFactFulfilPrecondition (VariableAssignment * outputVariableAssignment, const Domain & domain, const Fact & fact, int preconditionIdx) const
@@ -108,6 +138,31 @@ VariableAssignment::operator std::vector<int> (void) const
 	return assignments;
 }
 
+const std::vector<TaskWithArguments> & DecompositionMethod::getAntecedents (void) const
+{
+	return subtasks;
+}
+
+const std::vector<TaskWithArguments> DecompositionMethod::getConsequences (void) const
+{
+	std::vector<TaskWithArguments> consequences;
+	TaskWithArguments consequence;
+	consequence.taskNo = taskNo;
+	consequence.arguments = taskParameters;
+	consequences.push_back (consequence);
+	return consequences;
+}
+
+const std::vector<PredicateWithArguments> & Task::getAntecedents (void) const
+{
+	return preconditions;
+}
+
+const std::vector<PredicateWithArguments> & Task::getConsequences (void) const
+{
+	return effectsAdd;
+}
+
 FactSet::FactSet (size_t nPredicates) : factsByPredicate (nPredicates)
 {
 }
@@ -141,7 +196,27 @@ const std::set<Fact> & FactSet::getFactsForPredicate (int predicateNo) const
 FactSet::operator std::set<Fact> (void) const
 {
 	std::set<Fact> result;
-	for (auto predicateFacts : factsByPredicate)
+	for (const auto & predicateFacts : factsByPredicate)
 		result.insert (predicateFacts.begin (), predicateFacts.end ());
 	return result;
+}
+
+void GroundedTask::setHeadNo (int headNo)
+{
+	taskNo = headNo;
+}
+
+int GroundedTask::getHeadNo (void) const
+{
+	return taskNo;
+}
+
+bool GroundedTask::operator < (const GroundedTask & other) const
+{
+	return std::tie (taskNo, arguments) < std::tie (other.taskNo, other.arguments);
+}
+
+bool GroundedTask::operator == (const GroundedTask & other) const
+{
+	return std::tie (taskNo, arguments) == std::tie (other.taskNo, other.arguments);
 }

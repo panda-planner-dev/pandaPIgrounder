@@ -148,33 +148,28 @@ void readOrderingConstraint (const Domain & state, std::istream & input, std::pa
 	input >> outputOrderingConstraint.first >> outputOrderingConstraint.second;
 }
 
-void readDecompositionMethod (const Domain & state, std::istream & input, Domain & outputData)
+void readDecompositionMethod (const Domain & state, std::istream & input, DecompositionMethod & outputMethod)
 {
-	DecompositionMethod method;
+	input >> outputMethod.name;
 
-	input >> method.name;
-
-	input >> method.taskNo;
-	failIfNotSatisfied (method.taskNo >= 0 && method.taskNo < state.nTotalTasks, "Decomposition method refers to invalid task");
-	const Task & taskInfo = state.tasks[method.taskNo];
-	Task & task = outputData.tasks[method.taskNo];
+	input >> outputMethod.taskNo;
+	failIfNotSatisfied (outputMethod.taskNo >= 0 && outputMethod.taskNo < state.nTotalTasks, "Decomposition method refers to invalid task");
+	const Task & taskInfo = state.tasks[outputMethod.taskNo];
 
 	// Read variable sorts
-	readMultiple (state, input, method.variableSorts, readPrimitive);
+	readMultiple (state, input, outputMethod.variableSorts, readPrimitive);
 
 	// Read which variables correspond to the variables of the abstract task
-	readN (state, input, method.taskParameters, readPrimitive, taskInfo.variableSorts.size ());
+	readN (state, input, outputMethod.taskParameters, readPrimitive, taskInfo.variableSorts.size ());
 
 	// Read subtasks
-	readMultiple (state, input, method.subtasks, readTaskWithArguments);
+	readMultiple (state, input, outputMethod.subtasks, readTaskWithArguments);
 
 	// Ordering constraints
-	readMultiple (state, input, method.orderingConstraints, readOrderingConstraint);
+	readMultiple (state, input, outputMethod.orderingConstraints, readOrderingConstraint);
 
 	// Variable constraints
-	readMultiple (state, input, method.variableConstraints, readVariableConstraint);
-
-	task.decompositionMethods.push_back (method);
+	readMultiple (state, input, outputMethod.variableConstraints, readVariableConstraint);
 }
 
 void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
@@ -220,9 +215,17 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	// Read decomposition methods
 	int nMethods;
 	input >> nMethods;
+	output.decompositionMethods.resize (nMethods);
 	DEBUG (std::cerr << "Reading [" << nMethods << "] decomposition methods." << std::endl);
 	for (int methodIdx = 0; methodIdx < nMethods; ++methodIdx)
-		readDecompositionMethod (state, input, output);
+	{
+		// Read the method into the global list of methods
+		DecompositionMethod & method = output.decompositionMethods[methodIdx];
+		readDecompositionMethod (state, input, method);
+
+		// And add it to the task as well for faster access
+		output.tasks[method.taskNo].decompositionMethods.push_back (methodIdx);
+	}
 
 	// Read facts for initial and goal state
 	int nInitFacts;
@@ -237,7 +240,6 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 
 	// Reset exception mask
 	input.exceptions (exceptionMask);
-	
 
 	// sort preconditions by descending number of ground instances in the initial state
 	std::map<int,int> init_preciate_count;

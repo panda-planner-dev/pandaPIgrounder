@@ -10,17 +10,7 @@
 #include <set>
 #include <vector>
 
-/**
- * @brief A grounded task instance.
- */
-struct GroundedTask
-{
-	/// The number of the task.
-	int taskNo;
-
-	/// The arguments for the grounded task.
-	std::vector<int> arguments;
-};
+#include "model.h"
 
 /**
  * Runs the planning graph and returns the grounded tasks and facts in the given output arguments.

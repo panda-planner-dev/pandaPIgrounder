@@ -62,7 +62,7 @@ static void applyConstraints (PossibleConstants & possibleConstants, const std::
 	while (changed);
 }
 
-HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem) : possibleConstantsPerTask (domain.nTotalTasks)
+HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem) : possibleConstantsPerTask (domain.nTotalTasks), possibleConstantsPerMethod (domain.decompositionMethods.size ())
 {
 	const Task & topTask = domain.tasks[problem.initialAbstractTask];
 
@@ -100,8 +100,9 @@ void HierarchyTyping::taskDfs (const Domain & domain, size_t taskNo, PossibleCon
 	}
 	possibleConstantsPerTask[taskNo].push_back (possibleConstants);
 
-	for (const DecompositionMethod & method : task.decompositionMethods)
+	for (int methodNo : task.decompositionMethods)
 	{
+		const DecompositionMethod & method = domain.decompositionMethods[methodNo];
 		assert (task.variableSorts.size () == method.taskParameters.size ());
 
 		// Determine possible constants for this method
@@ -124,6 +125,8 @@ void HierarchyTyping::taskDfs (const Domain & domain, size_t taskNo, PossibleCon
 		if (std::any_of (possibleMethodConstants.begin (), possibleMethodConstants.end (), [](const auto & possibleValues) { return possibleValues.size () == 0; }))
 			continue;
 
+		possibleConstantsPerMethod[methodNo].push_back (possibleMethodConstants);
+
 		for (const auto & subtask : method.subtasks)
 		{
 			assert (subtask.arguments.size () == domain.tasks[subtask.taskNo].variableSorts.size ());
@@ -141,9 +144,9 @@ void HierarchyTyping::taskDfs (const Domain & domain, size_t taskNo, PossibleCon
 	}
 }
 
-bool HierarchyTyping::isAssignmentCompatible (int taskNo, const VariableAssignment & assignedVariables) const
+static bool isAssignmentCompatible (const std::vector<PossibleConstants> & possibleConstants, const VariableAssignment & assignedVariables)
 {
-	for (const auto & possibleConstants : possibleConstantsPerTask[taskNo])
+	for (const auto & possibleConstants : possibleConstants)
 	{
 		bool valid = true;
 		for (size_t varIdx = 0; varIdx < possibleConstants.size (); ++varIdx)
@@ -160,4 +163,16 @@ bool HierarchyTyping::isAssignmentCompatible (int taskNo, const VariableAssignme
 
 	}
 	return false;
+}
+
+template<>
+bool HierarchyTyping::isAssignmentCompatible<Task> (int taskNo, const VariableAssignment & assignedVariables) const
+{
+	return ::isAssignmentCompatible (possibleConstantsPerTask[taskNo], assignedVariables);
+}
+
+template<>
+bool HierarchyTyping::isAssignmentCompatible<DecompositionMethod> (int methodNo, const VariableAssignment & assignedVariables) const
+{
+	return ::isAssignmentCompatible (possibleConstantsPerMethod[methodNo], assignedVariables);
 }

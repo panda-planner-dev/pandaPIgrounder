@@ -36,6 +36,11 @@ struct HierarchyTyping
 	std::vector<std::vector<PossibleConstants>> possibleConstantsPerTask;
 
 	/**
+	 * @brief Contains a list of PossibleConstants instances for each decomposition method in the domain.
+	 */
+	std::vector<std::vector<PossibleConstants>> possibleConstantsPerMethod;
+
+	/**
 	 * @brief Calculates the hierarchy typing.
 	 */
 	HierarchyTyping (const Domain & domain, const Problem & Problem);
@@ -47,7 +52,10 @@ struct HierarchyTyping
 
 	/**
 	 * @brief Returns true if the given VariableAssignment is compatible with the Hierarchy Typing information.
+	 *
+	 * This templated function is only defined for the Task and DecompositionMethod types.
 	 */
+	template<typename>
 	bool isAssignmentCompatible (int taskNo, const VariableAssignment & assignedVariables) const;
 };
 

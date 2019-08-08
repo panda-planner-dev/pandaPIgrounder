@@ -80,7 +80,7 @@ void naivelyGroundTask(Domain & domain, int task, int vPos, vector<TaskGroundIns
 
 
 void naivelyGroundMethod(Domain & domain, int at, int method, int vPos,vector<MethodGroundInstance> & ret){
-	if (vPos == int(domain.tasks[at].decompositionMethods[method].variableSorts.size())){
+	if (vPos == int(domain.decompositionMethods[domain.tasks[at].decompositionMethods[method]].variableSorts.size())){
 		MethodGroundInstance inst;
 		inst.task = at;
 		inst.method = method;
@@ -88,8 +88,8 @@ void naivelyGroundMethod(Domain & domain, int at, int method, int vPos,vector<Me
 
 		// check variable constraints
 		bool failed = false;
-		for (unsigned constr = 0; constr < domain.tasks[at].decompositionMethods[method].variableConstraints.size(); constr++){
-			VariableConstraint con = domain.tasks[at].decompositionMethods[method].variableConstraints[constr];
+		for (unsigned constr = 0; constr < domain.decompositionMethods[domain.tasks[at].decompositionMethods[method]].variableConstraints.size(); constr++){
+			VariableConstraint con = domain.decompositionMethods[domain.tasks[at].decompositionMethods[method]].variableConstraints[constr];
 			int c1 = inst.args[con.var1];
 			int c2 = inst.args[con.var2];
 			if (con.type == VariableConstraint::Type::EQUAL && c1 != c2) failed = true;
@@ -103,7 +103,7 @@ void naivelyGroundMethod(Domain & domain, int at, int method, int vPos,vector<Me
 	}
 
 	// iterate through constants for that variable
-	int vSort = domain.tasks[at].decompositionMethods[method].variableSorts[vPos];
+	int vSort = domain.decompositionMethods[domain.tasks[at].decompositionMethods[method]].variableSorts[vPos];
 	for (int c : domain.sorts[vSort].members)
 	{
 		cur_naive_args[vPos] = c;
@@ -243,7 +243,7 @@ void naiveGrounding(Domain & domain, Problem & problem){
 
 	// add task ids to every method instance
 	for (int gm = 0; gm < int(allM.size()); gm++){
-		DecompositionMethod m = domain.tasks[allM[gm].task].decompositionMethods[allM[gm].method];
+		DecompositionMethod m = domain.decompositionMethods[domain.tasks[allM[gm].task].decompositionMethods[allM[gm].method]];
 		TaskGroundInstance atg;
 		atg.task = m.taskNo;
 		for (int a = 0; a < int(m.taskParameters.size()); a++)

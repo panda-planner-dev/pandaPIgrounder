@@ -9,6 +9,7 @@
 #include <getopt.h>
 
 #include "debug.h"
+#include "gpg.h"
 #include "hierarchy-typing.h"
 #include "model.h"
 #include "naiveGrounding.h"
@@ -43,7 +44,6 @@ int main (int argc, char * argv[])
 		{"print-domain",        no_argument,    NULL,   'p'},
 		{"quiet",               no_argument,    NULL,   'q'},
 		{"planning-graph",      no_argument,    NULL,   'r'},
-		{"invariants",          no_argument,    NULL,   'i'},
 		{NULL,                  0,              NULL,   0},
 	};
 
@@ -176,14 +176,6 @@ int main (int argc, char * argv[])
 		if (!quietMode)
 			std::cerr << "Parsing done." << std::endl;
 
-		
-		std::vector<invariant> invariants;
-		if (computeInvariants)
-		{
-			invariants = computeSASPlusInvariants(domain, problem);
-		}
-
-
 		if (runMode == RUN_MODE_PRINT_DOMAIN)
 		{
 			printDomainAndProblem (domain, problem);
@@ -194,16 +186,27 @@ int main (int argc, char * argv[])
 		}
 		else if (runMode == RUN_MODE_PLANNING_GRAPH)
 		{
+			std::vector<invariant> invariants;
+			if (computeInvariants)
+			{
+				invariants = computeSASPlusInvariants(domain, problem);
+			}
+
 			if (benchmarkMode)
 			{
 				// Run PG without printing output
+				std::unique_ptr<HierarchyTyping> hierarchyTyping;
+				if (enableHierarchyTyping)
+					hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
+
+				GpgPlanningGraph pg (domain, problem);
 				std::vector<GroundedTask> groundedTasks;
 				std::set<Fact> reachableFacts;
-				runPlanningGraph (groundedTasks, reachableFacts, domain, problem, enableHierarchyTyping);
+				runGpg (pg, groundedTasks, reachableFacts, hierarchyTyping.get ());
 			}
 			else
 			{
-				doAndPrintPlanningGraph (domain, problem, enableHierarchyTyping);
+				doBoth (domain, problem, enableHierarchyTyping);
 			}
 		}
 	}

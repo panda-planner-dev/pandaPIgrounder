@@ -26,18 +26,6 @@ void printFact (const Domain & domain, const Fact & fact)
 	std::cerr << std::endl;
 }
 
-void printPredicate (const Domain & domain, const Predicate & predicate)
-{
-	// Print predicate name and variable sorts
-	std::cerr << color (BLUE, predicate.name);
-	int nVariables = predicate.argumentSorts.size ();
-	for (int variableIdx = 0; variableIdx < nVariables; ++variableIdx)
-	{
-		std::cerr << " <" << color (YELLOW, domain.sorts[predicate.argumentSorts[variableIdx]].name) << ">";
-	}
-	std::cerr << std::endl;
-}
-
 void printTask (const Domain & domain, const Task & task, bool printDecompositionMethods)
 {
 	// Print task name and variable sorts
@@ -56,7 +44,7 @@ void printTask (const Domain & domain, const Task & task, bool printDecompositio
 		for (int methodIdx = 0; methodIdx < nMethods; ++methodIdx)
 		{
 			// Print method name and variable sorts
-			const DecompositionMethod & method = task.decompositionMethods[methodIdx];
+			const DecompositionMethod & method = domain.decompositionMethods[task.decompositionMethods[methodIdx]];
 			std::cerr << "        " << color (GREEN, method.name);
 			int nVariables = method.variableSorts.size ();
 			for (int variableIdx = 0; variableIdx < nVariables; ++variableIdx)
@@ -116,15 +104,6 @@ void printDomainAndProblem (const Domain & domain, const Problem & problem)
 		const Sort & sort = domain.sorts[sortIdx];
 		std::cerr << "    " << color (CYAN, std::to_string (sortIdx)) << " = ";
 		printSort (domain, sort);
-	}
-	std::cerr << std::endl;
-	
-	std::cerr << "Predicates:" << std::endl;
-	for (size_t predicateIdx = 0; predicateIdx  < domain.predicates.size (); ++predicateIdx)
-	{
-		const Predicate	& predicate = domain.predicates[predicateIdx];
-		std::cerr << "    " << color (CYAN, std::to_string (predicateIdx)) << " = ";
-		printPredicate (domain, predicate);
 	}
 	std::cerr << std::endl;
 

@@ -37,6 +37,17 @@ struct Predicate
 };
 
 /**
+ * @brief TODO
+ */
+template <typename T>
+concept bool Literal = requires (T instance, int headNo)
+{
+	{ instance.setHeadNo (headNo) } -> void;
+	{ instance.getHeadNo () } -> int;
+	{ instance.arguments } -> std::vector<int>;
+};
+
+/**
  * @brief A predicate where a task's variables are used as arguments to the predicate.
  */
 struct PredicateWithArguments
@@ -46,6 +57,10 @@ struct PredicateWithArguments
 
 	/// Vector of arguments. This means that the i-th argument to this predicate is the arguments[i]-th variable for this task.
 	std::vector<int> arguments;
+
+	void setHeadNo (int headNo);
+
+	int getHeadNo (void) const;
 };
 
 /**
@@ -53,11 +68,18 @@ struct PredicateWithArguments
  */
 struct Fact
 {
+	/// The number of this fact.
+	int groundedNo = -1;
+
 	/// The index of the predicate in the Domain.predicates vector.
 	int predicateNo;
 
 	/// Vector of arguments. This means that the i-th argument to this predicate is the arguments[i]-th constant from the Domain.constants vector.
 	std::vector<int> arguments;
+
+	void setHeadNo (int headNo);
+
+	int getHeadNo (void) const;
 
 	bool operator < (const Fact & other) const;
 
@@ -74,6 +96,10 @@ struct TaskWithArguments
 
 	/// Vector of arguments. This means that the i-th argument to this task is the arguments[i]-th variable for this decomposition method.
 	std::vector<int> arguments;
+
+	void setHeadNo (int headNo);
+
+	int getHeadNo (void) const;
 };
 
 /**
@@ -98,18 +124,38 @@ struct VariableConstraint
 };
 
 /**
- * @brief A method that an abstract task can be decomposed to.
+ * @brief ???
  */
-struct DecompositionMethod
+template<typename OperationType>
+struct Operator
 {
-	/// Name of the method.
+	/// Name of the operator.
 	std::string name;
 
-	/// The index of the abstract task in the Domain.tasks vector that this method belongs to.
-	int taskNo;
-
+	/// The sorts of this task's variables. Use `variableSorts.size ()` to get the number of variables.
 	/// Vector of variable sorts. This means that this method's i-th variable has the sort variableSorts[i].
 	std::vector<int> variableSorts;
+
+	/// Variable constraints
+	std::vector<VariableConstraint> variableConstraints;
+
+	// Force subclasses to implement the getAntecedents() method
+	const std::vector<OperationType> & getAntecedents (void);
+
+	// Force subclasses to implement the getConsequences() method
+	const std::vector<OperationType> & getConsequences (void);
+
+protected:
+	Operator (void) {};
+};
+
+/**
+ * @brief A method that an abstract task can be decomposed to.
+ */
+struct DecompositionMethod : Operator<TaskWithArguments>
+{
+	/// The index of the abstract task in the Domain.tasks vector that this method belongs to.
+	int taskNo;
 
 	/// Abstract task parameters.
 	std::vector<int> taskParameters;
@@ -120,14 +166,17 @@ struct DecompositionMethod
 	/// Subtask ordering constraints
 	std::vector<std::pair<int, int>> orderingConstraints;
 
-	/// Variable constraints
-	std::vector<VariableConstraint> variableConstraints;
+	const std::vector<TaskWithArguments> & getAntecedents (void) const;
+
+	const std::vector<TaskWithArguments> getConsequences (void) const;
+
+	DecompositionMethod (void) {};
 };
 
 /**
  * @brief A task with variables, and optional preconditions and delete/add effects.
  */
-struct Task
+struct Task : Operator<PredicateWithArguments>
 {
 	enum Type
 	{
@@ -135,14 +184,8 @@ struct Task
 		ABSTRACT,
 	} type; ///< The type of this task. Either Type::PRIMITIVE or Type::ABSTRACT.
 
-	/// The name of this task.
-	std::string name;
-
 	/// The cost to execute this task.
 	int cost;
-
-	/// The sorts of this task's variables. Use `variableSorts.size ()` to get the number of variables.
-	std::vector<int> variableSorts;
 
 	/// Preconditions that must be fulfilled to execute this task.
 	std::vector<PredicateWithArguments> preconditions;
@@ -153,11 +196,12 @@ struct Task
 	/// Predicates that will be added when this task is executed.
 	std::vector<PredicateWithArguments> effectsAdd;
 
-	/// Variable constraints
-	std::vector<VariableConstraint> variableConstraints;
+	/// Decomposition methods for abstract tasks. Each element is an index into the Domain.decompositionMethods vector.
+	std::vector<int> decompositionMethods;
 
-	/// Decomposition methods for abstract tasks
-	std::vector<DecompositionMethod> decompositionMethods;
+	const std::vector<PredicateWithArguments> & getAntecedents (void) const;
+
+	const std::vector<PredicateWithArguments> & getConsequences (void) const;
 
 	/**
 	 * @brief Check whether the given Fact fulfils the given precondition.
@@ -194,6 +238,9 @@ struct Domain
 
 	/// All tasks. Primitive tasks have indices in [0; nPrimitiveTasks); abstract tasks have indices in [nPrimitiveTasks; nPrimitiveTasks + nAbstractTasks).
 	std::vector<Task> tasks;
+
+	/// Decomposition methods
+	std::vector<DecompositionMethod> decompositionMethods;
 };
 
 struct Problem
@@ -309,6 +356,37 @@ struct FactSet
 	operator std::set<Fact> (void) const;
 };
 
+/**
+ * @brief A grounded task instance.
+ */
+struct GroundedTask
+{
+	/// The number of this grounded task.
+	int groundedNo = -1;
+
+	/// The number of the task that was grounded.
+	int taskNo;
+
+	/// The arguments for the grounded task.
+	std::vector<int> arguments;
+
+	/// List of grounded decomposition methods (for abstract tasks).
+	std::vector<int> groundedDecompositionMethods;
+
+	/// List of grounded preconditions
+	std::vector<int> groundedPreconditions;
+
+	/// List of grounded add effects
+	std::vector<int> groundedAddEffects;
+
+	void setHeadNo (int headNo);
+
+	int getHeadNo (void) const;
+
+	bool operator < (const GroundedTask & other) const;
+
+	bool operator == (const GroundedTask & other) const;
+};
 
 struct BadInputException : public std::exception
 {

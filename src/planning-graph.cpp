@@ -214,13 +214,14 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 		}
 
 		// Abort if the assigned variables are not compatible with the hierarchy typing
-		if (preprocessedDomain.hierarchyTyping && !preprocessedDomain.hierarchyTyping->isAssignmentCompatible (taskNo, assignedVariables))
+		if (preprocessedDomain.hierarchyTyping && !preprocessedDomain.hierarchyTyping->isAssignmentCompatible<Task> (taskNo, assignedVariables))
 			return;
 
 		DEBUG (std::cerr << "Found grounded task for task [" << task.name << "]." << std::endl);
 
 		// Create and return grounded task
 		GroundedTask groundedTask;
+		groundedTask.groundedNo = output.size ();
 		groundedTask.taskNo = taskNo;
 		groundedTask.arguments = assignedVariables;
 		output.push_back (groundedTask);
@@ -238,7 +239,10 @@ static void assignVariables (std::vector<GroundedTask> & output, std::set<Fact> 
 
 			// If we already processed this fact, don't add it again
 			if (knownFacts.count (addFact) == 0)
+			{
+				addFact.groundedNo = knownFacts.size ();
 				newFacts.insert (addFact);
+			}
 		}
 
 		return;
