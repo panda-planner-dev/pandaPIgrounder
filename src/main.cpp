@@ -44,6 +44,7 @@ int main (int argc, char * argv[])
 		{"print-domain",        no_argument,    NULL,   'p'},
 		{"quiet",               no_argument,    NULL,   'q'},
 		{"planning-graph",      no_argument,    NULL,   'r'},
+		{"invariants",          no_argument,    NULL,   'i'},
 		{NULL,                  0,              NULL,   0},
 	};
 
