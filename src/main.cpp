@@ -45,6 +45,7 @@ int main (int argc, char * argv[])
 		{"quiet",               no_argument,    NULL,   'q'},
 		{"planning-graph",      no_argument,    NULL,   'r'},
 		{"invariants",          no_argument,    NULL,   'i'},
+		{"planner-output",      no_argument,    NULL,   'o'},
 		{NULL,                  0,              NULL,   0},
 	};
 
@@ -53,12 +54,13 @@ int main (int argc, char * argv[])
 	bool debugMode = false;
 	bool enableHierarchyTyping = false;
 	bool computeInvariants = false;
+	bool outputForPlanner = false;
 
 	bool optionsValid = true;
 	std::set<RunMode> selectedModes;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "bdhnpqri", options, NULL);
+		int c = getopt_long (argc, argv, "bdhnpqrio", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -84,6 +86,8 @@ int main (int argc, char * argv[])
 			selectedModes.insert (RUN_MODE_PLANNING_GRAPH);
 		else if (c == 'i')
 			computeInvariants = true;
+		else if (c == 'o')
+			outputForPlanner  = true;
 	}
 	int nArgs = argc - optind;
 
@@ -207,7 +211,7 @@ int main (int argc, char * argv[])
 			}
 			else
 			{
-				doBoth (domain, problem, enableHierarchyTyping);
+				doBoth (domain, problem, enableHierarchyTyping, outputForPlanner );
 			}
 		}
 	}

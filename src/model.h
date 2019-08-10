@@ -71,6 +71,9 @@ struct Fact
 	/// The number of this fact.
 	int groundedNo = -1;
 
+	/// Number of this fact in an output
+	int outputNo = -1;
+
 	/// The index of the predicate in the Domain.predicates vector.
 	int predicateNo;
 
@@ -364,6 +367,9 @@ struct GroundedTask
 	/// The number of this grounded task.
 	int groundedNo = -1;
 
+	/// Number of this fact in an output
+	int outputNo = -1;
+
 	/// The number of the task that was grounded.
 	int taskNo;
 
@@ -378,6 +384,9 @@ struct GroundedTask
 
 	/// List of grounded add effects
 	std::vector<int> groundedAddEffects;
+
+	/// List of grounded del effects
+	std::vector<int> groundedDelEffects;
 
 	void setHeadNo (int headNo);
 
