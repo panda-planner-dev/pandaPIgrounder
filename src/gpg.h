@@ -250,16 +250,27 @@ struct GpgStateMap
 	std::vector<std::vector<std::map<int, VariablesToFactListMap>>> factMap;
 
 	/**
+	 * @brief Whether a fact exists for each task, precondition, future precondition and initially matched precondition (-1 if not eligible) and set of assigned variables.
+	 */
+	std::vector<std::vector<std::vector<std::map<int, std::set<std::vector<int>>>>>> consistency;
+
+	/**
 	 * @brief Initializes the factMap.
 	 */
 	GpgStateMap (const InstanceType & instance, const GpgPreprocessedDomain<InstanceType> & preprocessedDomain) : instance (instance), preprocessedDomain (preprocessedDomain)
 	{
 		factMap.resize (instance.getNumberOfActions ());
+		consistency.resize (instance.getNumberOfActions ());
 
 		for (size_t actionIdx = 0; actionIdx < instance.getNumberOfActions (); ++actionIdx)
 		{
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 			factMap[actionIdx].resize (action.getAntecedents ().size ());
+			consistency[actionIdx].resize (action.getAntecedents ().size ());
+			
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents().size(); preconditionIdx++){
+				consistency[actionIdx][preconditionIdx].resize (action.getAntecedents ().size ());
+			}
 		}
 	}
 
@@ -293,6 +304,7 @@ struct GpgStateMap
 			}
 			factMap[actionIdx][preconditionIdx][-1][values].push_back (stateElement);
 
+
 			// Eligible initially matched preconditions
 			for (int initiallyMatchedPreconditionIdx : preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx])
 			{
@@ -307,6 +319,42 @@ struct GpgStateMap
 				}
 
 				factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][values].push_back (stateElement);
+			}
+
+			//continue;
+			
+			// mark as potential future precondition
+			for (size_t pastPreconditionIdx = 0; pastPreconditionIdx < preconditionIdx; pastPreconditionIdx++){
+				
+				// Ineligible initially matched precondition
+				std::vector<int> values;
+				for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
+				{
+					int var = precondition.arguments[argumentIdx];
+	
+					// check whether this variable will already have been set by the past precondition
+					if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][pastPreconditionIdx+1].at (-1).count (var) > 0)
+					{
+						values.push_back (stateElement.arguments[argumentIdx]);
+					}
+				}
+				consistency[actionIdx][pastPreconditionIdx][preconditionIdx][-1].insert(values);
+	
+				// Eligible initially matched preconditions
+				for (int initiallyMatchedPreconditionIdx : preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx])
+				{
+					std::vector<int> values;
+					for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
+					{
+						int var = precondition.arguments[argumentIdx];
+						if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][pastPreconditionIdx+1].at (initiallyMatchedPreconditionIdx).count (var) > 0)
+						{
+							values.push_back (stateElement.arguments[argumentIdx]);
+						}
+					}
+	
+					consistency[actionIdx][pastPreconditionIdx][preconditionIdx][initiallyMatchedPreconditionIdx].insert(values);
+				}
 			}
 
 next_action:;
@@ -340,6 +388,48 @@ next_action:;
 		}
 
 		return factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][assignedVariableValues];
+	}
+	
+	bool hasPotentiallyConsistentExtension (size_t actionIdx, size_t preconditionIdx, const VariableAssignment & assignedVariables, int initiallyMatchedPreconditionIdx){
+		//std::cout << "Call " << actionIdx << " " << preconditionIdx << " " << initiallyMatchedPreconditionIdx << std::endl;
+		//for (auto & v : preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx+1].at (initiallyMatchedPreconditionIdx))
+		//	std::cout << v << " ";
+		//std::cout << std::endl;
+
+		bool initiallyMatchedPreconditionIsEligible = preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx].count (initiallyMatchedPreconditionIdx) > 0;
+		if (!initiallyMatchedPreconditionIsEligible)
+			initiallyMatchedPreconditionIdx = -1;
+	
+		const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
+
+		// check all future preconditions
+		for (size_t futurePreconditionIdx = preconditionIdx + 1; futurePreconditionIdx < action.getAntecedents().size(); futurePreconditionIdx++){
+			// variables assigned so far that are part of the arguments of the future precondition
+
+			const typename InstanceType::PreconditionType & futurePrecondition = instance.getAllActions()[actionIdx].getAntecedents()[futurePreconditionIdx];
+			// Build the vector which is used as the key in the map
+			std::vector<int> assignedVariableValues;
+			//std::cout << "Action " << action.name << " Current Precondition: " << preconditionIdx << " initial: " << initiallyMatchedPreconditionIdx << " Future Precondition " << instance.getAntecedantName(futurePrecondition.getHeadNo()) << "set variables:"; 
+			for (size_t argIdx = 0; argIdx < futurePrecondition.arguments.size (); ++argIdx)
+			{
+				int var = futurePrecondition.arguments[argIdx];
+				// check whether the future precondition will have already been assigned
+				if (!(preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx+1].at (initiallyMatchedPreconditionIdx).count (var) > 0))
+					continue;
+	
+				assert (assignedVariables.isAssigned (var));
+				//std::cout << " " << var;
+				assignedVariableValues.push_back (assignedVariables[var]);
+			}
+
+			if (consistency[actionIdx][preconditionIdx][futurePreconditionIdx][initiallyMatchedPreconditionIdx].count(assignedVariableValues) == 0){
+				//std::cout << " -> reject " << std::endl;
+				return false;
+			}
+			//std::cout << " -> accept " << std::endl;
+		}
+
+		return true;
 	}
 };
 
@@ -377,6 +467,11 @@ struct GpgPlanningGraph
 	const std::vector<ActionType> & getAllActions (void) const
 	{
 		return domain.tasks;
+	}
+
+	const std::string getAntecedantName(int antecedantHeadNo) const
+	{
+		return domain.predicates[antecedantHeadNo].name;
 	}
 
 	bool doesStateFulfillPrecondition (const ActionType & task, VariableAssignment * assignedVariables, const StateType & fact, size_t preconditionIdx) const
@@ -506,9 +601,10 @@ static void gpgAssignVariables (
 }
 
 size_t totalFactTests = 0;
-std::vector<std::vector<size_t>> factTests;
+std::vector<std::vector<std::vector<size_t>>> factTests;
 size_t totalFactHits = 0;
-std::vector<std::vector<size_t>> factHits;
+std::vector<std::vector<std::vector<size_t>>> factHits;
+std::vector<std::vector<std::vector<size_t>>> factFutureRejects;
 
 template<GpgInstance InstanceType>
 void gpgMatchPrecondition (
@@ -556,7 +652,7 @@ void gpgMatchPrecondition (
 			continue;
 
 		++totalFactTests;
-		++factTests[actionNo][preconditionIdx];
+		++factTests[actionNo][preconditionIdx][initiallyMatchedPrecondition];
 
 		assert (stateElement.getHeadNo () == precondition.getHeadNo ());
 		assert (stateElement.arguments.size () == precondition.arguments.size ());
@@ -575,7 +671,7 @@ void gpgMatchPrecondition (
 				if (instance.domain.sorts[argumentSort].members.count (stateElement.arguments[argIdx]) == 0)
 				{
 					factMatches = false;
-					//std::cerr << "Sort does not match" << std::endl;
+					std::cerr << "Sort does not match" << std::endl;
 					break;
 				}
 
@@ -598,21 +694,43 @@ void gpgMatchPrecondition (
 		if (factMatches)
 		{
 			++totalFactHits;
-			++factHits[actionNo][preconditionIdx];
+			++factHits[actionNo][preconditionIdx][initiallyMatchedPrecondition];
 		}
 
 		if (false && totalFactTests % 10000 == 0)
 		{
+			std::cerr << "========================================" << std::endl;
 			std::cerr << "Total fact misses: " << (totalFactTests - totalFactHits) << " / " << totalFactTests << " = " << std::fixed << std::setprecision (3) << 100.0 * (totalFactTests - totalFactHits) / totalFactTests << " % (" << totalFactHits << " hits)" << std::endl;
 			for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
 			{
 				const auto & action = instance.getAllActions ()[i];
 				std::cerr << "Fact misses for action " << i << " (" << action.name << "):" << std::endl;
-				for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
+				int actionTotal = 0;
+				for (size_t k = 0; k < action.getAntecedents ().size (); ++k)
 				{
-					std::cerr << "    Precondition " << (j + 1) << ": " << (factTests[i][j] - factHits[i][j]) << " / " << factTests[i][j] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j] - factHits[i][j]) / factTests[i][j] << " % (" << factHits[i][j] << " hits)" << std::endl;
+					std::cerr << "  Initially matched: " << k+1 << std::endl;
+					for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
+					{
+						actionTotal += factTests[i][j][k];
+						std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo()) << "): ";
+						std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << std::endl;
+					}
 				}
+				std::cerr << "total: " << actionTotal << std::endl;
 			}
+		}
+
+		// do prediction whether the precondition in the future may still have matching instantiations
+		if (factMatches && preconditionIdx !=  action.getAntecedents().size()-1 && !stateMap.hasPotentiallyConsistentExtension(actionNo, preconditionIdx, assignedVariables, initiallyMatchedPrecondition)){
+			factFutureRejects[actionNo][preconditionIdx][initiallyMatchedPrecondition]++;
+			factMatches = false;
+		}
+		
+		if (factMatches){
+			if (hierarchyTyping != nullptr &&
+					!hierarchyTyping->isAssignmentCompatible<typename InstanceType::ActionType> (actionNo, assignedVariables))
+				factMatches = false;
+
 		}
 
 		if (factMatches)
@@ -702,6 +820,11 @@ struct GpgTdg
 		return domain.decompositionMethods;
 	}
 
+	const std::string getAntecedantName(int antecedantHeadNo) const
+	{
+		return domain.tasks[antecedantHeadNo].name;
+	}
+
 	bool doesStateFulfillPrecondition (const ActionType & method, VariableAssignment * outputVariableAssignment, const StateType & groundedTask, size_t preconditionIdx) const
 	{
 		const PreconditionType & precondition = method.subtasks[preconditionIdx];
@@ -774,14 +897,23 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 	totalFactHits = 0;
 
 	factTests.clear ();
-	factTests.resize (instance.getNumberOfActions ());
-	for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
-		factTests[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
-
 	factHits.clear ();
+	factFutureRejects.clear ();
+	
+	factTests.resize (instance.getNumberOfActions ());
 	factHits.resize (instance.getNumberOfActions ());
-	for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
+	factFutureRejects.resize (instance.getNumberOfActions ());
+	
+	for (size_t i = 0; i < instance.getNumberOfActions (); ++i){
+		factTests[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
 		factHits[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
+		factFutureRejects[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
+		for (size_t j = 0; j < instance.getAllActions()[i].getAntecedents().size(); j++){
+			factTests[i][j].resize (instance.getAllActions ()[i].getAntecedents ().size ());
+			factHits[i][j].resize (instance.getAllActions ()[i].getAntecedents ().size ());
+			factFutureRejects[i][j].resize (instance.getAllActions ()[i].getAntecedents ().size ());
+		}
+	}
 
 	// First, process all actions without preconditions
 	for (int actionIdx = 0; actionIdx < instance.getNumberOfActions (); ++actionIdx)
@@ -1433,7 +1565,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	}
 	);
 
-#if 0
+#if 1
 	std::vector<int> groundedTasksByTask (domain.nTotalTasks);
 	for (const GroundedTask & task : groundedTasksPg)
 		++groundedTasksByTask[task.taskNo];
@@ -1445,7 +1577,8 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 		for (size_t subtaskIdx = 0; subtaskIdx < method.subtasks.size (); ++subtaskIdx)
 		{
 			const TaskWithArguments & subtask = method.subtasks[subtaskIdx];
-			subtasksWithFrequency.push_back (std::make_pair (groundedTasksByTask[subtask.taskNo], subtaskIdx));
+			//subtasksWithFrequency.push_back (std::make_pair (groundedTasksByTask[subtask.taskNo], subtaskIdx));
+			subtasksWithFrequency.push_back (std::make_pair (domain.tasks[subtask.taskNo].variableSorts.size(), subtaskIdx));
 		}
 		std::sort (subtasksWithFrequency.begin (), subtasksWithFrequency.end (), std::greater<std::pair<size_t, int>> ());
 		std::vector<TaskWithArguments> subtasks (method.subtasks.size ());
@@ -1455,7 +1588,13 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			subtasks[subtaskIdx] = method.subtasks[foo.second];
 		}
 		method.subtasks = subtasks;
-		// TODO: sort ordering constraints
+		std::vector<std::pair<int,int>> newOrdering;
+		for (auto & ord : method.orderingConstraints){
+			const auto & before = subtasksWithFrequency[ord.first];
+			const auto & after = subtasksWithFrequency[ord.second];
+			newOrdering.push_back(std::make_pair(before.second, after.second));
+		}
+		method.orderingConstraints = newOrdering;
 	}
 #endif
 
@@ -1637,9 +1776,10 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 
 #endif
 	//TODO: FLAGS!!!
-
+	std::cerr << "Simplifying instance." << std::endl;
 	removeUnnecessaryFacts(domain, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg);
 	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
+	std::cerr << "Writing instance to output." << std::endl;
 	
 
 	int absTask = 0;

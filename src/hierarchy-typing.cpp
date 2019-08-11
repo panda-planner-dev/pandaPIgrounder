@@ -152,7 +152,7 @@ static bool isAssignmentCompatible (const std::vector<PossibleConstants> & possi
 		for (size_t varIdx = 0; varIdx < possibleConstants.size (); ++varIdx)
 		{
 			int varValue = assignedVariables[varIdx];
-			if (possibleConstants[varIdx].count (varValue) == 0)
+			if (assignedVariables.NOT_ASSIGNED != varValue && possibleConstants[varIdx].count (varValue) == 0)
 			{
 				valid = false;
 				break;
