@@ -957,7 +957,7 @@ std::pair<size_t, size_t> groundedPg (std::vector<bool> & factReached, std::vect
 					factsToBeProcessed.push (addFact);
 					factReached[addFact] = true;
 					++reachedFactsCount;
-					std::cerr << "Reached fact " << addFact << " for the first time (task without preconditions)." << std::endl;
+					DEBUG(std::cerr << "Reached fact " << addFact << " for the first time (task without preconditions)." << std::endl);
 				}
 			}
 		}
