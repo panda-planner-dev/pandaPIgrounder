@@ -192,8 +192,8 @@ struct GpgPreprocessedDomain
 			// Determine which preconditions are eligible for optimization
 			// FIXME
 			//if (action.getAntecedents().size() < 6)
-			//for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx)
-			//	eligibleInitialPreconditionsByAction[actionIdx].insert (preconditionIdx);
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx)
+				eligibleInitialPreconditionsByAction[actionIdx].insert (preconditionIdx);
 
 			std::set<int> alreadyAssignedVariables;
 			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx)
@@ -1839,6 +1839,8 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	std::cout << tasksToPrint.size () << " " << resultFacts.size () << std::endl;
 #endif
 
+	std::cerr << "Exiting." << std::endl;
+	_exit (0);
 	//return;
 
 	// Helper vector for sorting the output
