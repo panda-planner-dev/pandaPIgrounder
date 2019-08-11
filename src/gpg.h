@@ -251,6 +251,7 @@ struct GpgStateMap
 
 	/**
 	 * @brief Whether a fact exists for each task, precondition, future precondition and initially matched precondition (-1 if not eligible) and set of assigned variables.
+	 * note that the index of the precondition is moved by one, i.e. 0 represents precondition -1 (i.e. none matched so far) and size-1 is actually size-2 as it is not necessary to check for the last precondition at all
 	 */
 	std::vector<std::vector<std::vector<std::map<int, std::set<std::vector<int>>>>>> consistency;
 
@@ -266,9 +267,9 @@ struct GpgStateMap
 		{
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 			factMap[actionIdx].resize (action.getAntecedents ().size ());
-			consistency[actionIdx].resize (action.getAntecedents ().size ());
+			consistency[actionIdx].resize (action.getAntecedents().size () + 1);
 			
-			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents().size(); preconditionIdx++){
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents().size()+1; preconditionIdx++){
 				consistency[actionIdx][preconditionIdx].resize (action.getAntecedents ().size ());
 			}
 		}
@@ -324,7 +325,7 @@ struct GpgStateMap
 			//continue;
 			
 			// mark as potential future precondition
-			for (size_t pastPreconditionIdx = 0; pastPreconditionIdx < preconditionIdx; pastPreconditionIdx++){
+			for (int pastPreconditionIdx = -1; pastPreconditionIdx < preconditionIdx; pastPreconditionIdx++){
 				
 				// Ineligible initially matched precondition
 				std::vector<int> values;
@@ -338,7 +339,7 @@ struct GpgStateMap
 						values.push_back (stateElement.arguments[argumentIdx]);
 					}
 				}
-				consistency[actionIdx][pastPreconditionIdx][preconditionIdx][-1].insert(values);
+				consistency[actionIdx][pastPreconditionIdx+1][preconditionIdx][-1].insert(values);
 	
 				// Eligible initially matched preconditions
 				for (int initiallyMatchedPreconditionIdx : preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx])
@@ -353,7 +354,7 @@ struct GpgStateMap
 						}
 					}
 	
-					consistency[actionIdx][pastPreconditionIdx][preconditionIdx][initiallyMatchedPreconditionIdx].insert(values);
+					consistency[actionIdx][pastPreconditionIdx+1][preconditionIdx][initiallyMatchedPreconditionIdx].insert(values);
 				}
 			}
 
@@ -389,7 +390,8 @@ next_action:;
 
 		return factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][assignedVariableValues];
 	}
-	
+
+	// precondition index may be -1 indicating that no precondition has been set yet, except for the initially matched one	
 	bool hasPotentiallyConsistentExtension (size_t actionIdx, size_t preconditionIdx, const VariableAssignment & assignedVariables, int initiallyMatchedPreconditionIdx){
 		//std::cout << "Call " << actionIdx << " " << preconditionIdx << " " << initiallyMatchedPreconditionIdx << std::endl;
 		//for (auto & v : preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx+1].at (initiallyMatchedPreconditionIdx))
@@ -422,7 +424,7 @@ next_action:;
 				assignedVariableValues.push_back (assignedVariables[var]);
 			}
 
-			if (consistency[actionIdx][preconditionIdx][futurePreconditionIdx][initiallyMatchedPreconditionIdx].count(assignedVariableValues) == 0){
+			if (consistency[actionIdx][preconditionIdx+1][futurePreconditionIdx][initiallyMatchedPreconditionIdx].count(assignedVariableValues) == 0){
 				//std::cout << " -> reject " << std::endl;
 				return false;
 			}
@@ -480,6 +482,8 @@ struct GpgPlanningGraph
 	}
 };
 
+std::map<int,int> liftedGroundingCount;
+
 template <GpgInstance InstanceType>
 static void gpgAssignVariables (
 	const InstanceType & instance,
@@ -528,6 +532,8 @@ static void gpgAssignVariables (
 			return;
 
 		DEBUG (std::cerr << "Found grounded action for action [" << action.name << "]." << std::endl);
+
+		liftedGroundingCount[actionNo]++;
 
 		// Create and return grounded action
 		typename InstanceType::ResultType result;
@@ -605,6 +611,7 @@ std::vector<std::vector<std::vector<size_t>>> factTests;
 size_t totalFactHits = 0;
 std::vector<std::vector<std::vector<size_t>>> factHits;
 std::vector<std::vector<std::vector<size_t>>> factFutureRejects;
+
 
 template<GpgInstance InstanceType>
 void gpgMatchPrecondition (
@@ -697,27 +704,32 @@ void gpgMatchPrecondition (
 			++factHits[actionNo][preconditionIdx][initiallyMatchedPrecondition];
 		}
 
-		if (false && totalFactTests % 10000 == 0)
+		if (false && totalFactTests % 100000 == 0)
 		{
+			bool outputPerPrec = true;
 			std::cerr << "========================================" << std::endl;
 			std::cerr << "Total fact misses: " << (totalFactTests - totalFactHits) << " / " << totalFactTests << " = " << std::fixed << std::setprecision (3) << 100.0 * (totalFactTests - totalFactHits) / totalFactTests << " % (" << totalFactHits << " hits)" << std::endl;
 			for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
 			{
+				if (i != 2) continue;
 				const auto & action = instance.getAllActions ()[i];
 				std::cerr << "Fact misses for action " << i << " (" << action.name << "):" << std::endl;
 				int actionTotal = 0;
 				for (size_t k = 0; k < action.getAntecedents ().size (); ++k)
 				{
-					std::cerr << "  Initially matched: " << k+1 << std::endl;
+					if (outputPerPrec) std::cerr << "  Initially matched: " << k+1 << std::endl;
 					for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
 					{
 						actionTotal += factTests[i][j][k];
-						std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo()) << "): ";
-						std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << std::endl;
+						if (outputPerPrec) std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo()) << "): ";
+						if (outputPerPrec) std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << std::endl;
 					}
 				}
 				std::cerr << "total: " << actionTotal << std::endl;
 			}
+			std::cerr << "Current Groundings: " << std::endl;
+			for (auto g : liftedGroundingCount)
+				std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
 		}
 
 		// do prediction whether the precondition in the future may still have matching instantiations
@@ -915,6 +927,8 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		}
 	}
 
+	std::cerr << "Process actions without preconditions" << std::endl;
+
 	// First, process all actions without preconditions
 	for (int actionIdx = 0; actionIdx < instance.getNumberOfActions (); ++actionIdx)
 	{
@@ -927,6 +941,8 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
 		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions);
 	}
+	
+	std::cerr << "Done." << std::endl;
 
 	while (!toBeProcessedQueue.empty ())
 	{
@@ -949,6 +965,14 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 
 			VariableAssignment assignedVariables (action.variableSorts.size ());
 			if (!instance.doesStateFulfillPrecondition (action, &assignedVariables, stateElement, preconditionIdx))
+				continue;
+		
+			if (action.getAntecedents().size() != 1 &&
+					!stateMap.hasPotentiallyConsistentExtension(actionIdx, -1, assignedVariables, preconditionIdx))
+				continue;
+			
+			if (hierarchyTyping != nullptr &&
+					!hierarchyTyping->isAssignmentCompatible<typename InstanceType::ActionType> (actionIdx, assignedVariables))
 				continue;
 
 			std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
