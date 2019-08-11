@@ -1251,6 +1251,149 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 }
 
 
+
+void removeUnnecessaryFacts(const Domain & domain,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedFacts,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<Fact> & inputFactsGroundedPg){
+
+}
+
+void expandAbstractTasksWithSingleMethod(const Domain & domain,
+		const Problem & problem,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedMethods,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<GroundedMethod> & inputMethodsGroundedTdg){
+
+	std::vector<std::set<int>> taskToMethodsTheyAreContainedIn (inputTasksGroundedPg.size());
+	for (auto & method : inputMethodsGroundedTdg){
+		if (prunedMethods[method.groundedNo]) continue;
+		for (size_t subTaskIdx = 0; subTaskIdx < method.groundedPreconditions.size(); subTaskIdx++)
+			taskToMethodsTheyAreContainedIn[method.groundedPreconditions[subTaskIdx]].insert(method.groundedNo);
+	}
+	
+	// may need to repeat due to empty methods hat might create new unit methods
+	bool emptyExpanded = true;
+	while (emptyExpanded) {
+		emptyExpanded = false;
+		for (auto & groundedTask : inputTasksGroundedPg){
+			if (prunedTasks[groundedTask.groundedNo]) continue;
+			if (groundedTask.taskNo < domain.nPrimitiveTasks) continue;
+			// don't compactify the top method
+			if (groundedTask.taskNo == problem.initialAbstractTask) continue;
+			
+			int applicableIndex = -1;
+			for (auto & groundedMethodIdx : groundedTask.groundedDecompositionMethods)
+			{
+				if (prunedMethods[groundedMethodIdx])
+					continue;
+				if (applicableIndex != -1) {
+					applicableIndex = -2;
+					break;
+				}
+				applicableIndex = groundedMethodIdx;
+			}
+			// it can't be -1, else the TDG would have eliminated it
+			if (applicableIndex == -2) continue;
+			
+			// this method is now pruned ...
+			prunedMethods[applicableIndex] = true;
+			prunedTasks[groundedTask.groundedNo] = true;
+	
+			GroundedMethod & unitGroundedMethod = inputMethodsGroundedTdg[applicableIndex];
+			DecompositionMethod unitLiftedMethod = domain.decompositionMethods[unitGroundedMethod.methodNo];
+	
+			// apply this method in all methods it is occurring
+			DEBUG( std::cerr << "Abstract task " << groundedTask.groundedNo << " has only a single method" << std::endl);
+			for (const int & method : taskToMethodsTheyAreContainedIn[groundedTask.groundedNo]){
+				if (prunedMethods[method]) continue;
+				DEBUG( std::cerr << "expanding in method " << method << std::endl);
+				// copy the lifted method
+				GroundedMethod & groundedMethod = inputMethodsGroundedTdg[method];
+				DecompositionMethod liftedMethod = domain.decompositionMethods[groundedMethod.methodNo];
+				
+				while (true){
+					bool found = false;
+					for (size_t subTaskIdx = 0; subTaskIdx < liftedMethod.subtasks.size(); subTaskIdx++){
+						DEBUG( std::cerr << "Checking  #" << subTaskIdx << " " << groundedMethod.groundedPreconditions[subTaskIdx] << " against " << groundedTask.groundedNo << std::endl);
+						if (groundedMethod.groundedPreconditions[subTaskIdx] == groundedTask.groundedNo){
+							found = true;
+	
+							std::vector<std::pair<int,int>> orderPertainingToThisTask;
+							std::vector<std::pair<int,int>> orderNotPertainingToThisTask;
+							for(auto order : liftedMethod.orderingConstraints)
+								if (order.first == subTaskIdx || order.second == subTaskIdx)
+									orderPertainingToThisTask.push_back(order);
+								else 
+									orderNotPertainingToThisTask.push_back(order);
+		
+							liftedMethod.name += "_applied_to_task_" + subTaskIdx + unitLiftedMethod.name + "[";
+							for (unsigned int i = 0; i < unitGroundedMethod.arguments.size(); i++){
+								if (i) liftedMethod.name += ",";
+								liftedMethod.name += domain.constants[unitGroundedMethod.arguments[i]];
+							}
+							liftedMethod.name += "]";
+	
+							// if the method we have to apply is empty
+							if (unitGroundedMethod.groundedPreconditions.size() == 0){
+								emptyExpanded = true;
+								groundedMethod.groundedPreconditions.erase(groundedMethod.groundedPreconditions.begin() + subTaskIdx);
+								liftedMethod.subtasks.erase(liftedMethod.subtasks.begin() + subTaskIdx);
+								for (auto a : orderPertainingToThisTask) {
+									if (a.second != subTaskIdx) continue;
+									for (auto b : orderPertainingToThisTask) {
+										if (b.first != subTaskIdx) continue;
+										orderNotPertainingToThisTask.push_back(std::make_pair(a.first,b.second));
+									}
+								}
+								liftedMethod.orderingConstraints.clear();
+								for (auto order : orderNotPertainingToThisTask){
+									if (order.first > subTaskIdx) order.first--;
+									if (order.second > subTaskIdx) order.second--;
+									liftedMethod.orderingConstraints.push_back(order);
+								}
+								break; // we can't go on from here, we have to restart the loop. It is too dangerous
+							} else {
+							
+								// set first subtask and add the rest
+								groundedMethod.groundedPreconditions[subTaskIdx] = unitGroundedMethod.groundedPreconditions[0];
+								for (size_t i = 1; i < unitGroundedMethod.groundedPreconditions.size(); i++){
+									for (auto order : orderPertainingToThisTask)
+										if (order.first == subTaskIdx)
+											liftedMethod.orderingConstraints.push_back(std::make_pair(groundedMethod.groundedPreconditions.size(), order.second));
+										else 
+											liftedMethod.orderingConstraints.push_back(std::make_pair(order.first, groundedMethod.groundedPreconditions.size())); 
+									
+									groundedMethod.groundedPreconditions.push_back(unitGroundedMethod.groundedPreconditions[i]);
+									liftedMethod.subtasks.push_back(liftedMethod.subtasks[subTaskIdx]);
+									// add to the name of the method what we have done
+								}
+	
+	
+								// update table accordingly as new tasks are now contained in this method 
+								for (size_t i = 0; i < unitGroundedMethod.groundedPreconditions.size(); i++){
+									taskToMethodsTheyAreContainedIn[unitGroundedMethod.groundedPreconditions[i]].insert(groundedMethod.groundedNo);
+								}
+							}
+						}
+					}
+	
+					if (!found)
+						break;
+				}
+				// write back the new method, i.e. add the lifted version to the domain
+				// the grounded one is a reference, so it does not need to be written back
+				groundedMethod.methodNo = domain.decompositionMethods.size();
+				const_cast<Domain &>(domain).decompositionMethods.push_back(liftedMethod);
+			}	
+		}
+	}
+}
+
+
+
 void doBoth (const Domain & domain, const Problem & problem, bool enableHierarchyTyping, bool outputForPlanner)
 {
 	std::unique_ptr<HierarchyTyping> hierarchyTyping;
@@ -1493,9 +1636,15 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	std::copy_if (inputFactsGroundedPg.begin (), inputFactsGroundedPg.end (), std::back_inserter (resultFacts), [& prunedFacts](const Fact & fact) { return !prunedFacts[fact.groundedNo]; });
 
 #endif
+	//TODO: FLAGS!!!
+
+	removeUnnecessaryFacts(domain, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg);
+	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
+	
 
 	int absTask = 0;
 	int primTask = 0;
+	int methods = 0;
 	for(int i = 0; i < resultTasks.size(); i++)
 		if (! prunedTasks[i]){
 			if (resultTasks[i].taskNo >= domain.nPrimitiveTasks)
@@ -1503,9 +1652,20 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			else
 				primTask++;
 		}
+	for (auto & method : inputMethodsGroundedTdg){
+		if (prunedMethods[method.groundedNo]) continue;
+		methods++;
+	}
 
 	// generate output for the planner if necessary
 	if (outputForPlanner){
+		int evalFact = 0;
+		int evalPrimitive = 0;
+		int evalMethodPrec = 0;
+		int evalAbstract = 0;
+		int evalMethod = 0;
+
+
 		std::cout << ";; #state features" << std::endl;
 		std::cout << remainingFactsCount << std::endl;
 		int fn = 0;
@@ -1520,6 +1680,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			std::cout << "]" << std::endl;
 		}
 		assert(fn == remainingFactsCount);
+		evalFact = fn;
 		std::cout << std::endl;
 
 
@@ -1586,13 +1747,19 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			if (prunedTasks[task.groundedNo]) continue;
 			if (task.taskNo >= domain.nPrimitiveTasks) continue;
 			std::cout << 0 << " ";
+			
+			if (domain.tasks[task.taskNo].name.rfind("method_precondition_",0) == 0)
+				evalMethodPrec++;
+			else
+				evalPrimitive++;
 
+			
 			std::cout << domain.tasks[task.taskNo].name << "[";
 			for (unsigned int i = 0; i < task.arguments.size(); i++){
 				if (i) std::cout << ",";
 				std::cout << domain.constants[task.arguments[i]];
 			}
-			std::cout << std::endl;
+			std::cout << "]" << std::endl;
 		}
 
 		int initialAbstract = -1;
@@ -1603,6 +1770,8 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			if (task.taskNo == problem.initialAbstractTask) initialAbstract = task.outputNo; 
 
 			std::cout << 1 << " ";
+
+			evalAbstract++;
 
 			std::cout << domain.tasks[task.taskNo].name << "[";
 			for (unsigned int i = 0; i < task.arguments.size(); i++){
@@ -1618,7 +1787,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 
 
 		std::cout << std::endl << ";; methods" << std::endl;
-		std::cout << remainingMethodsCount << std::endl;
+		std::cout << methods << std::endl;
 		int mc = 0;
 		for (auto & method : inputMethodsGroundedTdg){
 			if (prunedMethods[method.groundedNo]) continue;
@@ -1631,7 +1800,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			}
 			std::cout << "]" << std::endl;
 
-			// the abstract taks
+			// the abstract tasks
 			std::cout << reachableTasksDfs[method.groundedAddEffects[0]].outputNo << std::endl;
 			for (int & subtask : method.groundedPreconditions){
 				std::cout << reachableTasksDfs[subtask].outputNo << " ";
@@ -1642,10 +1811,12 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 				std::cout << order.first << " " << order.second << " ";
 			std::cout << "-1" << std::endl;
 		}
+		evalMethod = mc;
 
 
 		// exiting this way is faster as data structures will not be cleared ... who needs this anyway
 		std::cerr << "Exiting." << std::endl;
+		std::cerr << "Statistics: " << evalFact << " " << evalPrimitive << " " << evalMethodPrec << " " << evalAbstract << " " << evalMethod << std::endl;
 		_exit (0);
 	}
 
