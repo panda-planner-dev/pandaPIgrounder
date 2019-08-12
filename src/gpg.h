@@ -38,6 +38,8 @@ concept bool GpgInstance = requires (T instance)
 	requires Literal<typename T::ResultType>;
 	requires Literal<typename T::PreconditionType>;
 
+	//requires bool pruneWithHierarchyTyping;
+	//requires bool pruneWithFutureSatisfiablility;
 	// ...other things?
 };
 
@@ -170,6 +172,7 @@ struct GpgPreprocessedDomain
 	 * that were matched so far).
 	 */
 	std::vector<std::set<int>> eligibleInitialPreconditionsByAction;
+	
 
 	/**
 	 * @brief Preprocesses the given Domain.
@@ -254,7 +257,7 @@ struct GpgStateMap
 	 * note that the index of the precondition is moved by one, i.e. 0 represents precondition -1 (i.e. none matched so far) and size-1 is actually size-2 as it is not necessary to check for the last precondition at all
 	 */
 	std::vector<std::vector<std::vector<std::map<int, std::set<std::vector<int>>>>>> consistency;
-
+	
 	/**
 	 * @brief Initializes the factMap.
 	 */
@@ -322,7 +325,7 @@ struct GpgStateMap
 				factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][values].push_back (stateElement);
 			}
 
-			//continue;
+			if (! instance.pruneWithFutureSatisfiablility[actionIdx]) continue;
 			
 			// mark as potential future precondition
 			for (int pastPreconditionIdx = -1; pastPreconditionIdx < preconditionIdx; pastPreconditionIdx++){
@@ -448,8 +451,16 @@ struct GpgPlanningGraph
 	const Domain & domain;
 
 	const Problem & problem;
+	
+	std::vector<bool> pruneWithHierarchyTyping;
+	std::vector<bool> pruneWithFutureSatisfiablility;
 
-	GpgPlanningGraph (const Domain & domain, const Problem & problem) : domain (domain), problem (problem) {}
+	GpgPlanningGraph (const Domain & domain, const Problem & problem) : domain (domain), problem (problem) {
+		for (size_t i = 0; i < domain.nPrimitiveTasks; i++){
+			pruneWithFutureSatisfiablility.push_back(true);
+			pruneWithHierarchyTyping.push_back(true);
+		}
+	}
 
 	const std::vector<StateType> & getInitialState (void) const
 	{
@@ -479,6 +490,14 @@ struct GpgPlanningGraph
 	bool doesStateFulfillPrecondition (const ActionType & task, VariableAssignment * assignedVariables, const StateType & fact, size_t preconditionIdx) const
 	{
 		return task.doesFactFulfilPrecondition (assignedVariables, domain, fact, preconditionIdx);
+	}
+	
+	void disablePruneWithFutureSatisfiablility(size_t actionIdx){
+		pruneWithFutureSatisfiablility[actionIdx] = false;
+	}
+
+	void disablePruneWithHierarchyTyping(size_t actionIdx){
+		pruneWithHierarchyTyping[actionIdx] = false;
 	}
 };
 
@@ -612,6 +631,39 @@ size_t totalFactHits = 0;
 std::vector<std::vector<std::vector<size_t>>> factHits;
 std::vector<std::vector<std::vector<size_t>>> factFutureRejects;
 
+std::vector<size_t> futureReject;
+std::vector<size_t> futureTests;
+std::vector<size_t> htReject;
+std::vector<size_t> htTests;
+
+template<GpgInstance InstanceType>
+void printStatistics(const InstanceType & instance){
+	bool outputPerPrec = false;
+	std::cerr << "========================================" << std::endl;
+	std::cerr << "Total fact misses: " << (totalFactTests - totalFactHits) << " / " << totalFactTests << " = " << std::fixed << std::setprecision (3) << 100.0 * (totalFactTests - totalFactHits) / totalFactTests << " % (" << totalFactHits << " hits)" << std::endl;
+	for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
+	{
+		//if (i != 2) continue;
+		const auto & action = instance.getAllActions ()[i];
+		std::cerr << "Fact misses for action " << i << " (" << action.name << "):" << std::endl;
+		std::cerr << "Rejects Future: " << futureReject[i] << " HT: " << htReject[i] << std::endl;
+		int actionTotal = 0;
+		for (size_t k = 0; k < action.getAntecedents ().size (); ++k)
+		{
+			if (outputPerPrec) std::cerr << "  Initially matched: " << k+1 << std::endl;
+			for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
+			{
+				actionTotal += factTests[i][j][k];
+				if (outputPerPrec) std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo()) << "): ";
+				if (outputPerPrec) std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << std::endl;
+			}
+		}
+		std::cerr << "total: " << actionTotal << std::endl;
+	}
+	std::cerr << "Current Groundings: " << std::endl;
+	for (auto g : liftedGroundingCount)
+		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
+}
 
 template<GpgInstance InstanceType>
 void gpgMatchPrecondition (
@@ -704,45 +756,40 @@ void gpgMatchPrecondition (
 			++factHits[actionNo][preconditionIdx][initiallyMatchedPrecondition];
 		}
 
-		if (false && totalFactTests % 100000 == 0)
-		{
-			bool outputPerPrec = true;
-			std::cerr << "========================================" << std::endl;
-			std::cerr << "Total fact misses: " << (totalFactTests - totalFactHits) << " / " << totalFactTests << " = " << std::fixed << std::setprecision (3) << 100.0 * (totalFactTests - totalFactHits) / totalFactTests << " % (" << totalFactHits << " hits)" << std::endl;
-			for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
-			{
-				if (i != 2) continue;
-				const auto & action = instance.getAllActions ()[i];
-				std::cerr << "Fact misses for action " << i << " (" << action.name << "):" << std::endl;
-				int actionTotal = 0;
-				for (size_t k = 0; k < action.getAntecedents ().size (); ++k)
-				{
-					if (outputPerPrec) std::cerr << "  Initially matched: " << k+1 << std::endl;
-					for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
-					{
-						actionTotal += factTests[i][j][k];
-						if (outputPerPrec) std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo()) << "): ";
-						if (outputPerPrec) std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << std::endl;
-					}
-				}
-				std::cerr << "total: " << actionTotal << std::endl;
-			}
-			std::cerr << "Current Groundings: " << std::endl;
-			for (auto g : liftedGroundingCount)
-				std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
-		}
-
 		// do prediction whether the precondition in the future may still have matching instantiations
-		if (factMatches && preconditionIdx !=  action.getAntecedents().size()-1 && !stateMap.hasPotentiallyConsistentExtension(actionNo, preconditionIdx, assignedVariables, initiallyMatchedPrecondition)){
-			factFutureRejects[actionNo][preconditionIdx][initiallyMatchedPrecondition]++;
-			factMatches = false;
+		if (factMatches && instance.pruneWithFutureSatisfiablility[actionNo]
+				&&preconditionIdx !=  action.getAntecedents().size()-1){
+			futureTests[actionNo]++;
+			if (!stateMap.hasPotentiallyConsistentExtension(actionNo, preconditionIdx, assignedVariables, initiallyMatchedPrecondition)){
+				factFutureRejects[actionNo][preconditionIdx][initiallyMatchedPrecondition]++;
+				factMatches = false;
+				futureReject[actionNo]++;
+			}
 		}
 		
-		if (factMatches){
-			if (hierarchyTyping != nullptr &&
-					!hierarchyTyping->isAssignmentCompatible<typename InstanceType::ActionType> (actionNo, assignedVariables))
+		if (factMatches && instance.pruneWithHierarchyTyping[actionNo] && hierarchyTyping != nullptr ){
+			htTests[actionNo]++;
+			if (!hierarchyTyping->isAssignmentCompatible<typename InstanceType::ActionType> (actionNo, assignedVariables)){
 				factMatches = false;
+				htReject[actionNo]++;
+			}
+		}
 
+		if (htTests[actionNo] % 100 == 0 && htTests[actionNo]){
+			const auto & action = instance.getAllActions ()[actionNo];
+			if (instance.pruneWithFutureSatisfiablility[actionNo] && futureReject[actionNo] < futureTests[actionNo] / 10){
+				const_cast<InstanceType &>(instance).disablePruneWithFutureSatisfiablility(actionNo);
+				std::cerr << " ---> Disabling potentially consistent extension checking for action:           " << actionNo << " (" << action.name << ")" << std::endl;
+			}
+			if (instance.pruneWithHierarchyTyping[actionNo] && htReject[actionNo] < htTests[actionNo] / 10){
+				const_cast<InstanceType &>(instance).disablePruneWithHierarchyTyping(actionNo);
+				std::cerr << " ---> Disabling hierarchy typing checking during match precondition for action: " << actionNo << " (" << action.name << ")" << std::endl;
+			}
+		}
+
+		if (false && totalFactTests % 1000 == 0)
+		{
+			printStatistics(instance);
 		}
 
 		if (factMatches)
@@ -810,7 +857,15 @@ struct GpgTdg
 
 	const std::vector<GroundedTask> & tasks;
 
-	GpgTdg (const Domain & domain, const Problem & problem, const std::vector<GroundedTask> & tasks) : domain (domain), problem (problem), tasks (tasks) {}
+	std::vector<bool> pruneWithHierarchyTyping;
+	std::vector<bool> pruneWithFutureSatisfiablility;
+
+	GpgTdg (const Domain & domain, const Problem & problem, const std::vector<GroundedTask> & tasks) : domain (domain), problem (problem), tasks (tasks) {
+		for (size_t i = 0; i < domain.decompositionMethods.size(); i++){
+			pruneWithFutureSatisfiablility.push_back(true);
+			pruneWithHierarchyTyping.push_back(true);
+		}
+	}
 
 	const std::vector<StateType> & getInitialState (void) const
 	{
@@ -868,6 +923,14 @@ struct GpgTdg
 
 		return true;
 	}
+	
+	void disablePruneWithFutureSatisfiablility(size_t actionIdx){
+		pruneWithFutureSatisfiablility[actionIdx] = false;
+	}
+
+	void disablePruneWithHierarchyTyping(size_t actionIdx){
+		pruneWithHierarchyTyping[actionIdx] = false;
+	}
 };
 
 /**
@@ -904,10 +967,18 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		assert (toBeProcessedQueue.size () == toBeProcessedSet.size ());
 	}
 
+
 	// Reset counters
 	totalFactTests = 0;
 	totalFactHits = 0;
-
+	
+	htReject.clear(); htReject.resize(instance.getNumberOfActions());
+	htTests.clear(); htTests.resize(instance.getNumberOfActions());
+	futureReject.clear(); futureReject.resize(instance.getNumberOfActions());
+	futureTests.clear(); futureTests.resize(instance.getNumberOfActions());
+	
+	
+	liftedGroundingCount.clear();
 	factTests.clear ();
 	factHits.clear ();
 	factFutureRejects.clear ();
@@ -967,11 +1038,11 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 			if (!instance.doesStateFulfillPrecondition (action, &assignedVariables, stateElement, preconditionIdx))
 				continue;
 		
-			if (action.getAntecedents().size() != 1 &&
+			if (instance.pruneWithFutureSatisfiablility[actionIdx] && action.getAntecedents().size() != 1 &&
 					!stateMap.hasPotentiallyConsistentExtension(actionIdx, -1, assignedVariables, preconditionIdx))
 				continue;
 			
-			if (hierarchyTyping != nullptr &&
+			if (instance.pruneWithHierarchyTyping[actionIdx] && hierarchyTyping != nullptr &&
 					!hierarchyTyping->isAssignmentCompatible<typename InstanceType::ActionType> (actionIdx, assignedVariables))
 				continue;
 
@@ -983,6 +1054,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 
 	outputStateElements = processedStateElements;
 
+	//printStatistics(instance);
 	std::cerr << "Returning from runGpg()." << std::endl;
 }
 
