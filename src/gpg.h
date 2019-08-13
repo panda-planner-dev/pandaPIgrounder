@@ -343,7 +343,8 @@ struct GpgStateMap
 					}
 				}
 				consistency[actionIdx][pastPreconditionIdx+1][preconditionIdx][-1].insert(values);
-	
+
+				continue;	
 				// Eligible initially matched preconditions
 				for (int initiallyMatchedPreconditionIdx : preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx])
 				{
@@ -401,8 +402,11 @@ next_action:;
 		//	std::cout << v << " ";
 		//std::cout << std::endl;
 
-		bool initiallyMatchedPreconditionIsEligible = preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx].count (initiallyMatchedPreconditionIdx) > 0;
-		if (!initiallyMatchedPreconditionIsEligible)
+
+		// for testing: always disregard the initially matched Precondition
+
+		//bool initiallyMatchedPreconditionIsEligible = preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx].count (initiallyMatchedPreconditionIdx) > 0;
+		//if (!initiallyMatchedPreconditionIsEligible)
 			initiallyMatchedPreconditionIdx = -1;
 	
 		const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
@@ -775,8 +779,14 @@ void gpgMatchPrecondition (
 			}
 		}
 
+		/*if (totalFactTests % 10000 == 0)
+			for (int x = 0; x < instance.getNumberOfActions(); x++)
+				std::cerr << "Action " << x << " (" << instance.getAllActions()[x].name << "): " << futureReject[x] << " / " << futureTests[x] << "    " <<
+				   htReject[x] << " / " << htTests[x] << std::endl;
+*/
+
 		if (htTests[actionNo] % 100 == 0 && htTests[actionNo]){
-			const auto & action = instance.getAllActions ()[actionNo];
+			const auto & action = instance.getAllActions()[actionNo];
 			if (instance.pruneWithFutureSatisfiablility[actionNo] && futureReject[actionNo] < futureTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithFutureSatisfiablility(actionNo);
 				std::cerr << " ---> Disabling potentially consistent extension checking for action:           " << actionNo << " (" << action.name << ")" << std::endl;
