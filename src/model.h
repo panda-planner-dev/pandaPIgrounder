@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <variant>
 
 /**
  * @brief Sort (aka type) of a variable.
@@ -188,7 +189,7 @@ struct Task : Operator<PredicateWithArguments>
 	} type; ///< The type of this task. Either Type::PRIMITIVE or Type::ABSTRACT.
 
 	/// The cost to execute this task.
-	int cost;
+	std::vector<std::variant<PredicateWithArguments,int>> costs;
 
 	/// Preconditions that must be fulfilled to execute this task.
 	std::vector<PredicateWithArguments> preconditions;
@@ -230,6 +231,9 @@ struct Domain
 	/// Predicates
 	std::vector<Predicate> predicates;
 
+	/// Functions
+	std::vector<Predicate> functions;
+
 	/// Number of primitive tasks.
 	int nPrimitiveTasks;
 
@@ -253,6 +257,9 @@ struct Problem
 
 	/// List of facts that should be in the goal state. (Not currently processed in any way, but these facts need to be part of the output)
 	std::vector<Fact> goal;
+
+	/// List of function value assertions that are true in the initial state
+	std::vector<std::pair<Fact,int>> init_functions;
 
 	/// The initial abstract task, identified by its number.
 	int initialAbstractTask;

@@ -78,12 +78,42 @@ void readPredicateWithArguments (const Domain & state, std::istream & input, Pre
 	readN (state, input, outputPredicate.arguments, readPrimitive, nArguments);
 }
 
+void readCostStatement (const Domain & state, std::istream & input, std::variant<PredicateWithArguments,int> & outputCosts)
+{
+	std::string cost_type;
+	input >> cost_type;
+
+	if (cost_type == "const"){
+		int cost;
+		input >> cost;
+		outputCosts.emplace<int>(cost);
+	} else {
+		assert(cost_type == "var");
+		PredicateWithArguments predicate;
+
+		input >> predicate.predicateNo;
+		size_t nArguments = state.predicates[predicate.predicateNo].argumentSorts.size ();
+		readN (state, input, predicate.arguments, readPrimitive, nArguments);
+		outputCosts.emplace<PredicateWithArguments>(predicate);
+	}
+}
+
 void readFact (const Domain & state, std::istream & input, Fact & fact)
 {
 	input >> fact.predicateNo;
 
 	size_t nArguments = state.predicates[fact.predicateNo].argumentSorts.size ();
 	readN (state, input, fact.arguments, readPrimitive, nArguments);
+}
+
+
+void readFunctionFact (const Domain & state, std::istream & input, std::pair<Fact,int> & ffact)
+{
+	input >> ffact.first.predicateNo;
+
+	size_t nArguments = state.predicates[ffact.first.predicateNo].argumentSorts.size ();
+	readN (state, input, ffact.first.arguments, readPrimitive, nArguments);
+	input >> ffact.second;
 }
 
 void readTaskWithArguments (const Domain & state, std::istream & input, TaskWithArguments & outputTaskWithArguments)
@@ -114,10 +144,12 @@ void readPrimitiveTask (const Domain & state, std::istream & input, Task & outpu
 	outputTask.type = Task::Type::PRIMITIVE;
 
 	input >> outputTask.name;
-	input >> outputTask.cost;
 
 	// Read number of variables and their sorts
 	readMultiple (state, input, outputTask.variableSorts, readPrimitive);
+
+	// read the cost statements of this action
+	readMultiple (state, input, outputTask.costs, readCostStatement);
 
 	// Preconditions
 	readMultiple (state, input, outputTask.preconditions, readPredicateWithArguments);
@@ -137,7 +169,6 @@ void readAbstractTask (const Domain & state, std::istream & input, Task & output
 	outputTask.type = Task::Type::ABSTRACT;
 
 	input >> outputTask.name;
-	input >> outputTask.cost;
 
 	// Read variable sorts
 	readMultiple (state, input, outputTask.variableSorts, readPrimitive);
@@ -197,6 +228,9 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	// Read predicates
 	readMultiple (state, input, output.predicates, readPredicate);
 
+	// Read functions
+	readMultiple (state, input, output.functions, readPredicate);
+	
 	// Read number of tasks
 	input >> output.nPrimitiveTasks >> output.nAbstractTasks;
 	output.nTotalTasks = output.nPrimitiveTasks + output.nAbstractTasks;
@@ -234,6 +268,9 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	DEBUG (std::cerr << "Reading [" << nInitFacts << "] initial and [" << nGoalFacts << "] goal facts." << std::endl);
 	readN (state, input, outputProblem.init, readFact, nInitFacts);
 	readN (state, input, outputProblem.goal, readFact, nGoalFacts);
+	int nInitFunctions;
+	input >> nInitFunctions;
+	readN (state, input, outputProblem.init_functions, readFunctionFact, nInitFunctions);
 
 	// Read initial task
 	input >> outputProblem.initialAbstractTask;

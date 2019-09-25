@@ -1944,6 +1944,13 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			std::cout << "]" << std::endl;
 		}
 		std::cout << std::endl;
+	
+		
+		std::map<Fact,int> init_functions_map;
+		for (auto & init_function_literal : problem.init_functions){
+			init_functions_map[init_function_literal.first] = init_function_literal.second;
+		}
+
 
 
 		std::cout << ";; Actions" << std::endl;
@@ -1953,8 +1960,26 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
 
 			task.outputNo = ac++;
-			// TODO: for now all actions have cost 1
-			std::cout << 1 << std::endl;
+			
+			// compute the costs for this ground actions
+			std::vector<std::variant<PredicateWithArguments,int>> additive_cost_expressions = domain.tasks[task.taskNo].costs;
+			int costs = 0;
+			for (std::variant<PredicateWithArguments,int> cost_element : additive_cost_expressions){
+				if (std::holds_alternative<int>(cost_element)){
+					costs += std::get<int>(cost_element);
+				} else {
+					PredicateWithArguments function_term = std::get<PredicateWithArguments>(cost_element);
+					// build fact representation of this term with respect to the grounding
+					Fact cost_fact;
+					cost_fact.predicateNo = function_term.predicateNo;
+					for (int & argument_variable : function_term.arguments)
+						cost_fact.arguments.push_back(task.arguments[argument_variable]);
+
+					costs += init_functions_map[cost_fact];
+				}
+			}
+			std::cout << costs << std::endl;
+			
 			for (int & prec : task.groundedPreconditions)
 				std::cout << inputFactsGroundedPg[prec].outputNo << " ";
 			std::cout << -1 << std::endl;
