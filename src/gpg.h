@@ -1488,14 +1488,99 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 	}
 }
 
+void removeDeletingEffectsThatAlsoAdd(const Domain & domain,
+		std::vector<bool> & prunedTasks, 
+		std::vector<GroundedTask> & inputTasksGroundedPg){
+
+	for (GroundedTask & task : inputTasksGroundedPg){
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		for (int & add : task.groundedAddEffects)
+			for (std::vector<int>::iterator del = task.groundedDelEffects.begin(); del != task.groundedDelEffects.end(); del++) 
+				if (add == *del){
+					task.groundedDelEffects.erase(del);
+					break;
+				}
+
+	}
+	
+}
 
 
 void removeUnnecessaryFacts(const Domain & domain,
+		const Problem & problem,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<GroundedTask> & inputTasksGroundedPg,
-		std::vector<Fact> & inputFactsGroundedPg){
+		std::vector<Fact> & inputFactsGroundedPg,
+		std::set<GpgPlanningGraph::StateType> reachableFacts){
+	// find facts that are static
+	// first determine their initial truth value
+	std::vector<bool> initialTruth(prunedFacts.size());
+	// all facts in the initial state are initially true
+	for (const Fact & f : problem.init)
+		initialTruth[reachableFacts.find(f)->groundedNo] = true;
 
+	// check all non-pruned action's effects
+	std::vector<bool> truthChanges (prunedFacts.size());
+	for (GroundedTask & task : inputTasksGroundedPg){
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		// iterate over add and del effects
+		for (int & add : task.groundedAddEffects)
+			if (!initialTruth[add]) // if an actions adds this, but it is not initially true, it might be added
+				truthChanges[add] = true;
+			
+		for (int & del : task.groundedDelEffects)
+			if (initialTruth[del]) // opposite for a del
+				truthChanges[del] = true;
+	}
+
+	// look out for facts whose truth never changes
+	for (int f = 0; f < initialTruth.size(); f++)
+		if (!truthChanges[f]){
+			DEBUG(
+			Fact & fact = inputFactsGroundedPg[f];
+			std::cout << "static predicate " << domain.predicates[fact.predicateNo].name << "[";
+			for (unsigned int i = 0; i < fact.arguments.size(); i++){
+				if (i) std::cout << ",";
+				std::cout << domain.constants[fact.arguments[i]];
+			}
+			std::cout << "]" << std::endl;)
+
+			// prune the fact that does not change its truth value
+			prunedFacts[f] = true;
+		}
+	
+	// look for facts that to not occur in preconditions. They can be removed as well
+	std::vector<bool> occuringInPrecondition (prunedFacts.size());
+	for (GroundedTask & task : inputTasksGroundedPg)
+		for (int & pre : task.groundedPreconditions)
+			occuringInPrecondition[pre] = true;
+	// facts in the goal may also not be removed
+	for (const Fact & f : problem.goal){
+		auto it = reachableFacts.find(f);
+		if (it == reachableFacts.end()){
+			// TODO detect this earlier and do something intelligent
+			std::cerr << "Goal is unreachable ..." << std::endl;
+			_exit(0);
+		}
+		occuringInPrecondition[it->groundedNo] = true;
+	}
+
+	// remove facts that are not contained in preconditions
+	for (int f = 0; f < occuringInPrecondition.size(); f++)
+		if (!occuringInPrecondition[f]){
+			DEBUG(
+			Fact & fact = inputFactsGroundedPg[f];
+			std::cout << "static predicate " << domain.predicates[fact.predicateNo].name << "[";
+			for (unsigned int i = 0; i < fact.arguments.size(); i++){
+				if (i) std::cout << ",";
+				std::cout << domain.constants[fact.arguments[i]];
+			}
+			std::cout << "]" << std::endl;)
+
+			// prune the fact that does not change its truth value
+			prunedFacts[f] = true;
+		}
 }
 
 void expandAbstractTasksWithSingleMethod(const Domain & domain,
@@ -1567,7 +1652,7 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 								else 
 									orderNotPertainingToThisTask.push_back(order);
 		
-							liftedMethod.name += "_applied_to_task_" + subTaskIdx + unitLiftedMethod.name + "[";
+							liftedMethod.name += "_applied_to_task_#" + std::to_string(subTaskIdx) + "_method_" + unitLiftedMethod.name + "[";
 							for (unsigned int i = 0; i < unitGroundedMethod.arguments.size(); i++){
 								if (i) liftedMethod.name += ",";
 								liftedMethod.name += domain.constants[unitGroundedMethod.arguments[i]];
@@ -1883,7 +1968,8 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 #endif
 	//TODO: FLAGS!!!
 	std::cerr << "Simplifying instance." << std::endl;
-	removeUnnecessaryFacts(domain, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg);
+	removeDeletingEffectsThatAlsoAdd(domain, prunedTasks, inputTasksGroundedPg);
+	removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg,reachableFacts);
 	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
 	std::cerr << "Writing instance to output." << std::endl;
 	
@@ -1911,13 +1997,18 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 		int evalAbstract = 0;
 		int evalMethod = 0;
 
-
-		std::cout << ";; #state features" << std::endl;
-		std::cout << remainingFactsCount << std::endl;
+		// assign fact numbers
 		int fn = 0;
 		for (Fact & fact : inputFactsGroundedPg){
 			if (prunedFacts[fact.groundedNo]) continue;
 			fact.outputNo = fn++; // assign actual index to fact
+		}
+		evalFact = fn;
+
+		std::cout << ";; #state features" << std::endl;
+		std::cout << evalFact << std::endl;
+		for (Fact & fact : inputFactsGroundedPg){
+			if (prunedFacts[fact.groundedNo]) continue;
 			std::cout << domain.predicates[fact.predicateNo].name << "[";
 			for (unsigned int i = 0; i < fact.arguments.size(); i++){
 				if (i) std::cout << ",";
@@ -1925,14 +2016,12 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			}
 			std::cout << "]" << std::endl;
 		}
-		assert(fn == remainingFactsCount);
-		evalFact = fn;
 		std::cout << std::endl;
 
 
 		// as long as we can't output true SAS+, we simply output the fact list again
 		std::cout << ";; Mutex Groups" << std::endl;
-		std::cout << remainingFactsCount << std::endl;
+		std::cout << evalFact << std::endl;
 		for (Fact & fact : inputFactsGroundedPg){
 			if (prunedFacts[fact.groundedNo]) continue;
 			std::cout << fact.outputNo << " " << fact.outputNo << " ";
@@ -1981,22 +2070,30 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			std::cout << costs << std::endl;
 			
 			for (int & prec : task.groundedPreconditions)
-				std::cout << inputFactsGroundedPg[prec].outputNo << " ";
+				if (!prunedFacts[prec])
+					std::cout << inputFactsGroundedPg[prec].outputNo << " ";
 			std::cout << -1 << std::endl;
 			
 			for (int & add : task.groundedAddEffects)
-				std::cout << inputFactsGroundedPg[add].outputNo << " ";
+				if (!prunedFacts[add])
+					std::cout << inputFactsGroundedPg[add].outputNo << " ";
 			std::cout << -1 << std::endl;
 			
 			for (int & del : task.groundedDelEffects)
-				std::cout << inputFactsGroundedPg[del].outputNo << " ";
+				if (!prunedFacts[del])
+					std::cout << inputFactsGroundedPg[del].outputNo << " ";
 			std::cout << -1 << std::endl;
 		}
 
 		std::cout << std::endl << ";; initial state" << std::endl;
+		std::set<int> initFacts; // needed for efficient goal checking
 		for (const Fact & f : problem.init){
-			std::cout << inputFactsGroundedPg[reachableFacts.find(f)->groundedNo].outputNo << " ";
+			int groundNo = reachableFacts.find(f)->groundedNo;
+			if (prunedFacts[groundNo]) continue;
+			std::cout << inputFactsGroundedPg[groundNo].outputNo << " ";
+			initFacts.insert(groundNo);
 		}
+		
 		std::cout << -1 << std::endl;
 		std::cout << std::endl << ";; goal" << std::endl;
 		for (const Fact & f : problem.goal){
@@ -2005,6 +2102,15 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 				// TODO detect this earlier and do something intelligent
 				std::cerr << "Goal is unreachable ..." << std::endl;
 				_exit(0);
+			}
+			if (prunedFacts[it->groundedNo]){
+				// check whether it is true ...
+				if (!initFacts.count(it->groundedNo)){
+					// TODO detect this earlier and do something intelligent
+					std::cerr << "Goal is unreachable ..." << std::endl;
+					_exit(0);
+				}
+				continue;
 			}
 			std::cout << inputFactsGroundedPg[it->groundedNo].outputNo << " ";
 		}
