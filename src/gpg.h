@@ -1715,6 +1715,79 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 	}
 }
 
+void pruneEmptyMethodPreconditions(const Domain & domain,
+		std::vector<bool> & prunedFacts,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedMethods,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<GroundedMethod> & inputMethodsGroundedTdg){
+
+	std::vector<std::set<int>> taskToMethodsTheyAreContainedIn (inputTasksGroundedPg.size());
+	for (auto & method : inputMethodsGroundedTdg){
+		if (prunedMethods[method.groundedNo]) continue;
+		for (size_t subTaskIdx = 0; subTaskIdx < method.groundedPreconditions.size(); subTaskIdx++)
+			taskToMethodsTheyAreContainedIn[method.groundedPreconditions[subTaskIdx]].insert(method.groundedNo);
+	}
+
+
+	// find method precondition actions that have no unpruned preconditions
+	std::vector<bool> prunableMethodPrecondition(inputMethodsGroundedTdg.size());
+	for (GroundedTask & task : inputTasksGroundedPg){
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		if (domain.tasks[task.taskNo].name.rfind("method_precondition_",0) != 0) continue;
+		bool unprunedPrecondition = false;
+		for (int & pre : task.groundedPreconditions)
+			if (!prunedFacts[pre]) { unprunedPrecondition = true; break; }
+		if (unprunedPrecondition) continue;
+	
+		// this task is now pruned
+		prunedTasks[task.groundedNo] = true;
+
+		// so remove it from all methods this task is contained in	
+		for (const int & method : taskToMethodsTheyAreContainedIn[task.groundedNo]){
+			if (prunedMethods[method]) continue;
+			DEBUG( std::cerr << "removing task " << task.groundedNo << " from method " << method << std::endl);
+			// copy the lifted method
+			GroundedMethod & groundedMethod = inputMethodsGroundedTdg[method];
+			DecompositionMethod liftedMethod = domain.decompositionMethods[groundedMethod.methodNo];
+			
+			for (size_t subTaskIdx = 0; subTaskIdx < liftedMethod.subtasks.size(); subTaskIdx++){
+				if (groundedMethod.groundedPreconditions[subTaskIdx] != task.groundedNo) continue; 
+
+				std::vector<std::pair<int,int>> orderPertainingToThisTask;
+				std::vector<std::pair<int,int>> orderNotPertainingToThisTask;
+				for(auto order : liftedMethod.orderingConstraints)
+					if (order.first == subTaskIdx || order.second == subTaskIdx)
+						orderPertainingToThisTask.push_back(order);
+					else 
+						orderNotPertainingToThisTask.push_back(order);
+
+				// if the method we have to apply is empty
+				groundedMethod.groundedPreconditions.erase(groundedMethod.groundedPreconditions.begin() + subTaskIdx);
+				liftedMethod.subtasks.erase(liftedMethod.subtasks.begin() + subTaskIdx);
+				for (auto a : orderPertainingToThisTask) {
+					if (a.second != subTaskIdx) continue;
+					for (auto b : orderPertainingToThisTask) {
+						if (b.first != subTaskIdx) continue;
+						orderNotPertainingToThisTask.push_back(std::make_pair(a.first,b.second));
+					}
+				}
+				liftedMethod.orderingConstraints.clear();
+				for (auto order : orderNotPertainingToThisTask){
+					if (order.first > subTaskIdx) order.first--;
+					if (order.second > subTaskIdx) order.second--;
+					liftedMethod.orderingConstraints.push_back(order);
+				}
+			}
+
+			// write back the new method, i.e. add the lifted version to the domain
+			// the grounded one is a reference, so it does not need to be written back
+			groundedMethod.methodNo = domain.decompositionMethods.size();
+			const_cast<Domain &>(domain).decompositionMethods.push_back(liftedMethod);
+		}
+	}
+
+}
 
 
 void doBoth (const Domain & domain, const Problem & problem, bool enableHierarchyTyping, bool outputForPlanner)
@@ -1971,6 +2044,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	removeDeletingEffectsThatAlsoAdd(domain, prunedTasks, inputTasksGroundedPg);
 	removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg,reachableFacts);
 	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
+	pruneEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,inputTasksGroundedPg,inputMethodsGroundedTdg);
 	std::cerr << "Writing instance to output." << std::endl;
 	
 
@@ -2184,7 +2258,11 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			}
 			std::cout << "-1" << std::endl;
 
-			for (auto & order : domain.decompositionMethods[method.methodNo].orderingConstraints)
+			auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;
+			auto last = std::unique(orderings.begin(), orderings.end());
+    		orderings.erase(last, orderings.end());
+
+			for (auto & order : orderings)
 				std::cout << order.first << " " << order.second << " ";
 			std::cout << "-1" << std::endl;
 		}
