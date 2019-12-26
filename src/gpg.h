@@ -1544,7 +1544,7 @@ void removeUnnecessaryFacts(const Domain & domain,
 				if (i) std::cout << ",";
 				std::cout << domain.constants[fact.arguments[i]];
 			}
-			std::cout << "]" << std::endl;)
+			std::cout << "]" << std::endl;);
 
 			// prune the fact that does not change its truth value
 			prunedFacts[f] = true;
@@ -1576,7 +1576,7 @@ void removeUnnecessaryFacts(const Domain & domain,
 				if (i) std::cout << ",";
 				std::cout << domain.constants[fact.arguments[i]];
 			}
-			std::cout << "]" << std::endl;)
+			std::cout << "]" << std::endl;);
 
 			// prune the fact that does not change its truth value
 			prunedFacts[f] = true;
@@ -1620,7 +1620,8 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 			}
 			// it can't be -1, else the TDG would have eliminated it
 			if (applicableIndex == -2) continue;
-			
+			assert(applicableIndex != -1);
+
 			// this method is now pruned ...
 			prunedMethods[applicableIndex] = true;
 			prunedTasks[groundedTask.groundedNo] = true;
@@ -1640,9 +1641,10 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 				while (true){
 					bool found = false;
 					for (size_t subTaskIdx = 0; subTaskIdx < liftedMethod.subtasks.size(); subTaskIdx++){
-						DEBUG( std::cerr << "Checking  #" << subTaskIdx << " " << groundedMethod.groundedPreconditions[subTaskIdx] << " against " << groundedTask.groundedNo << std::endl);
+						DEBUG( std::cerr << "Checking  #" << subTaskIdx << ": " << groundedMethod.groundedPreconditions[subTaskIdx] << " == " << groundedTask.groundedNo << "?" << std::endl);
 						if (groundedMethod.groundedPreconditions[subTaskIdx] == groundedTask.groundedNo){
 							found = true;
+							DEBUG( std::cerr << "Yes, so expand it" << std::endl);
 	
 							std::vector<std::pair<int,int>> orderPertainingToThisTask;
 							std::vector<std::pair<int,int>> orderNotPertainingToThisTask;
@@ -1661,9 +1663,11 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 	
 							// if the method we have to apply is empty
 							if (unitGroundedMethod.groundedPreconditions.size() == 0){
+								DEBUG( std::cerr << "Applied method is empty." << std::endl);
 								emptyExpanded = true;
 								groundedMethod.groundedPreconditions.erase(groundedMethod.groundedPreconditions.begin() + subTaskIdx);
 								liftedMethod.subtasks.erase(liftedMethod.subtasks.begin() + subTaskIdx);
+								// orderings that were transitively induced using the removed task
 								for (auto a : orderPertainingToThisTask) {
 									if (a.second != subTaskIdx) continue;
 									for (auto b : orderPertainingToThisTask) {
@@ -1679,9 +1683,10 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 								}
 								break; // we can't go on from here, we have to restart the loop. It is too dangerous
 							} else {
-							
+								DEBUG( std::cerr << "Applied method is not empty." << std::endl);
 								// set first subtask and add the rest
 								groundedMethod.groundedPreconditions[subTaskIdx] = unitGroundedMethod.groundedPreconditions[0];
+								int originalMethodSize = groundedMethod.groundedPreconditions.size();
 								for (size_t i = 1; i < unitGroundedMethod.groundedPreconditions.size(); i++){
 									for (auto order : orderPertainingToThisTask)
 										if (order.first == subTaskIdx)
@@ -1692,6 +1697,14 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 									groundedMethod.groundedPreconditions.push_back(unitGroundedMethod.groundedPreconditions[i]);
 									liftedMethod.subtasks.push_back(liftedMethod.subtasks[subTaskIdx]);
 									// add to the name of the method what we have done
+								}
+								for (auto order : unitLiftedMethod.orderingConstraints) {
+									if (order.first == 0) // the replaced task
+										liftedMethod.orderingConstraints.push_back(std::make_pair(subTaskIdx, order.second - 1 + originalMethodSize));
+									else if (order.second == 0) // the replaced task
+										liftedMethod.orderingConstraints.push_back(std::make_pair(order.first - 1 + originalMethodSize, subTaskIdx)); 
+									else
+										liftedMethod.orderingConstraints.push_back(std::make_pair(order.first - 1 + originalMethodSize, order.second - 1 + originalMethodSize)); 
 								}
 	
 	
@@ -2044,7 +2057,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	removeDeletingEffectsThatAlsoAdd(domain, prunedTasks, inputTasksGroundedPg);
 	removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg,reachableFacts);
 	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
-	pruneEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,inputTasksGroundedPg,inputMethodsGroundedTdg);
+	//pruneEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,inputTasksGroundedPg,inputMethodsGroundedTdg);
 	std::cerr << "Writing instance to output." << std::endl;
 	
 
