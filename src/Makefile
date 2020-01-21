@@ -12,7 +12,7 @@ CDEFS=
 # Warning settings
 #CWARN=-Wno-declaration-after-statement -Wno-variadic-macros
 CWARN=-Wno-unused-parameter -Wno-sign-compare
-CERROR=-Werror=implicit-function-declaration
+CERROR=
 
 # CFlags for libraries
 CXXFLAGS_LIBS=

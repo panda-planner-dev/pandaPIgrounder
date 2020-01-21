@@ -1505,6 +1505,49 @@ void removeDeletingEffectsThatAlsoAdd(const Domain & domain,
 	
 }
 
+void applyEffectPriority(const Domain & domain,
+		std::vector<bool> & prunedTasks,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<Fact> & inputFactsGroundedPg){
+
+	for (GroundedTask & task : inputTasksGroundedPg){
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+
+		std::set<int> addSet;
+		for (int & add : task.groundedAddEffects) addSet.insert(add);
+
+		// look for del effects that are also del effects
+		std::set<int> addToRemove;
+		std::set<int> delToRemove;
+		for (int & del : task.groundedDelEffects)
+			if (addSet.count(del)){
+				// edge case, if this is a negated original predicate, then the del effect takes precedence
+				Fact & fact = inputFactsGroundedPg[del];
+				if (domain.predicates[fact.predicateNo].name[0] != '-')
+					delToRemove.insert(del);
+				else
+					addToRemove.insert(del);
+			}
+
+		if (addToRemove.size()){
+			std::vector<int> newAdd;
+			for (int & add : task.groundedAddEffects)
+				if (! addToRemove.count(add))
+					newAdd.push_back(add);
+			task.groundedAddEffects = newAdd;
+		}
+
+		if (delToRemove.size()){
+			std::vector<int> newDel;
+			for (int & del : task.groundedDelEffects)
+				if (! delToRemove.count(del))
+					newDel.push_back(del);
+			task.groundedDelEffects = newDel;
+		}
+
+	}
+}
+
 
 void removeUnnecessaryFacts(const Domain & domain,
 		const Problem & problem,
@@ -2054,8 +2097,9 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 #endif
 	//TODO: FLAGS!!!
 	std::cerr << "Simplifying instance." << std::endl;
+	applyEffectPriority(domain, prunedTasks, reachableTasksDfs, inputFactsGroundedPg);
 	removeDeletingEffectsThatAlsoAdd(domain, prunedTasks, inputTasksGroundedPg);
-	removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg,reachableFacts);
+	removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, reachableTasksDfs, inputFactsGroundedPg,reachableFacts);
 	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
 	//pruneEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,inputTasksGroundedPg,inputMethodsGroundedTdg);
 	std::cerr << "Writing instance to output." << std::endl;
