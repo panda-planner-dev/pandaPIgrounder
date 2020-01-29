@@ -831,6 +831,9 @@ struct GroundedMethod
 	/// List of grounded preconditions (subtasks)
 	std::vector<int> groundedPreconditions;
 
+	/// distinct topological ordering of the subtasks (for output and compliance with verification)
+	std::vector<int> preconditionOrdering;
+
 	/// List of grounded add effects (exactly one abstract task)
 	std::vector<int> groundedAddEffects;
 
@@ -1506,6 +1509,45 @@ void removeDeletingEffectsThatAlsoAdd(const Domain & domain,
 	
 }
 
+void topsort_dfs(int a,std::vector<std::vector<int>> & adj, std::vector<int> & od, int & p, std::vector<int> & v) {
+	assert(v[a]!=1);
+	if(v[a]) return;
+	v[a] = 1; // gray
+	for(size_t i = 0; i < adj[a].size(); i++) topsort_dfs(adj[a][i],adj,od,p,v);
+	v[a] = 2; // black
+	od[p] = a; p--;
+}
+
+void topsort(std::vector<std::vector<int>> & adj, std::vector<int> & od) {
+	int n = adj.size();
+	std::vector<int> v(n);
+	od.resize(n);
+	for(int i = 0; i < n; i++) v[i]=0; //white
+	int p=n-1;
+	for(int i = 0; i < n; i++) if(!v[i]) topsort_dfs(i,adj,od,p,v);
+}
+
+void sortSubtasksOfMethodsTopologically(const Domain & domain,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedMethods,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<GroundedMethod> & inputMethodsGroundedTdg){
+	for (GroundedMethod & method : inputMethodsGroundedTdg){
+		if (prunedMethods[method.groundedNo]) continue;
+		
+		// find a topological ordering of the subtasks
+		std::vector<std::vector<int>> adj(method.groundedPreconditions.size());
+		
+		auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;
+		for (std::pair<int,int> ordering : orderings)
+			adj[ordering.first].push_back(ordering.second);
+
+		topsort(adj, method.preconditionOrdering);
+
+	}
+}
+
+
 void applyEffectPriority(const Domain & domain,
 		std::vector<bool> & prunedTasks,
 		std::vector<GroundedTask> & inputTasksGroundedPg,
@@ -1672,6 +1714,13 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 	
 			GroundedMethod & unitGroundedMethod = inputMethodsGroundedTdg[applicableIndex];
 			DecompositionMethod unitLiftedMethod = domain.decompositionMethods[unitGroundedMethod.methodNo];
+
+			std::string decomposedTaskName = domain.tasks[groundedTask.taskNo].name + "[";
+			for (size_t i = 0; i < groundedTask.arguments.size(); i++){
+				if (i) decomposedTaskName += ",";
+				decomposedTaskName += domain.constants[groundedTask.arguments[i]];
+			}
+			decomposedTaskName += "]";
 	
 			// apply this method in all methods it is occurring
 			DEBUG( std::cerr << "Abstract task " << groundedTask.groundedNo << " has only a single method" << std::endl);
@@ -1698,12 +1747,9 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 								else 
 									orderNotPertainingToThisTask.push_back(order);
 		
-							liftedMethod.name += "_applied_to_task_#" + std::to_string(subTaskIdx) + "_method_" + unitLiftedMethod.name + "[";
-							for (unsigned int i = 0; i < unitGroundedMethod.arguments.size(); i++){
-								if (i) liftedMethod.name += ",";
-								liftedMethod.name += domain.constants[unitGroundedMethod.arguments[i]];
-							}
-							liftedMethod.name += "]";
+							
+							std::vector<int> idmapping;
+							int positionOfExpanded = -1;
 	
 							// if the method we have to apply is empty
 							if (unitGroundedMethod.groundedPreconditions.size() == 0){
@@ -1711,6 +1757,21 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 								emptyExpanded = true;
 								groundedMethod.groundedPreconditions.erase(groundedMethod.groundedPreconditions.begin() + subTaskIdx);
 								liftedMethod.subtasks.erase(liftedMethod.subtasks.begin() + subTaskIdx);
+								// adapt the ordering of the subtasks accordingly
+
+								std::vector<int> newOrder;
+								for (size_t i = 0; i < groundedMethod.preconditionOrdering.size(); i++){
+									if (groundedMethod.preconditionOrdering[i] == subTaskIdx){
+										positionOfExpanded = i;
+									} else {
+										bool afterDeleted = groundedMethod.preconditionOrdering[i] > subTaskIdx;
+										newOrder.push_back(groundedMethod.preconditionOrdering[i] - (afterDeleted?1:0));
+										idmapping.push_back(i);
+									}
+								}
+
+								groundedMethod.preconditionOrdering = newOrder;
+
 								// orderings that were transitively induced using the removed task
 								for (auto a : orderPertainingToThisTask) {
 									if (a.second != subTaskIdx) continue;
@@ -1742,6 +1803,34 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 									liftedMethod.subtasks.push_back(liftedMethod.subtasks[subTaskIdx]);
 									// add to the name of the method what we have done
 								}
+
+								// update the ordering
+								std::vector<int> newOrdering;
+								for (size_t i = 0; i < groundedMethod.preconditionOrdering.size(); i++){
+									if (groundedMethod.preconditionOrdering[i] == subTaskIdx){
+										positionOfExpanded = i;
+										// insert the ordering of the unit method here
+									
+										for (size_t j = 0; j < unitGroundedMethod.preconditionOrdering.size(); j++){
+											int unitTaskID = unitGroundedMethod.preconditionOrdering[j];
+											if (unitTaskID == 0){
+												// the re-used task
+												newOrdering.push_back(groundedMethod.preconditionOrdering[i]);
+											} else {
+												newOrdering.push_back(groundedMethod.preconditionOrdering.size() + unitTaskID - 1);
+											}
+											idmapping.push_back(-j-1);
+										}
+
+										//
+									} else {
+										newOrdering.push_back(groundedMethod.preconditionOrdering[i]);
+										idmapping.push_back(i);
+									}
+								}
+								groundedMethod.preconditionOrdering = newOrdering;
+
+
 								for (auto order : unitLiftedMethod.orderingConstraints) {
 									if (order.first == 0) // the replaced task
 										liftedMethod.orderingConstraints.push_back(std::make_pair(subTaskIdx, order.second - 1 + originalMethodSize));
@@ -1757,6 +1846,15 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 									taskToMethodsTheyAreContainedIn[unitGroundedMethod.groundedPreconditions[i]].insert(groundedMethod.groundedNo);
 								}
 							}
+
+							// create the correct name of the new method so that the plan extractor can extract the correct
+							liftedMethod.name = "<" + liftedMethod.name + ";" + decomposedTaskName + ";" + unitLiftedMethod.name + ";";
+							liftedMethod.name += std::to_string(positionOfExpanded) + ";";
+							for (size_t i = 0; i < idmapping.size(); i++){
+								if (i) liftedMethod.name += ",";
+								liftedMethod.name += std::to_string(idmapping[i]);
+							}
+							liftedMethod.name += ">";
 						}
 					}
 	
@@ -2096,6 +2194,10 @@ void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout
 	std::copy_if (inputFactsGroundedPg.begin (), inputFactsGroundedPg.end (), std::back_inserter (resultFacts), [& prunedFacts](const Fact & fact) { return !prunedFacts[fact.groundedNo]; });
 
 #endif
+	// sort the subtasks of each method topologically s.t. 
+	sortSubtasksOfMethodsTopologically(domain, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
+		
+	
 	//TODO: FLAGS!!!
 	if (!quietMode) std::cerr << "Simplifying instance." << std::endl;
 	applyEffectPriority(domain, prunedTasks, reachableTasksDfs, inputFactsGroundedPg);
@@ -2302,17 +2404,26 @@ void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout
 			if (prunedMethods[method.groundedNo]) continue;
 			mc++;
 			// output their name
-			pout << domain.decompositionMethods[method.methodNo].name << "[";
+			pout << domain.decompositionMethods[method.methodNo].name << std::endl;
+			/* method names may not contained variables for verification
+			 * TODO maybe add a FLAG here (for debugging the planner)
+			<< "[";
 			for (unsigned int i = 0; i < method.arguments.size(); i++){
 				if (i) pout << ",";
 				pout << domain.constants[method.arguments[i]];
 			}
-			pout << "]" << std::endl;
+			pout << "]" << std::endl;*/
 
 			// the abstract tasks
 			pout << reachableTasksDfs[method.groundedAddEffects[0]].outputNo << std::endl;
-			for (int & subtask : method.groundedPreconditions){
-				pout << reachableTasksDfs[subtask].outputNo << " ";
+			
+			std::map<int,int> subTaskIndexToOutputIndex;
+			// output subtasks in their topological ordering
+			for (size_t outputIndex = 0; outputIndex < method.preconditionOrdering.size(); outputIndex++){
+				int subtaskIndex = method.preconditionOrdering[outputIndex];
+				subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
+
+				pout << reachableTasksDfs[method.groundedPreconditions[subtaskIndex]].outputNo << " ";
 			}
 			pout << "-1" << std::endl;
 
@@ -2320,8 +2431,9 @@ void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout
 			auto last = std::unique(orderings.begin(), orderings.end());
     		orderings.erase(last, orderings.end());
 
+
 			for (auto & order : orderings)
-				pout << order.first << " " << order.second << " ";
+				pout << subTaskIndexToOutputIndex[order.first] << " " << subTaskIndexToOutputIndex[order.second] << " ";
 			pout << "-1" << std::endl;
 		}
 		evalMethod = mc;
