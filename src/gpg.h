@@ -16,6 +16,7 @@
 #include <set>
 #include <sstream>
 #include <vector>
+#include <ostream>
 
 #include <cassert>
 
@@ -947,7 +948,7 @@ struct GpgTdg
  * TODO
  */
 template<GpgInstance InstanceType>
-void runGpg (const InstanceType & instance, std::vector<typename InstanceType::ResultType> & output, std::set<typename InstanceType::StateType> & outputStateElements, const HierarchyTyping * hierarchyTyping)
+void runGpg (const InstanceType & instance, std::vector<typename InstanceType::ResultType> & output, std::set<typename InstanceType::StateType> & outputStateElements, const HierarchyTyping * hierarchyTyping, bool quietMode)
 {
 	output.clear ();
 
@@ -1008,7 +1009,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		}
 	}
 
-	std::cerr << "Process actions without preconditions" << std::endl;
+	if (!quietMode) std::cerr << "Process actions without preconditions" << std::endl;
 
 	// First, process all actions without preconditions
 	for (int actionIdx = 0; actionIdx < instance.getNumberOfActions (); ++actionIdx)
@@ -1023,7 +1024,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions);
 	}
 	
-	std::cerr << "Done." << std::endl;
+	if (!quietMode) std::cerr << "Done." << std::endl;
 
 	while (!toBeProcessedQueue.empty ())
 	{
@@ -1065,7 +1066,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 	outputStateElements = processedStateElements;
 
 	//printStatistics(instance);
-	std::cerr << "Returning from runGpg()." << std::endl;
+	if (!quietMode) std::cerr << "Returning from runGpg()." << std::endl;
 }
 
 // Returns the new number of the visited grounded task
@@ -1846,23 +1847,23 @@ void pruneEmptyMethodPreconditions(const Domain & domain,
 }
 
 
-void doBoth (const Domain & domain, const Problem & problem, bool enableHierarchyTyping, bool outputForPlanner)
+void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout, bool enableHierarchyTyping, bool outputForPlanner, bool quietMode)
 {
 	std::unique_ptr<HierarchyTyping> hierarchyTyping;
 	if (enableHierarchyTyping)
 		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
 
-	std::cerr << "Running PG." << std::endl;
+	if (!quietMode) std::cerr << "Running PG." << std::endl;
 	GpgPlanningGraph pg (domain, problem);
 	std::vector<GpgPlanningGraph::ResultType> groundedTasksPg;
 	std::set<GpgPlanningGraph::StateType> reachableFacts;
-	runGpg (pg, groundedTasksPg, reachableFacts, hierarchyTyping.get ());
+	runGpg (pg, groundedTasksPg, reachableFacts, hierarchyTyping.get (), quietMode);
 	assignGroundNosToDeleteEffects(domain, groundedTasksPg, reachableFacts);
 
 	validateGroundedList (groundedTasksPg);
 
-	std::cerr << "PG done." << std::endl;
-	std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
+	if (!quietMode) std::cerr << "PG done." << std::endl;
+	if (!quietMode) std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
 
 #ifdef PRINT_DEBUG_STUFF
 	std::cerr << "After lifted PG:" << std::endl;
@@ -1921,13 +1922,13 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 #ifndef TDG
 	const std::vector<GroundedTask> tasksToPrint = groundedTasksPg;
 #else
-	std::cerr << "Running TDG." << std::endl;
+	if (!quietMode) std::cerr << "Running TDG." << std::endl;
 	GpgTdg tdg (domain, problem, groundedTasksPg);
 	std::vector<GpgTdg::ResultType> groundedMethods;
 	std::set<GpgTdg::StateType> groundedTaskSetTdg;
-	runGpg (tdg, groundedMethods, groundedTaskSetTdg, hierarchyTyping.get ());
-	std::cerr << "TDG done." << std::endl;
-	std::cerr << "Calculated [" << groundedTaskSetTdg.size () << "] grounded tasks and [" << groundedMethods.size () << "] grounded decomposition methods." << std::endl;
+	runGpg (tdg, groundedMethods, groundedTaskSetTdg, hierarchyTyping.get (), quietMode);
+	if (!quietMode) std::cerr << "TDG done." << std::endl;
+	if (!quietMode) std::cerr << "Calculated [" << groundedTaskSetTdg.size () << "] grounded tasks and [" << groundedMethods.size () << "] grounded decomposition methods." << std::endl;
 
 	validateGroundedList (groundedMethods);
 
@@ -1978,12 +1979,12 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	);
 
 	// Perform DFS
-	std::cerr << "Performing DFS." << std::endl;
+	if (!quietMode) std::cerr << "Performing DFS." << std::endl;
 	std::vector<GroundedTask> reachableTasksDfs;
 	std::vector<GroundedMethod> reachableMethodsDfs;
 	tdgDfs (reachableTasksDfs, reachableMethodsDfs, groundedTasksTdg, groundedMethods, domain, problem);
-	std::cerr << "DFS done." << std::endl;
-	std::cerr << "After DFS: " << reachableTasksDfs.size () << " tasks, " << reachableMethodsDfs.size () << " methods." << std::endl;
+	if (!quietMode) std::cerr << "DFS done." << std::endl;
+	if (!quietMode) std::cerr << "After DFS: " << reachableTasksDfs.size () << " tasks, " << reachableMethodsDfs.size () << " methods." << std::endl;
 
 #ifdef PRINT_DEBUG_STUFF
 	size_t tmp = 0;
@@ -2038,8 +2039,8 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 		std::vector<int> unfulfilledPreconditions;
 		auto [reachedTasksCount, reachedFactsCount] = groundedPg (factReached, unfulfilledPreconditions, prunedTasks, prunedFacts, inputTasksGroundedPg, inputFactsGroundedPg, domain, problem);
 
-		std::cerr << "Grounded PG:" << std::endl;
-		std::cerr << "Input was [" << remainingPrimitiveTasks << ", " << remainingFactsCount << "], output was [" << reachedTasksCount << ", " << reachedFactsCount << "]." << std::endl;
+		if (!quietMode) std::cerr << "Grounded PG:" << std::endl;
+		if (!quietMode) std::cerr << "Input was [" << remainingPrimitiveTasks << ", " << remainingFactsCount << "], output was [" << reachedTasksCount << ", " << reachedFactsCount << "]." << std::endl;
 #ifdef PRINT_DEBUG_STUFF
 		for (size_t taskIdx = 0; taskIdx < inputTasksGroundedPg.size (); ++taskIdx)
 		{
@@ -2060,8 +2061,8 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 		std::vector<bool> taskReached;
 		//std::vector<int> unfulfilledPreconditions;
 		auto [reachedMethodsCount, reachedTasksCountTdg] = groundedTdg (taskReached, unfulfilledPreconditions, prunedMethods, prunedTasks, inputMethodsGroundedTdg, inputTasksGroundedPg, domain, problem);
-		std::cerr << "Grounded TDG:" << std::endl;
-		std::cerr << "Input was [" << remainingMethodsCount << ", " << remainingPrimitiveTasks << "], output was [" << reachedMethodsCount << ", " << reachedTasksCountTdg << "]." << std::endl;
+		if (!quietMode) std::cerr << "Grounded TDG:" << std::endl;
+		if (!quietMode) std::cerr << "Input was [" << remainingMethodsCount << ", " << remainingPrimitiveTasks << "], output was [" << reachedMethodsCount << ", " << reachedTasksCountTdg << "]." << std::endl;
 
 		// Do DFS
 		auto [reachedPrimitiveTasksCountDfs, reachedMethodsCountDfs] = groundedTdgDfs (prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg, domain, problem);
@@ -2078,7 +2079,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	// FIXME
 	resultTasks = inputTasksGroundedPg;
 
-	std::cerr << "Copying tasks." << std::endl;
+	if (!quietMode) std::cerr << "Copying tasks." << std::endl;
 	std::vector<GroundedTask> tasksToPrint;
 #if 0
 	std::copy_if (resultTasks.begin (), resultTasks.end (), std::back_inserter (tasksToPrint), [& domain](const GroundedTask & task) { return task.taskNo < domain.nPrimitiveTasks; });
@@ -2089,20 +2090,20 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 	std::vector<GroundedMethod> methodsToPrint;
 	//std::copy_if (reachableMethodsDfs.begin (), reachableMethodsDfs.end (), std::back_inserter (methodsToPrint), [& domain, & problem](const GroundedMethod & method) { return domain.decompositionMethods[method.methodNo].taskNo != problem.initialAbstractTask; });
 	std::copy_if (inputMethodsGroundedTdg.begin (), inputMethodsGroundedTdg.end (), std::back_inserter (methodsToPrint), [& domain, & problem, & prunedMethods](const GroundedMethod & method) { return domain.decompositionMethods[method.methodNo].taskNo != problem.initialAbstractTask && !prunedMethods[method.groundedNo]; });
-	std::cerr << "Done." << std::endl;
+	if (!quietMode) std::cerr << "Done." << std::endl;
 
 	//resultFacts; clear?
 	std::copy_if (inputFactsGroundedPg.begin (), inputFactsGroundedPg.end (), std::back_inserter (resultFacts), [& prunedFacts](const Fact & fact) { return !prunedFacts[fact.groundedNo]; });
 
 #endif
 	//TODO: FLAGS!!!
-	std::cerr << "Simplifying instance." << std::endl;
+	if (!quietMode) std::cerr << "Simplifying instance." << std::endl;
 	applyEffectPriority(domain, prunedTasks, reachableTasksDfs, inputFactsGroundedPg);
 	removeDeletingEffectsThatAlsoAdd(domain, prunedTasks, inputTasksGroundedPg);
 	removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, reachableTasksDfs, inputFactsGroundedPg,reachableFacts);
 	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
-	//pruneEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,inputTasksGroundedPg,inputMethodsGroundedTdg);
-	std::cerr << "Writing instance to output." << std::endl;
+	pruneEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,inputTasksGroundedPg,inputMethodsGroundedTdg);
+	if (!quietMode) std::cerr << "Writing instance to output." << std::endl;
 	
 
 	int absTask = 0;
@@ -2136,34 +2137,34 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 		}
 		evalFact = fn;
 
-		std::cout << ";; #state features" << std::endl;
-		std::cout << evalFact << std::endl;
+		pout << ";; #state features" << std::endl;
+		pout << evalFact << std::endl;
 		for (Fact & fact : inputFactsGroundedPg){
 			if (prunedFacts[fact.groundedNo]) continue;
-			std::cout << domain.predicates[fact.predicateNo].name << "[";
+			pout << domain.predicates[fact.predicateNo].name << "[";
 			for (unsigned int i = 0; i < fact.arguments.size(); i++){
-				if (i) std::cout << ",";
-				std::cout << domain.constants[fact.arguments[i]];
+				if (i) pout << ",";
+				pout << domain.constants[fact.arguments[i]];
 			}
-			std::cout << "]" << std::endl;
+			pout << "]" << std::endl;
 		}
-		std::cout << std::endl;
+		pout << std::endl;
 
 
 		// as long as we can't output true SAS+, we simply output the fact list again
-		std::cout << ";; Mutex Groups" << std::endl;
-		std::cout << evalFact << std::endl;
+		pout << ";; Mutex Groups" << std::endl;
+		pout << evalFact << std::endl;
 		for (Fact & fact : inputFactsGroundedPg){
 			if (prunedFacts[fact.groundedNo]) continue;
-			std::cout << fact.outputNo << " " << fact.outputNo << " ";
-			std::cout << domain.predicates[fact.predicateNo].name << "[";
+			pout << fact.outputNo << " " << fact.outputNo << " ";
+			pout << domain.predicates[fact.predicateNo].name << "[";
 			for (unsigned int i = 0; i < fact.arguments.size(); i++){
-				if (i) std::cout << ",";
-				std::cout << domain.constants[fact.arguments[i]];
+				if (i) pout << ",";
+				pout << domain.constants[fact.arguments[i]];
 			}
-			std::cout << "]" << std::endl;
+			pout << "]" << std::endl;
 		}
-		std::cout << std::endl;
+		pout << std::endl;
 	
 		
 		std::map<Fact,int> init_functions_map;
@@ -2173,8 +2174,8 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 
 
 
-		std::cout << ";; Actions" << std::endl;
-		std::cout << primTask << std::endl; 
+		pout << ";; Actions" << std::endl;
+		pout << primTask << std::endl; 
 		int ac = 0;
 		for (GroundedTask & task : reachableTasksDfs){
 			if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
@@ -2198,35 +2199,35 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 					costs += init_functions_map[cost_fact];
 				}
 			}
-			std::cout << costs << std::endl;
+			pout << costs << std::endl;
 			
 			for (int & prec : task.groundedPreconditions)
 				if (!prunedFacts[prec])
-					std::cout << inputFactsGroundedPg[prec].outputNo << " ";
-			std::cout << -1 << std::endl;
+					pout << inputFactsGroundedPg[prec].outputNo << " ";
+			pout << -1 << std::endl;
 			
 			for (int & add : task.groundedAddEffects)
 				if (!prunedFacts[add])
-					std::cout << inputFactsGroundedPg[add].outputNo << " ";
-			std::cout << -1 << std::endl;
+					pout << inputFactsGroundedPg[add].outputNo << " ";
+			pout << -1 << std::endl;
 			
 			for (int & del : task.groundedDelEffects)
 				if (!prunedFacts[del])
-					std::cout << inputFactsGroundedPg[del].outputNo << " ";
-			std::cout << -1 << std::endl;
+					pout << inputFactsGroundedPg[del].outputNo << " ";
+			pout << -1 << std::endl;
 		}
 
-		std::cout << std::endl << ";; initial state" << std::endl;
+		pout << std::endl << ";; initial state" << std::endl;
 		std::set<int> initFacts; // needed for efficient goal checking
 		for (const Fact & f : problem.init){
 			int groundNo = reachableFacts.find(f)->groundedNo;
 			if (prunedFacts[groundNo]) continue;
-			std::cout << inputFactsGroundedPg[groundNo].outputNo << " ";
+			pout << inputFactsGroundedPg[groundNo].outputNo << " ";
 			initFacts.insert(groundNo);
 		}
 		
-		std::cout << -1 << std::endl;
-		std::cout << std::endl << ";; goal" << std::endl;
+		pout << -1 << std::endl;
+		pout << std::endl << ";; goal" << std::endl;
 		for (const Fact & f : problem.goal){
 			auto it = reachableFacts.find(f);
 			if (it == reachableFacts.end()){
@@ -2243,18 +2244,18 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 				}
 				continue;
 			}
-			std::cout << inputFactsGroundedPg[it->groundedNo].outputNo << " ";
+			pout << inputFactsGroundedPg[it->groundedNo].outputNo << " ";
 		}
-		std::cout << -1 << std::endl;
+		pout << -1 << std::endl;
 
 		
-		std::cout << std::endl << ";; tasks (primitive and abstract)" << std::endl;
-		std::cout << ac + absTask << std::endl;
+		pout << std::endl << ";; tasks (primitive and abstract)" << std::endl;
+		pout << ac + absTask << std::endl;
 		// count number of reachable  abstracts
 		for (GroundedTask & task : reachableTasksDfs){
 			if (prunedTasks[task.groundedNo]) continue;
 			if (task.taskNo >= domain.nPrimitiveTasks) continue;
-			std::cout << 0 << " ";
+			pout << 0 << " ";
 			
 			if (domain.tasks[task.taskNo].name.rfind("method_precondition_",0) == 0)
 				evalMethodPrec++;
@@ -2262,12 +2263,12 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 				evalPrimitive++;
 
 			
-			std::cout << domain.tasks[task.taskNo].name << "[";
+			pout << domain.tasks[task.taskNo].name << "[";
 			for (unsigned int i = 0; i < task.arguments.size(); i++){
-				if (i) std::cout << ",";
-				std::cout << domain.constants[task.arguments[i]];
+				if (i) pout << ",";
+				pout << domain.constants[task.arguments[i]];
 			}
-			std::cout << "]" << std::endl;
+			pout << "]" << std::endl;
 		}
 
 		int initialAbstract = -1;
@@ -2277,58 +2278,59 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 			task.outputNo = ac++;
 			if (task.taskNo == problem.initialAbstractTask) initialAbstract = task.outputNo; 
 
-			std::cout << 1 << " ";
+			pout << 1 << " ";
 
 			evalAbstract++;
 
-			std::cout << domain.tasks[task.taskNo].name << "[";
+			pout << domain.tasks[task.taskNo].name << "[";
 			for (unsigned int i = 0; i < task.arguments.size(); i++){
-				if (i) std::cout << ",";
-				std::cout << domain.constants[task.arguments[i]];
+				if (i) pout << ",";
+				pout << domain.constants[task.arguments[i]];
 			}
-			std::cout << "]" << std::endl;
+			pout << "]" << std::endl;
 		}
 
 
-		std::cout << std::endl << ";; initial abstract task" << std::endl;
-		std::cout << initialAbstract << std::endl;
+		pout << std::endl << ";; initial abstract task" << std::endl;
+		pout << initialAbstract << std::endl;
 
 
-		std::cout << std::endl << ";; methods" << std::endl;
-		std::cout << methods << std::endl;
+		pout << std::endl << ";; methods" << std::endl;
+		pout << methods << std::endl;
 		int mc = 0;
 		for (auto & method : inputMethodsGroundedTdg){
 			if (prunedMethods[method.groundedNo]) continue;
 			mc++;
 			// output their name
-			std::cout << domain.decompositionMethods[method.methodNo].name << "[";
+			pout << domain.decompositionMethods[method.methodNo].name << "[";
 			for (unsigned int i = 0; i < method.arguments.size(); i++){
-				if (i) std::cout << ",";
-				std::cout << domain.constants[method.arguments[i]];
+				if (i) pout << ",";
+				pout << domain.constants[method.arguments[i]];
 			}
-			std::cout << "]" << std::endl;
+			pout << "]" << std::endl;
 
 			// the abstract tasks
-			std::cout << reachableTasksDfs[method.groundedAddEffects[0]].outputNo << std::endl;
+			pout << reachableTasksDfs[method.groundedAddEffects[0]].outputNo << std::endl;
 			for (int & subtask : method.groundedPreconditions){
-				std::cout << reachableTasksDfs[subtask].outputNo << " ";
+				pout << reachableTasksDfs[subtask].outputNo << " ";
 			}
-			std::cout << "-1" << std::endl;
+			pout << "-1" << std::endl;
 
 			auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;
 			auto last = std::unique(orderings.begin(), orderings.end());
     		orderings.erase(last, orderings.end());
 
 			for (auto & order : orderings)
-				std::cout << order.first << " " << order.second << " ";
-			std::cout << "-1" << std::endl;
+				pout << order.first << " " << order.second << " ";
+			pout << "-1" << std::endl;
 		}
 		evalMethod = mc;
 
 
 		// exiting this way is faster as data structures will not be cleared ... who needs this anyway
-		std::cerr << "Exiting." << std::endl;
-		std::cerr << "Statistics: " << evalFact << " " << evalPrimitive << " " << evalMethodPrec << " " << evalAbstract << " " << evalMethod << std::endl;
+		if (!quietMode) std::cerr << "Exiting." << std::endl;
+		if (!quietMode) std::cerr << "Statistics: " << evalFact << " " << evalPrimitive << " " << evalMethodPrec << " " << evalAbstract << " " << evalMethod << std::endl;
+		// exiting this way is faster ...
 		_exit (0);
 	}
 
@@ -2352,63 +2354,7 @@ void doBoth (const Domain & domain, const Problem & problem, bool enableHierarch
 #endif
 
 	std::cerr << "Exiting." << std::endl;
-	_exit (0);
-	//return;
-
-	// Helper vector for sorting the output
-	std::vector<std::string> sortVec;
-
-	// First print all grounded tasks
-	sortVec.clear ();
-	for (const GroundedTask & groundedTask : tasksToPrint)
-	{
-		std::stringstream stream;
-		stream << domain.tasks[groundedTask.taskNo].name;
-		for (int argument : groundedTask.arguments)
-			stream << " " << domain.constants[argument];
-
-		sortVec.push_back (stream.str ());
-	}
-
-	sort (sortVec.begin (), sortVec.end ());
-	for (const std::string & str : sortVec)
-		std::cout << str << std::endl;
-
-	// Then print all reachable facts
-	sortVec.clear ();
-	for (const Fact & fact : resultFacts)
-	{
-		std::stringstream stream;
-		stream << domain.predicates[fact.predicateNo].name;
-		for (int argument : fact.arguments)
-			stream << " " << domain.constants[argument];
-
-		sortVec.push_back (stream.str ());
-	}
-
-	sort (sortVec.begin (), sortVec.end ());
-	for (const std::string & str : sortVec)
-		std::cout << str << std::endl;
-
-#if defined(TDG) and defined(PRINT_METHODS)
-	// Then print all grounded methods
-	sortVec.clear ();
-	for (const GroundedMethod & method : methodsToPrint)
-	{
-		const DecompositionMethod & liftedMethod = domain.decompositionMethods[method.methodNo];
-
-		std::stringstream stream;
-		stream << liftedMethod.name;
-		for (int argument : method.arguments)
-			stream << " " << domain.constants[argument];
-
-		sortVec.push_back (stream.str ());
-	}
-
-	sort (sortVec.begin (), sortVec.end ());
-	for (const std::string & str : sortVec)
-		std::cout << str << std::endl;
-#endif
+	return;
 }
 
 /**

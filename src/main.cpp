@@ -12,55 +12,35 @@
 #include "gpg.h"
 #include "hierarchy-typing.h"
 #include "model.h"
-#include "naiveGrounding.h"
 #include "parser.h"
 #include "planning-graph.h"
 #include "sasinvariants.h"
 
-enum RunMode
-{
-	RUN_MODE_PLANNING_GRAPH,
-	RUN_MODE_NAIVE_GROUNDING,
-	RUN_MODE_PRINT_DOMAIN,
-
-	RUN_MODE_DEFAULT = RUN_MODE_PLANNING_GRAPH,
-};
-
-const std::map<RunMode, std::string> runModes =
-	{
-		{RUN_MODE_PRINT_DOMAIN,     "Print Domain"},
-		{RUN_MODE_NAIVE_GROUNDING,  "Naive Grounding"},
-		{RUN_MODE_PLANNING_GRAPH,   "Planning Graph"},
-	}
-;
-
 int main (int argc, char * argv[])
 {
 	struct option options[] = {
-		{"benchmark",           no_argument,    NULL,   'b'},
+		{"output-domain",       no_argument,    NULL,   'O'},
+		{"primitive",           no_argument,    NULL,   'P'},
 		{"debug",               no_argument,    NULL,   'd'},
 		{"hierarchy-typing",    no_argument,    NULL,   'h'},
-		{"naive-grounding",     no_argument,    NULL,   'n'},
 		{"print-domain",        no_argument,    NULL,   'p'},
 		{"quiet",               no_argument,    NULL,   'q'},
-		{"planning-graph",      no_argument,    NULL,   'r'},
 		{"invariants",          no_argument,    NULL,   'i'},
-		{"planner-output",      no_argument,    NULL,   'o'},
 		{NULL,                  0,              NULL,   0},
 	};
 
-	bool benchmarkMode = false;
+	bool primitiveMode = false;
 	bool quietMode = false;
 	bool debugMode = false;
 	bool enableHierarchyTyping = false;
 	bool computeInvariants = false;
-	bool outputForPlanner = false;
+	bool outputForPlanner = true; // don't output in 
 
 	bool optionsValid = true;
-	std::set<RunMode> selectedModes;
+	bool outputDomain = false;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "bdhnpqrio", options, NULL);
+		int c = getopt_long (argc, argv, "dhpqiOP", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -70,149 +50,142 @@ int main (int argc, char * argv[])
 			continue;
 		}
 
-		if (c == 'b')
-			benchmarkMode = true;
+		if (c == 'P')
+			primitiveMode = true;
 		else if (c == 'd')
 			debugMode = true;
 		else if (c == 'h')
 			enableHierarchyTyping = true;
-		else if (c == 'n')
-			selectedModes.insert (RUN_MODE_NAIVE_GROUNDING);
 		else if (c == 'p')
-			selectedModes.insert (RUN_MODE_PRINT_DOMAIN);
+			outputDomain = true;
 		else if (c == 'q')
 			quietMode = true;
-		else if (c == 'r')
-			selectedModes.insert (RUN_MODE_PLANNING_GRAPH);
 		else if (c == 'i')
 			computeInvariants = true;
-		else if (c == 'o')
-			outputForPlanner  = true;
+		else if (c == 'O')
+			outputDomain = true;
 	}
-	int nArgs = argc - optind;
-
+	
 	if (!optionsValid)
 	{
 		std::cout << "Invalid options. Exiting." << std::endl;
 		return 1;
 	}
 
-	// Check if mutually exclusive modes were selected
-	RunMode runMode = RUN_MODE_DEFAULT;
-	if (selectedModes.size () > 1)
-	{
-		std::cout << "Cannot enable mutually exclusive run modes: ";
-		size_t printed = 0;
-		for (const auto runMode : selectedModes)
-		{
-			if (printed > 0)
-				std::cout << ", ";
-			std::cout << runModes.at (runMode);
-			++printed;
-		}
-		std::cout << std::endl;
-		return 1;
-	}
-	else if (selectedModes.size () == 0)
-	{
-		if (!quietMode)
-			std::cerr << "No run mode selected; selecting \"" << runModes.at (RUN_MODE_DEFAULT) << "\" mode." << std::endl;
-	}
-	else
-	{
-		runMode = *selectedModes.begin ();
-	}
-
 	if (debugMode)
 		setDebugMode (debugMode);
 
-	if (benchmarkMode && !quietMode)
+	if (primitiveMode && !quietMode)
 		std::cerr << "Note: Running in benchmark mode; grounding results will not be printed." << std::endl;
 
 	std::vector<std::string> inputFiles;
-	if (nArgs < 1)
+	for (int i = optind; i < argc; ++i)
 	{
-		inputFiles.push_back ("-");
+		inputFiles.push_back (argv[i]);
+	}
+
+	std::string inputFilename = "-";
+	std::string outputFilename = "-";
+
+	if (inputFiles.size() > 2){
+		std::cerr << "You may specify at most two files as parameters: the input and the output file" << std::endl;
+		return 1;
+	} else {
+		if (inputFiles.size())
+			inputFilename = inputFiles[0];
+		if (inputFiles.size() > 1)
+			outputFilename = inputFiles[1];
+	}
+
+	std::istream * inputStream;
+	if (inputFilename == "-")
+	{
+		if (!quietMode)
+			std::cerr << "Reading input from standard input." << std::endl;
+
+		inputStream = &std::cin;
 	}
 	else
 	{
-		for (int i = optind; i < argc; ++i)
+		if (!quietMode)
+			std::cerr << "Reading input from " << inputFilename << "." << std::endl;
+
+		std::ifstream * fileInput  = new std::ifstream(inputFilename);
+		if (!fileInput->good())
 		{
-			inputFiles.push_back (argv[i]);
-		}
-	}
-
-	for (std::string inputFilename : inputFiles)
-	{
-		std::istream * inputStream;
-		std::ifstream fileInput;
-		if (inputFilename == "-")
-		{
-			if (!quietMode)
-				std::cerr << "Reading input from standard input." << std::endl;
-
-			inputStream = &std::cin;
-		}
-		else
-		{
-			if (!quietMode)
-				std::cerr << "Reading input from " << inputFilename << "." << std::endl;
-
-			fileInput.open (inputFilename);
-
-			if (!fileInput.good ())
-			{
-				std::cerr << "Unable to open input file " << inputFilename << ": " << strerror (errno) << std::endl;
-				return 1;
-			}
-
-			inputStream = &fileInput;
-		}
-
-		Domain domain;
-		Problem problem;
-		bool success = readInput (*inputStream, domain, problem);
-
-		if (!success)
-		{
-			std::cerr << "Failed to read input data!" << std::endl;
+			std::cerr << "Unable to open input file " << inputFilename << ": " << strerror (errno) << std::endl;
 			return 1;
 		}
-		if (!quietMode)
-			std::cerr << "Parsing done." << std::endl;
 
-		if (runMode == RUN_MODE_PRINT_DOMAIN)
-		{
-			printDomainAndProblem (domain, problem);
-		}
-		else if (runMode == RUN_MODE_NAIVE_GROUNDING)
-		{
-			naiveGrounding (domain, problem);
-		}
-		else if (runMode == RUN_MODE_PLANNING_GRAPH)
-		{
-			std::vector<invariant> invariants;
-			if (computeInvariants)
-			{
-				invariants = computeSASPlusInvariants(domain, problem);
-			}
-
-			if (benchmarkMode)
-			{
-				// Run PG without printing output
-				std::unique_ptr<HierarchyTyping> hierarchyTyping;
-				if (enableHierarchyTyping)
-					hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
-
-				GpgPlanningGraph pg (domain, problem);
-				std::vector<GroundedTask> groundedTasks;
-				std::set<Fact> reachableFacts;
-				runGpg (pg, groundedTasks, reachableFacts, hierarchyTyping.get ());
-			}
-			else
-			{
-				doBoth (domain, problem, enableHierarchyTyping, outputForPlanner );
-			}
-		}
+		inputStream = fileInput;
 	}
+
+
+	Domain domain;
+	Problem problem;
+	bool success = readInput (*inputStream, domain, problem);
+
+	std::ostream * outputStream;
+	if (outputFilename == "-")
+	{
+		if (!quietMode)
+			std::cerr << "Writing output to standard output." << std::endl;
+
+		outputStream = &std::cout;
+	}
+	else
+	{
+		if (!quietMode)
+			std::cerr << "Writing output to " << outputFilename << "." << std::endl;
+
+		std::ofstream * fileOutput  = new std::ofstream(outputFilename);
+
+		if (!fileOutput->good ())
+		{
+			std::cerr << "Unable to open output file " << outputFilename << ": " << strerror (errno) << std::endl;
+			return 1;
+		}
+
+		outputStream = fileOutput;
+	}
+
+	if (!success)
+	{
+		std::cerr << "Failed to read input data!" << std::endl;
+		return 1;
+	}
+	if (!quietMode)
+		std::cerr << "Parsing done." << std::endl;
+
+	if (outputDomain)
+	{
+		printDomainAndProblem (domain, problem);
+		return 1;
+	}
+
+
+	std::vector<invariant> invariants;
+	if (computeInvariants)
+	{
+		invariants = computeSASPlusInvariants(domain, problem);
+	}
+
+	// Run the actual grounding procedure
+	if (primitiveMode)
+	{
+		// Just run the PG - this is for speed testing
+		std::unique_ptr<HierarchyTyping> hierarchyTyping;
+		if (enableHierarchyTyping)
+			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
+
+		GpgPlanningGraph pg (domain, problem);
+		std::vector<GroundedTask> groundedTasks;
+		std::set<Fact> reachableFacts;
+		runGpg (pg, groundedTasks, reachableFacts, hierarchyTyping.get (), quietMode);
+	}
+	else
+	{
+		doBoth (domain, problem, *outputStream, enableHierarchyTyping, outputForPlanner , quietMode);
+	}
+
 }
