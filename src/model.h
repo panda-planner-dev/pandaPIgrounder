@@ -188,6 +188,8 @@ struct Task : Operator<PredicateWithArguments>
 		ABSTRACT,
 	} type; ///< The type of this task. Either Type::PRIMITIVE or Type::ABSTRACT.
 
+	int number_of_original_variables;
+
 	/// The cost to execute this task.
 	std::vector<std::variant<PredicateWithArguments,int>> costs;
 

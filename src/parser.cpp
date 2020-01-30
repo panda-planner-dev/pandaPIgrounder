@@ -144,6 +144,7 @@ void readPrimitiveTask (const Domain & state, std::istream & input, Task & outpu
 	outputTask.type = Task::Type::PRIMITIVE;
 
 	input >> outputTask.name;
+	input >> outputTask.number_of_original_variables;
 
 	// Read number of variables and their sorts
 	readMultiple (state, input, outputTask.variableSorts, readPrimitive);
@@ -169,6 +170,7 @@ void readAbstractTask (const Domain & state, std::istream & input, Task & output
 	outputTask.type = Task::Type::ABSTRACT;
 
 	input >> outputTask.name;
+	input >> outputTask.number_of_original_variables;
 
 	// Read variable sorts
 	readMultiple (state, input, outputTask.variableSorts, readPrimitive);

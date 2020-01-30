@@ -1492,22 +1492,6 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 	}
 }
 
-void removeDeletingEffectsThatAlsoAdd(const Domain & domain,
-		std::vector<bool> & prunedTasks, 
-		std::vector<GroundedTask> & inputTasksGroundedPg){
-
-	for (GroundedTask & task : inputTasksGroundedPg){
-		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
-		for (int & add : task.groundedAddEffects)
-			for (std::vector<int>::iterator del = task.groundedDelEffects.begin(); del != task.groundedDelEffects.end(); del++) 
-				if (add == *del){
-					task.groundedDelEffects.erase(del);
-					break;
-				}
-
-	}
-	
-}
 
 void topsort_dfs(int a,std::vector<std::vector<int>> & adj, std::vector<int> & od, int & p, std::vector<int> & v) {
 	assert(v[a]!=1);
@@ -1559,7 +1543,7 @@ void applyEffectPriority(const Domain & domain,
 		std::set<int> addSet;
 		for (int & add : task.groundedAddEffects) addSet.insert(add);
 
-		// look for del effects that are also del effects
+		// look for del effects that are also add effects
 		std::set<int> addToRemove;
 		std::set<int> delToRemove;
 		for (int & del : task.groundedDelEffects)
@@ -1630,7 +1614,16 @@ void removeUnnecessaryFacts(const Domain & domain,
 				if (i) std::cout << ",";
 				std::cout << domain.constants[fact.arguments[i]];
 			}
-			std::cout << "]" << std::endl;);
+			std::cout << "]" << std::endl;
+		
+			for (const Fact & gf : problem.goal){
+				auto it = reachableFacts.find(gf);
+				if (it != reachableFacts.end()){
+					if (f == it->groundedNo){
+						std::cout << "Deleting goal fact, in init " << initialTruth[f] << std::endl;
+					}
+				}
+			});
 
 			// prune the fact that does not change its truth value
 			prunedFacts[f] = true;
@@ -1657,12 +1650,21 @@ void removeUnnecessaryFacts(const Domain & domain,
 		if (!occuringInPrecondition[f]){
 			DEBUG(
 			Fact & fact = inputFactsGroundedPg[f];
-			std::cout << "static predicate " << domain.predicates[fact.predicateNo].name << "[";
+			std::cout << "no precondition predicate " << domain.predicates[fact.predicateNo].name << "[";
 			for (unsigned int i = 0; i < fact.arguments.size(); i++){
 				if (i) std::cout << ",";
 				std::cout << domain.constants[fact.arguments[i]];
 			}
-			std::cout << "]" << std::endl;);
+			std::cout << "]" << std::endl;
+
+			for (const Fact & gf : problem.goal){
+				auto it = reachableFacts.find(gf);
+				if (it != reachableFacts.end()){
+					if (f == it->groundedNo){
+						std::cout << "Deleting goal fact, in init " << initialTruth[f] << std::endl;
+					}
+				}
+			});
 
 			// prune the fact that does not change its truth value
 			prunedFacts[f] = true;
@@ -2201,7 +2203,6 @@ void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout
 	//TODO: FLAGS!!!
 	if (!quietMode) std::cerr << "Simplifying instance." << std::endl;
 	applyEffectPriority(domain, prunedTasks, reachableTasksDfs, inputFactsGroundedPg);
-	removeDeletingEffectsThatAlsoAdd(domain, prunedTasks, inputTasksGroundedPg);
 	removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, reachableTasksDfs, inputFactsGroundedPg,reachableFacts);
 	expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, inputTasksGroundedPg, inputMethodsGroundedTdg);
 	pruneEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,inputTasksGroundedPg,inputMethodsGroundedTdg);
@@ -2321,9 +2322,14 @@ void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout
 
 		pout << std::endl << ";; initial state" << std::endl;
 		std::set<int> initFacts; // needed for efficient goal checking
+		std::set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
+
 		for (const Fact & f : problem.init){
 			int groundNo = reachableFacts.find(f)->groundedNo;
-			if (prunedFacts[groundNo]) continue;
+			if (prunedFacts[groundNo]){
+				initFactsPruned.insert(groundNo);
+				continue;
+			}
 			pout << inputFactsGroundedPg[groundNo].outputNo << " ";
 			initFacts.insert(groundNo);
 		}
@@ -2334,14 +2340,22 @@ void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout
 			auto it = reachableFacts.find(f);
 			if (it == reachableFacts.end()){
 				// TODO detect this earlier and do something intelligent
-				std::cerr << "Goal is unreachable ..." << std::endl;
+				std::cerr << "Goal is unreachable [never reachable] ... " << std::endl;
 				_exit(0);
 			}
 			if (prunedFacts[it->groundedNo]){
 				// check whether it is true ...
-				if (!initFacts.count(it->groundedNo)){
+				if (!initFactsPruned.count(it->groundedNo)){
 					// TODO detect this earlier and do something intelligent
-					std::cerr << "Goal is unreachable ..." << std::endl;
+					std::cerr << "Goal is unreachable [pruned] ..." << std::endl;
+
+					std::cout << "Pruned, non-true fact: " << domain.predicates[f.predicateNo].name << "[";
+					for (unsigned int i = 0; i < f.arguments.size(); i++){
+						if (i) std::cout << ",";
+						std::cout << domain.constants[f.arguments[i]];
+					}
+					std::cout << "]" << std::endl;
+
 					_exit(0);
 				}
 				continue;
@@ -2366,7 +2380,8 @@ void doBoth (const Domain & domain, const Problem & problem, std::ostream & pout
 
 			
 			pout << domain.tasks[task.taskNo].name << "[";
-			for (unsigned int i = 0; i < task.arguments.size(); i++){
+			// only output the original variables
+			for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
 				if (i) pout << ",";
 				pout << domain.constants[task.arguments[i]];
 			}
