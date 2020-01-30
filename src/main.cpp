@@ -51,7 +51,7 @@ int main (int argc, char * argv[])
 	bool pruneEmptyMethodPreconditions = true;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "dpqiOPhlem", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlem", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
