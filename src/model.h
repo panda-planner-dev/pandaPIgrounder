@@ -406,6 +406,41 @@ struct GroundedTask
 	bool operator == (const GroundedTask & other) const;
 };
 
+
+/**
+ * @brief A grounded decomposition method.
+ */
+struct GroundedMethod
+{
+	/// The number of this grounded method.
+	int groundedNo = -1;
+
+	/// The number of the decomposition method.
+	int methodNo;
+
+	/// The arguments for the decomposition method.
+	std::vector<int> arguments;
+
+	/// List of grounded preconditions (subtasks)
+	std::vector<int> groundedPreconditions;
+
+	/// distinct topological ordering of the subtasks (for output and compliance with verification)
+	std::vector<int> preconditionOrdering;
+
+	/// List of grounded add effects (exactly one abstract task)
+	std::vector<int> groundedAddEffects;
+
+	void setHeadNo (int headNo);
+
+	int getHeadNo (void) const;
+
+	bool operator < (const GroundedMethod & other) const;
+
+	bool operator == (const GroundedMethod & other) const;
+};
+
+
+
 struct BadInputException : public std::exception
 {
 	std::string message;

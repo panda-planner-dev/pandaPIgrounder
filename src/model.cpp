@@ -220,3 +220,25 @@ bool GroundedTask::operator == (const GroundedTask & other) const
 {
 	return std::tie (taskNo, arguments) == std::tie (other.taskNo, other.arguments);
 }
+
+
+void GroundedMethod::setHeadNo (int headNo)
+{
+	methodNo = headNo;
+}
+
+int GroundedMethod::getHeadNo (void) const
+{
+	return methodNo;
+}
+
+bool GroundedMethod::operator < (const GroundedMethod & other) const
+{
+	return std::tie (methodNo, arguments) < std::tie (other.methodNo, other.arguments);
+}
+
+bool GroundedMethod::operator == (const GroundedMethod & other) const
+{
+	return std::tie (methodNo, arguments) == std::tie (other.methodNo, other.arguments);
+}
+

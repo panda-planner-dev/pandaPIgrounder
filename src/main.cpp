@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <memory>
 
 #include <cerrno>
 #include <cstring>
@@ -9,7 +10,7 @@
 #include <getopt.h>
 
 #include "debug.h"
-#include "gpg.h"
+#include "grounding.h"
 #include "hierarchy-typing.h"
 #include "model.h"
 #include "parser.h"
@@ -19,28 +20,38 @@
 int main (int argc, char * argv[])
 {
 	struct option options[] = {
-		{"output-domain",       no_argument,    NULL,   'O'},
-		{"primitive",           no_argument,    NULL,   'P'},
-		{"debug",               no_argument,    NULL,   'd'},
-		{"hierarchy-typing",    no_argument,    NULL,   'h'},
-		{"print-domain",        no_argument,    NULL,   'p'},
-		{"quiet",               no_argument,    NULL,   'q'},
-		{"invariants",          no_argument,    NULL,   'i'},
-		{NULL,                  0,              NULL,   0},
+		{"output-domain",      	          no_argument,    NULL,   'O'},
+		{"primitive",          	          no_argument,    NULL,   'P'},
+		{"debug",              	          no_argument,    NULL,   'd'},
+		{"print-domain",       	          no_argument,    NULL,   'p'},
+		{"quiet",              	          no_argument,    NULL,   'q'},
+		{"invariants",         	          no_argument,    NULL,   'i'},
+		
+		{"no-hierarchy-typing",	          no_argument,    NULL,   'h'},
+		{"no-literal-pruning", 	          no_argument,    NULL,   'l'},
+		{"no-abstract-expansion",         no_argument,    NULL,   'e'},
+		{"no-method-precondition-pruning",no_argument,    NULL,   'm'},
+
+		
+		{NULL,                            0,              NULL,   0},
 	};
 
 	bool primitiveMode = false;
 	bool quietMode = false;
 	bool debugMode = false;
-	bool enableHierarchyTyping = false;
 	bool computeInvariants = false;
 	bool outputForPlanner = true; // don't output in 
-
 	bool optionsValid = true;
 	bool outputDomain = false;
+	
+
+	bool enableHierarchyTyping = true;
+	bool removeUselessPredicates = true;
+	bool expandChoicelessAbstractTasks = true;
+	bool pruneEmptyMethodPreconditions = true;
 	while (true)
 	{
-		int c = getopt_long (argc, argv, "dhpqiOP", options, NULL);
+		int c = getopt_long (argc, argv, "dpqiOPhlem", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -54,8 +65,6 @@ int main (int argc, char * argv[])
 			primitiveMode = true;
 		else if (c == 'd')
 			debugMode = true;
-		else if (c == 'h')
-			enableHierarchyTyping = true;
 		else if (c == 'p')
 			outputDomain = true;
 		else if (c == 'q')
@@ -64,6 +73,15 @@ int main (int argc, char * argv[])
 			computeInvariants = true;
 		else if (c == 'O')
 			outputDomain = true;
+		
+		else if (c == 'h')
+			enableHierarchyTyping = false;
+		else if (c == 'l')
+			removeUselessPredicates = false;
+		else if (c == 'e')
+			expandChoicelessAbstractTasks = false;
+		else if (c == 'm')
+			pruneEmptyMethodPreconditions = false;
 	}
 	
 	if (!optionsValid)
@@ -178,14 +196,14 @@ int main (int argc, char * argv[])
 		if (enableHierarchyTyping)
 			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
 
-		GpgPlanningGraph pg (domain, problem);
+		/*GpgPlanningGraph pg (domain, problem);
 		std::vector<GroundedTask> groundedTasks;
 		std::set<Fact> reachableFacts;
-		runGpg (pg, groundedTasks, reachableFacts, hierarchyTyping.get (), quietMode);
+		runGpg (pg, groundedTasks, reachableFacts, hierarchyTyping.get (), quietMode);*/
 	}
 	else
 	{
-		doBoth (domain, problem, *outputStream, enableHierarchyTyping, outputForPlanner , quietMode);
+		run_grounding (domain, problem, *outputStream, enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, outputForPlanner , quietMode);
 	}
 
 }
