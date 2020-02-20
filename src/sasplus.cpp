@@ -15,7 +15,7 @@ void write_sasplus(std::ostream & sout, const Domain & domain, const Problem & p
 	// determine the number of unpruned facts
 	int unprunedFacts = 0;
 	for (bool x : prunedFacts) if (!x) unprunedFacts++;
-	sout << unprunedFacts << std::endl;
+	sout << unprunedFacts + (problem.initialAbstractTask == -1? 0 : 1) << std::endl;
 
 	// contains mapping from output IDs to internal IDS
 	std::vector<int> factOutput;
@@ -46,6 +46,13 @@ void write_sasplus(std::ostream & sout, const Domain & domain, const Problem & p
 		sout << "end_variable" << std::endl;
 	}
 
+	if (problem.initialAbstractTask != -1){
+		sout << "begin_variable" << std::endl << "fakeGoal" << std::endl << "-1" << std::endl << "2" << std::endl;
+		sout << "GOAL" << std::endl << "NOT GOAL" << std::endl;
+		sout << "end_variable" << std::endl;
+	}
+
+
 	sout << "0" << std::endl; // I don't know of any non-trivial mutexes
 
 	std::set<Fact> initFacts (problem.init.begin(), problem.init.end());
@@ -58,6 +65,7 @@ void write_sasplus(std::ostream & sout, const Domain & domain, const Problem & p
 		else
 			sout << 1 << std::endl;
 	}
+	if (problem.initialAbstractTask != -1) sout << 1 << std::endl;
 	sout << "end_state" << std::endl;
 
 
@@ -70,6 +78,7 @@ void write_sasplus(std::ostream & sout, const Domain & domain, const Problem & p
 		goalFacts.push_back(factIDtoOutputOutput[it->groundedNo]);
 	}
 	
+	if (problem.initialAbstractTask != -1) goalFacts.push_back(unprunedFacts);
 	sout << "begin_goal" << std::endl << goalFacts.size() << std::endl;
 	for (int gf : goalFacts) sout << gf << " " << 0 << std::endl;
 	sout << "end_goal" << std::endl;
@@ -124,15 +133,14 @@ void write_sasplus(std::ostream & sout, const Domain & domain, const Problem & p
 		sout << prevail.size() << std::endl;
 		for (const int & p : prevail) sout << p << " " << 0 << std::endl;
 
-		sout << add.size() + del.size() << std::endl;
+		sout << add.size() + del.size() + (problem.initialAbstractTask == -1? 0 : 1) << std::endl;
 		for (const int & x : add) sout << 0 << " " << x << " " << -1 << " " << 0 << std::endl;
 		for (const int & x : del) sout << 0 << " " << x << " " << (pre.count(x)?0:-1) << " " << 1 << std::endl;
+		if (problem.initialAbstractTask != -1) sout << 0 << " " << unprunedFacts << " " << -1 << " " << 0 << std::endl;
 
 
 		int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
 		sout << costs << std::endl;
 		sout << "end_operator" << std::endl;
 	}
-
-	
 }
