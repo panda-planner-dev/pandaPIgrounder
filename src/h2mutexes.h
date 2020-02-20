@@ -4,7 +4,7 @@
 #include <vector>
 #include "model.h"
 
-void h2_mutexes(const Domain & domain, const Problem & problem,
+bool h2_mutexes(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<bool> & prunedFacts,

@@ -312,20 +312,18 @@ std::pair<size_t, size_t> groundedTdgDfs (std::vector<bool> & prunedTasks, std::
 }
 
 
-std::tuple<std::vector<bool>,std::vector<bool>,std::vector<bool>> run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,  
+void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,  
 		std::vector<Fact> reachableFacts,
 		std::vector<GroundedTask> reachableTasks,
 		std::vector<GroundedMethod> reachableMethods,
+		std::vector<bool> & prunedFacts,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedMethods,
 		bool quietMode)
 {
-	// Iterate grounded PG and TDG until convergence
-	std::vector<bool> prunedTasks (reachableTasks.size ());
-	std::vector<bool> prunedFacts (reachableFacts.size ());
-	std::vector<bool> prunedMethods (reachableMethods.size ());
-
 	// don't to anything for grounded problems
 	if (problem.initialAbstractTask == -1)
-		return std::make_tuple(prunedFacts,prunedTasks,prunedMethods);
+		return;
 
 	size_t remainingFactsCount = reachableTasks.size ();
 	size_t remainingMethodsCount = reachableMethods.size ();
@@ -337,6 +335,7 @@ std::tuple<std::vector<bool>,std::vector<bool>,std::vector<bool>> run_grounded_H
 			++remainingPrimitiveTasks;
 	}
 
+	// Iterate grounded PG and TDG until convergence
 	while (true)
 	{
 		// Grounded PG
@@ -381,5 +380,5 @@ std::tuple<std::vector<bool>,std::vector<bool>,std::vector<bool>> run_grounded_H
 	}
 
 
-	return std::make_tuple(prunedFacts,prunedTasks,prunedMethods);
+	return;
 }

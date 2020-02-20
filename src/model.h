@@ -14,6 +14,7 @@
 #include <vector>
 #include <variant>
 
+
 /**
  * @brief Sort (aka type) of a variable.
  */
@@ -128,7 +129,9 @@ struct VariableConstraint
 	int var2;
 };
 
-#ifndef NO_OPERATOR
+namespace pandaPI{
+
+
 /**
  * @brief ???
  */
@@ -155,15 +158,12 @@ protected:
 	Operator (void) {};
 };
 
-#endif
+}
 
 /**
  * @brief A method that an abstract task can be decomposed to.
  */
-struct DecompositionMethod 
-#ifndef NO_OPERATOR
-: Operator<TaskWithArguments>
-#endif
+struct DecompositionMethod : pandaPI::Operator<TaskWithArguments>
 {
 	/// The index of the abstract task in the Domain.tasks vector that this method belongs to.
 	int taskNo;
@@ -191,11 +191,9 @@ struct GroundedTask;
 /**
  * @brief A task with variables, and optional preconditions and delete/add effects.
  */
-struct Task
-#ifndef NO_OPERATOR
-: Operator<PredicateWithArguments>
-#endif
+struct Task: pandaPI::Operator<PredicateWithArguments>
 {
+	
 	enum Type
 	{
 		PRIMITIVE,

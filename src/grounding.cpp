@@ -24,12 +24,25 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, 
 			enableHierarchyTyping, futureCachingByPrecondition, printTimings, quietMode);
 	// run the grounded GPG until convergence to get the grounding smaller
-	auto [prunedFacts, prunedTasks, prunedMethods] = run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, quietMode);
+	std::vector<bool> prunedFacts (initiallyReachableFacts.size());
+	std::vector<bool> prunedTasks (initiallyReachableTasks.size());
+	std::vector<bool> prunedMethods (initiallyReachableMethods.size());
+	
+	run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
+			prunedFacts, prunedTasks, prunedMethods,
+			quietMode);
 
 
 	if (h2Mutextes){
-		h2_mutexes(domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
-		return;
+		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
+			removeUselessPredicates, false, false, quietMode);	
+
+		if (h2_mutexes(domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode)){
+			// if we have pruned actions, rerun the PGP and HTN stuff
+			run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
+				prunedFacts, prunedTasks, prunedMethods,
+				quietMode);
+		}
 	}
 
 

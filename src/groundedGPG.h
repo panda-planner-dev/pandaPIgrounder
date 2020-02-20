@@ -5,10 +5,13 @@
 
 #include "model.h"
 
-std::tuple<std::vector<bool>,std::vector<bool>,std::vector<bool>> run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,  
+void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,  
 		std::vector<Fact> reachableFacts,
 		std::vector<GroundedTask> reachableTasks,
 		std::vector<GroundedMethod> reachableMethods,
+		std::vector<bool> & prunedFacts,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedMethods,
 		bool quietMode);
 
 

@@ -32,6 +32,8 @@
 #define TDG
 #define PRINT_METHODS
 
+using namespace pandaPI;
+
 template <typename T>
 concept bool GpgInstance = requires (T instance)
 {
@@ -718,8 +720,8 @@ void gpgMatchPrecondition (
 	size_t initiallyMatchedPrecondition,
 	const typename InstanceType::StateType & initiallyMatchedState,
 	std::vector<int> & matchedPreconditions,
-	size_t preconditionIdx = 0,
-	bool quietMode = true
+	size_t preconditionIdx,
+	bool quietMode
 )
 {
 	
@@ -875,11 +877,13 @@ void gpgMatchPrecondition (
 			const auto & action = instance.getAllActions()[actionNo];
 			if (instance.pruneWithFutureSatisfiablility[actionNo] && futureReject[actionNo] < futureTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithFutureSatisfiablility(actionNo);
-				if (!quietMode) std::cerr << " ---> Disabling potentially consistent extension checking for action:           " << actionNo << " (" << action.name << ")" << std::endl;
+				if (!quietMode)
+				   	std::cerr << " ---> Disabling potentially consistent extension checking for action:           " << actionNo << " (" << action.name << ")" << std::endl;
 			}
 			if (instance.pruneWithHierarchyTyping[actionNo] && htReject[actionNo] < htTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithHierarchyTyping(actionNo);
-				if (!quietMode) std::cerr << " ---> Disabling hierarchy typing checking during match precondition for action: " << actionNo << " (" << action.name << ")" << std::endl;
+				if (!quietMode)
+				   	std::cerr << " ---> Disabling hierarchy typing checking during match precondition for action: " << actionNo << " (" << action.name << ")" << std::endl;
 			}
 		}
 
@@ -1077,7 +1081,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		VariableAssignment assignedVariables (action.variableSorts.size ());
 		typename InstanceType::StateType f;
 		std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
-		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions, quietMode);
+		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions, 0, quietMode);
 	}
 	
 	if (!quietMode) std::cerr << "Done." << std::endl;
@@ -1125,7 +1129,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 
 			std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
 			matchedPreconditions[preconditionIdx] = stateElement.groundedNo;
-			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, preconditionIdx, stateElement, matchedPreconditions, quietMode);
+			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, preconditionIdx, stateElement, matchedPreconditions, 0, quietMode);
 			
 			if (!quietMode && printTimings){
 				std::clock_t cc_end = std::clock();
