@@ -20,6 +20,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		int methods,
 		bool quietMode	
 		){
+	if (!quietMode) std::cerr << "Writing instance to output." << std::endl;
 
 	std::set<Fact> reachableFactsSet(reachableFacts.begin(), reachableFacts.end());
 

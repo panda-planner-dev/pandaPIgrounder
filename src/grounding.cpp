@@ -12,9 +12,13 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool removeUselessPredicates,
 		bool expandChoicelessAbstractTasks,
 		bool pruneEmptyMethodPreconditions,
-		bool outputForPlanner, bool quietMode){
+		bool futureCachingByPrecondition,
+		bool outputForPlanner, 
+		bool printTimings,
+		bool quietMode){
 	// run the lifted GPG to create an initial grounding of the domain
-	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, enableHierarchyTyping, quietMode);
+	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, 
+			enableHierarchyTyping, futureCachingByPrecondition, printTimings, quietMode);
 	// run the grounded GPG until convergence to get the grounding smaller
 	auto [prunedFacts, prunedTasks, prunedMethods] = run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, quietMode);
 

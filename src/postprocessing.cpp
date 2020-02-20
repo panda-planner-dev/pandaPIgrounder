@@ -465,20 +465,18 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 	applyEffectPriority(domain, prunedTasks, reachableTasks, reachableFacts);
 		
 	
-	//TODO: FLAGS!!!
 	if (!quietMode) std::cerr << "Simplifying instance." << std::endl;
 	if (removeUselessPredicates) {
-		std::cerr << "Removing useless facts/literals" << std::endl;
+		if (!quietMode) std::cerr << "Removing useless facts/literals" << std::endl;
 		removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, reachableTasks, reachableFacts);
 	}
 	if (expandChoicelessAbstractTasks){
-		std::cerr << "Expanding abstract tasks with only one method" << std::endl;
+		if (!quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
 		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
 	}
 	if (pruneEmptyMethodPreconditions){
-		std::cerr << "Removing method precondition actions whose precondition is empty" << std::endl;
+		if (!quietMode) std::cerr << "Removing method precondition actions whose precondition is empty" << std::endl;
 		removeEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,reachableTasks,reachableMethods);
 	}
-	if (!quietMode) std::cerr << "Writing instance to output." << std::endl;
 	
 }

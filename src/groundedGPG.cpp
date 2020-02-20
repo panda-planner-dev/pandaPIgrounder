@@ -323,6 +323,10 @@ std::tuple<std::vector<bool>,std::vector<bool>,std::vector<bool>> run_grounded_H
 	std::vector<bool> prunedFacts (reachableFacts.size ());
 	std::vector<bool> prunedMethods (reachableMethods.size ());
 
+	// don't to anything for grounded problems
+	if (problem.initialAbstractTask == -1)
+		return std::make_tuple(prunedFacts,prunedTasks,prunedMethods);
+
 	size_t remainingFactsCount = reachableTasks.size ();
 	size_t remainingMethodsCount = reachableMethods.size ();
 

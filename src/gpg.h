@@ -7,6 +7,8 @@
  * @{
  */
 
+#include <ctime>
+
 #include <algorithm>
 #include <functional>
 #include <iomanip>
@@ -252,6 +254,11 @@ struct GpgStateMap
 	const GpgPreprocessedDomain<InstanceType> & preprocessedDomain;
 
 	/**
+	 * @brief if true, future consistency will be cached separately per initially matched precondition
+	 */
+	bool futureCachingByPrecondition;
+
+	/**
 	 * @brief A list of Facts for each task, precondition, initially matched precondition (-1 if not eligible) and set of assigned variables.
 	 */
 	std::vector<std::vector<std::map<int, VariablesToFactListMap>>> factMap;
@@ -265,7 +272,8 @@ struct GpgStateMap
 	/**
 	 * @brief Initializes the factMap.
 	 */
-	GpgStateMap (const InstanceType & instance, const GpgPreprocessedDomain<InstanceType> & preprocessedDomain) : instance (instance), preprocessedDomain (preprocessedDomain)
+	GpgStateMap (const InstanceType & instance, const GpgPreprocessedDomain<InstanceType> & preprocessedDomain, bool _futureCachingByPrecondition) : 
+		instance (instance), preprocessedDomain (preprocessedDomain), futureCachingByPrecondition(_futureCachingByPrecondition)
 	{
 		factMap.resize (instance.getNumberOfActions ());
 		consistency.resize (instance.getNumberOfActions ());
@@ -348,7 +356,7 @@ struct GpgStateMap
 				}
 				consistency[actionIdx][pastPreconditionIdx+1][preconditionIdx][-1].insert(values);
 
-				continue;	
+				if (!futureCachingByPrecondition) continue;	
 				// Eligible initially matched preconditions
 				for (int initiallyMatchedPreconditionIdx : preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx])
 				{
@@ -409,14 +417,15 @@ next_action:;
 
 		// for testing: always disregard the initially matched Precondition
 
-		//bool initiallyMatchedPreconditionIsEligible = preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx].count (initiallyMatchedPreconditionIdx) > 0;
-		//if (!initiallyMatchedPreconditionIsEligible)
+		bool initiallyMatchedPreconditionIsEligible = preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx].count (initiallyMatchedPreconditionIdx) > 0;
+		if (!initiallyMatchedPreconditionIsEligible || !futureCachingByPrecondition)
 			initiallyMatchedPreconditionIdx = -1;
 	
 		const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 
 		// check all future preconditions
 		for (size_t futurePreconditionIdx = preconditionIdx + 1; futurePreconditionIdx < action.getAntecedents().size(); futurePreconditionIdx++){
+			
 			// variables assigned so far that are part of the arguments of the future precondition
 
 			const typename InstanceType::PreconditionType & futurePrecondition = instance.getAllActions()[actionIdx].getAntecedents()[futurePreconditionIdx];
@@ -434,7 +443,7 @@ next_action:;
 				//std::cout << " " << var;
 				assignedVariableValues.push_back (assignedVariables[var]);
 			}
-
+			
 			if (consistency[actionIdx][preconditionIdx+1][futurePreconditionIdx][initiallyMatchedPreconditionIdx].count(assignedVariableValues) == 0){
 				//std::cout << " -> reject " << std::endl;
 				return false;
@@ -510,6 +519,9 @@ struct GpgPlanningGraph
 };
 
 extern std::map<int,int> liftedGroundingCount;
+extern std::map<int,double> liftedGroundingTime;
+extern std::map<int,double> instantiationtime;
+extern std::map<int,double> instantiationtime2;
 
 template <GpgInstance InstanceType>
 static void gpgAssignVariables (
@@ -536,7 +548,7 @@ static void gpgAssignVariables (
 	if (assignedVariables.size () == action.variableSorts.size ())
 	{
 		// All variables assigned!
-
+		DEBUG (std::cerr << "All vars assigned" << std::endl);
 		// Check variable constraints
 		for (const VariableConstraint & constraint : action.variableConstraints)
 		{
@@ -584,6 +596,7 @@ static void gpgAssignVariables (
 				addState.arguments.push_back (assignedVariables[varIdx]);
 			}
 
+			//std::clock_t cc_begin = std::clock();
 			// Check if we already know this fact
 			bool found = false;
 			typename std::set<typename InstanceType::StateType>::iterator factIt;
@@ -597,6 +610,9 @@ static void gpgAssignVariables (
 				addState = *factIt;
 				found = true;
 			}
+			//std::clock_t cc_end = std::clock();
+			//double time_elapsed_ms = 1000.0 * (cc_end-cc_begin) / CLOCKS_PER_SEC;
+			//instantiationtime2[actionNo] += time_elapsed_ms;
 
 			// If we already processed this fact, don't add it again
 			if (!found)
@@ -638,6 +654,7 @@ extern std::vector<std::vector<std::vector<size_t>>> factTests;
 extern size_t totalFactHits;
 extern std::vector<std::vector<std::vector<size_t>>> factHits;
 extern std::vector<std::vector<std::vector<size_t>>> factFutureRejects;
+extern std::vector<std::vector<std::vector<size_t>>> noextensionFound;
 
 extern std::vector<size_t> futureReject;
 extern std::vector<size_t> futureTests;
@@ -646,7 +663,7 @@ extern std::vector<size_t> htTests;
 
 template<GpgInstance InstanceType>
 void printStatistics(const InstanceType & instance){
-	bool outputPerPrec = false;
+	bool outputPerPrec = true;
 	std::cerr << "========================================" << std::endl;
 	std::cerr << "Total fact misses: " << (totalFactTests - totalFactHits) << " / " << totalFactTests << " = " << std::fixed << std::setprecision (3) << 100.0 * (totalFactTests - totalFactHits) / totalFactTests << " % (" << totalFactHits << " hits)" << std::endl;
 	for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
@@ -662,14 +679,28 @@ void printStatistics(const InstanceType & instance){
 			for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
 			{
 				actionTotal += factTests[i][j][k];
-				if (outputPerPrec) std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo()) << "): ";
-				if (outputPerPrec) std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << std::endl;
+				if (outputPerPrec) {
+					std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo());
+					for (int arg : action.getAntecedents()[j].arguments)
+							std::cerr << " " << arg;
+					std::cerr << "): ";
+				}
+				if (outputPerPrec) std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << " no extensions " << noextensionFound[i][j][k] << std::endl;
 			}
 		}
 		std::cerr << "total: " << actionTotal << std::endl;
 	}
 	std::cerr << "Current Groundings: " << std::endl;
 	for (auto g : liftedGroundingCount)
+		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
+	std::cerr << "Grounding Time: " << std::endl;
+	for (auto g : liftedGroundingTime)
+		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
+	std::cerr << "Instantiaton Time: " << std::endl;
+	for (auto g : instantiationtime)
+		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
+	std::cerr << "Instantiaton Time #2: " << std::endl;
+	for (auto g : instantiationtime2)
 		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
 }
 
@@ -687,16 +718,33 @@ void gpgMatchPrecondition (
 	size_t initiallyMatchedPrecondition,
 	const typename InstanceType::StateType & initiallyMatchedState,
 	std::vector<int> & matchedPreconditions,
-	size_t preconditionIdx = 0
+	size_t preconditionIdx = 0,
+	bool quietMode = true
 )
 {
+	
+	if (preconditionIdx == 0){
+		if (!stateMap.hasPotentiallyConsistentExtension(actionNo, -1, assignedVariables, initiallyMatchedPrecondition)){
+			factFutureRejects[actionNo][initiallyMatchedPrecondition][initiallyMatchedPrecondition]++;
+			futureReject[actionNo]++;
+			return;
+		}
+	
+	}
+	
+	
 	const typename InstanceType::ActionType & action = instance.getAllActions ()[actionNo];
 
 	if (preconditionIdx >= action.getAntecedents ().size ())
 	{
 		// Processed all preconditions. This is a potentially reachable ground instance.
 		// Now we only need to assign all unassigned variables.
+		
+		//std::clock_t cc_begin = std::clock();
 		gpgAssignVariables (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, actionNo, assignedVariables, matchedPreconditions);
+		//std::clock_t cc_end = std::clock();
+		//double time_elapsed_ms = 1000.0 * (cc_end-cc_begin) / CLOCKS_PER_SEC;
+		//instantiationtime[actionNo] += time_elapsed_ms;
 
 		return;
 	}
@@ -704,11 +752,18 @@ void gpgMatchPrecondition (
 	// Skip initially matched precondition
 	if (preconditionIdx == initiallyMatchedPrecondition)
 	{
-		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1);
+		// if the initially matched precondition cannot be extended continue
+		//if (!stateMap.hasPotentiallyConsistentExtension(actionNo, preconditionIdx, assignedVariables, initiallyMatchedPrecondition))
+		//	return
+		
+		
+		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1, quietMode);
 		return;
 	}
 
 	const typename InstanceType::PreconditionType & precondition = action.getAntecedents ()[preconditionIdx];
+
+	bool foundExtension = false;
 
 	// Try to find a fact that fulfills this precondition
 	for (const typename InstanceType::StateType & stateElement : stateMap.getFacts (actionNo, preconditionIdx, assignedVariables, initiallyMatchedPrecondition))
@@ -783,6 +838,33 @@ void gpgMatchPrecondition (
 			}
 		}
 
+		// check variable constraints ahead
+		if (factMatches){
+			for (const VariableConstraint & constraint : action.variableConstraints)
+			{
+				if (!assignedVariables.isAssigned (constraint.var1)) continue;
+				if (!assignedVariables.isAssigned (constraint.var2)) continue;
+				
+				int val1 = assignedVariables[constraint.var1];
+				int val2 = assignedVariables[constraint.var2];
+				if (constraint.type == VariableConstraint::Type::EQUAL)
+				{
+					if (val1 != val2){
+						factMatches = false;
+						break;
+					}
+				}
+				else if (constraint.type == VariableConstraint::Type::NOT_EQUAL)
+				{
+					if (val1 == val2){
+						factMatches = false;
+						break;
+					}
+				}
+			}
+	
+		}
+
 		/*if (totalFactTests % 10000 == 0)
 			for (int x = 0; x < instance.getNumberOfActions(); x++)
 				std::cerr << "Action " << x << " (" << instance.getAllActions()[x].name << "): " << futureReject[x] << " / " << futureTests[x] << "    " <<
@@ -793,28 +875,32 @@ void gpgMatchPrecondition (
 			const auto & action = instance.getAllActions()[actionNo];
 			if (instance.pruneWithFutureSatisfiablility[actionNo] && futureReject[actionNo] < futureTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithFutureSatisfiablility(actionNo);
-				std::cerr << " ---> Disabling potentially consistent extension checking for action:           " << actionNo << " (" << action.name << ")" << std::endl;
+				if (!quietMode) std::cerr << " ---> Disabling potentially consistent extension checking for action:           " << actionNo << " (" << action.name << ")" << std::endl;
 			}
 			if (instance.pruneWithHierarchyTyping[actionNo] && htReject[actionNo] < htTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithHierarchyTyping(actionNo);
-				std::cerr << " ---> Disabling hierarchy typing checking during match precondition for action: " << actionNo << " (" << action.name << ")" << std::endl;
+				if (!quietMode) std::cerr << " ---> Disabling hierarchy typing checking during match precondition for action: " << actionNo << " (" << action.name << ")" << std::endl;
 			}
 		}
 
-		if (false && totalFactTests % 1000 == 0)
-		{
-			printStatistics(instance);
-		}
+		//if (false && totalFactTests % 100000 == 0)
+		//{
+		//	printStatistics(instance);
+		//}
 
 		if (factMatches)
 		{
+			foundExtension = true;
 			matchedPreconditions[preconditionIdx] = stateElement.groundedNo;
-			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1);
+			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1, quietMode);
 		}
 
 		for (int newlyAssignedVar : newlyAssigned)
 			assignedVariables.erase (newlyAssignedVar);
 	}
+
+	if (! foundExtension)
+		noextensionFound[actionNo][preconditionIdx][initiallyMatchedPrecondition]++;
 }
 
 
@@ -911,12 +997,16 @@ struct GpgTdg
  * TODO
  */
 template<GpgInstance InstanceType>
-void runGpg (const InstanceType & instance, std::vector<typename InstanceType::ResultType> & output, std::set<typename InstanceType::StateType> & outputStateElements, const HierarchyTyping * hierarchyTyping, bool quietMode)
+void runGpg (const InstanceType & instance, std::vector<typename InstanceType::ResultType> & output, std::set<typename InstanceType::StateType> & outputStateElements,
+		const HierarchyTyping * hierarchyTyping, 
+		bool futureCachingByPrecondition,
+		bool printTimings,
+		bool quietMode)
 {
 	output.clear ();
 
 	GpgPreprocessedDomain<InstanceType> preprocessed (instance, instance.domain, instance.problem);
-	static GpgStateMap<InstanceType> stateMap (instance, preprocessed);
+	static GpgStateMap<InstanceType> stateMap (instance, preprocessed, futureCachingByPrecondition);
 
 	GpgLiteralSet<typename InstanceType::StateType> processedStateElements (instance.getNumberOfPredicates ());
 
@@ -960,15 +1050,18 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 	factTests.resize (instance.getNumberOfActions ());
 	factHits.resize (instance.getNumberOfActions ());
 	factFutureRejects.resize (instance.getNumberOfActions ());
-	
+	noextensionFound.resize (instance.getNumberOfActions ());
+
 	for (size_t i = 0; i < instance.getNumberOfActions (); ++i){
 		factTests[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
 		factHits[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
 		factFutureRejects[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
+		noextensionFound[i].resize (instance.getAllActions ()[i].getAntecedents ().size ());
 		for (size_t j = 0; j < instance.getAllActions()[i].getAntecedents().size(); j++){
 			factTests[i][j].resize (instance.getAllActions ()[i].getAntecedents ().size ());
 			factHits[i][j].resize (instance.getAllActions ()[i].getAntecedents ().size ());
 			factFutureRejects[i][j].resize (instance.getAllActions ()[i].getAntecedents ().size ());
+			noextensionFound[i][j].resize (instance.getAllActions ()[i].getAntecedents ().size ());
 		}
 	}
 
@@ -984,7 +1077,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		VariableAssignment assignedVariables (action.variableSorts.size ());
 		typename InstanceType::StateType f;
 		std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
-		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions);
+		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions, quietMode);
 	}
 	
 	if (!quietMode) std::cerr << "Done." << std::endl;
@@ -997,6 +1090,13 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		const typename InstanceType::StateType stateElement = toBeProcessedQueue.front ();
 		toBeProcessedQueue.pop ();
 		toBeProcessedSet.erase (stateElement);
+
+		std::clock_t c_start;
+		if (!quietMode && printTimings) {
+			std::cout << stateElement.getHeadNo() << " ";	
+			std::cout << instance.getAntecedantName(stateElement.getHeadNo()) << std::endl;	
+			c_start = std::clock();
+		}
 
 		stateMap.insertState (stateElement);
 		processedStateElements.insert (stateElement);
@@ -1019,16 +1119,34 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 			if (instance.pruneWithHierarchyTyping[actionIdx] && hierarchyTyping != nullptr &&
 					!hierarchyTyping->isAssignmentCompatible<typename InstanceType::ActionType> (actionIdx, assignedVariables))
 				continue;
+		
+			std::clock_t cc_begin;
+		   	if (!quietMode && printTimings) cc_begin = std::clock();
 
 			std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
 			matchedPreconditions[preconditionIdx] = stateElement.groundedNo;
-			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, preconditionIdx, stateElement, matchedPreconditions);
+			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, preconditionIdx, stateElement, matchedPreconditions, quietMode);
+			
+			if (!quietMode && printTimings){
+				std::clock_t cc_end = std::clock();
+				double time_elapsed_ms = 1000.0 * (cc_end-cc_begin) / CLOCKS_PER_SEC;
+				liftedGroundingTime[actionIdx] += time_elapsed_ms;
+			}
 		}
+
+		if (!quietMode && printTimings){
+			std::clock_t c_end = std::clock();
+			std::cout << toBeProcessedQueue.size() << " " << output.size() << std::endl;
+
+			double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+			std::cout << "CPU time used: " << time_elapsed_ms << " ms\n";
+		}
+
 	}
 
 	outputStateElements = processedStateElements;
 
-	//printStatistics(instance);
+	if (!quietMode && printTimings) printStatistics(instance);
 	if (!quietMode) std::cerr << "Returning from runGpg()." << std::endl;
 }
 

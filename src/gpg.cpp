@@ -4,11 +4,15 @@
 #include "groundedGPG.h"
 
 std::map<int,int> liftedGroundingCount;
+std::map<int,double> liftedGroundingTime;
+std::map<int,double> instantiationtime;
+std::map<int,double> instantiationtime2;
 size_t totalFactTests = 0;
 std::vector<std::vector<std::vector<size_t>>> factTests;
 size_t totalFactHits = 0;
 std::vector<std::vector<std::vector<size_t>>> factHits;
 std::vector<std::vector<std::vector<size_t>>> factFutureRejects;
+std::vector<std::vector<std::vector<size_t>>> noextensionFound;
 
 std::vector<size_t> futureReject;
 std::vector<size_t> futureTests;
@@ -73,7 +77,3 @@ void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod
 		innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, domain, visitedTasks, task.groundedNo);
 	}
 }
-
-
-
-

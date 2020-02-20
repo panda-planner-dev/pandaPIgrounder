@@ -26,23 +26,39 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 }
 
 
-std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMethod>> run_lifted_HTN_GPG(const Domain & domain, const Problem & problem, bool enableHierarchyTyping, bool quietMode){
+std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMethod>> run_lifted_HTN_GPG(const Domain & domain, const Problem & problem, 
+		bool enableHierarchyTyping, 
+		bool futureCachingByPrecondition,
+		bool printTimings,
+		bool quietMode){
 	std::unique_ptr<HierarchyTyping> hierarchyTyping;
-	if (enableHierarchyTyping)
+	// don't do hierarchy typing for classical instances
+	if (problem.initialAbstractTask != -1 && enableHierarchyTyping)
 		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
 
 	if (!quietMode) std::cerr << "Running PG." << std::endl;
 	GpgPlanningGraph pg (domain, problem);
 	std::vector<GpgPlanningGraph::ResultType> groundedTasksPg;
 	std::set<Fact> reachableFacts;
-	runGpg (pg, groundedTasksPg, reachableFacts, hierarchyTyping.get (), quietMode);
+	runGpg (pg, groundedTasksPg, reachableFacts, hierarchyTyping.get (), futureCachingByPrecondition, printTimings, quietMode);
+	
+	if (!quietMode) std::cerr << "PG done. Postprocessing" << std::endl;
 	assignGroundNosToDeleteEffects(domain, groundedTasksPg, reachableFacts);
-
 	validateGroundedList (groundedTasksPg);
 
-	if (!quietMode) std::cerr << "PG done." << std::endl;
+	if (!quietMode) std::cerr << "PG postprocessing done." << std::endl;
 	if (!quietMode) std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
 
+	if (problem.initialAbstractTask == -1){
+		// create facts in the correct order
+		std::vector<Fact> reachableFactsList  (reachableFacts.size ());
+		for (const Fact & fact : reachableFacts)
+			reachableFactsList[fact.groundedNo] = fact;
+	
+		std::vector<GroundedMethod> no_methods;
+
+		return std::make_tuple(reachableFactsList, groundedTasksPg, no_methods);
+	}
 
 	DEBUG(std::cerr << "After lifted PG:" << std::endl;
 	for (size_t taskIdx = 0; taskIdx < groundedTasksPg.size (); ++taskIdx)
@@ -99,7 +115,7 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	GpgTdg tdg (domain, problem, groundedTasksPg);
 	std::vector<GpgTdg::ResultType> groundedMethods;
 	std::set<GpgTdg::StateType> groundedTaskSetTdg;
-	runGpg (tdg, groundedMethods, groundedTaskSetTdg, hierarchyTyping.get (), quietMode);
+	runGpg (tdg, groundedMethods, groundedTaskSetTdg, hierarchyTyping.get (), futureCachingByPrecondition, printTimings, quietMode);
 	if (!quietMode) std::cerr << "TDG done." << std::endl;
 	if (!quietMode) std::cerr << "Calculated [" << groundedTaskSetTdg.size () << "] grounded tasks and [" << groundedMethods.size () << "] grounded decomposition methods." << std::endl;
 

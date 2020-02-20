@@ -20,17 +20,20 @@
 int main (int argc, char * argv[])
 {
 	struct option options[] = {
-		{"output-domain",      	          no_argument,    NULL,   'O'},
-		{"primitive",          	          no_argument,    NULL,   'P'},
-		{"debug",              	          no_argument,    NULL,   'd'},
-		{"print-domain",       	          no_argument,    NULL,   'p'},
-		{"quiet",              	          no_argument,    NULL,   'q'},
-		{"invariants",         	          no_argument,    NULL,   'i'},
+		{"output-domain",      	                            no_argument,    NULL,   'O'},
+		{"primitive",          	                            no_argument,    NULL,   'P'},
+		{"debug",              	                            no_argument,    NULL,   'd'},
+		{"print-domain",       	                            no_argument,    NULL,   'p'},
+		{"quiet",              	                            no_argument,    NULL,   'q'},
+		{"print-timings",     	                            no_argument,    NULL,   't'},
+		{"invariants",         	                            no_argument,    NULL,   'i'},
+		{"only-ground",         	                        no_argument,    NULL,   'g'},
 		
-		{"no-hierarchy-typing",	          no_argument,    NULL,   'h'},
-		{"no-literal-pruning", 	          no_argument,    NULL,   'l'},
-		{"no-abstract-expansion",         no_argument,    NULL,   'e'},
-		{"no-method-precondition-pruning",no_argument,    NULL,   'm'},
+		{"no-hierarchy-typing",	                            no_argument,    NULL,   'h'},
+		{"no-literal-pruning", 	                            no_argument,    NULL,   'l'},
+		{"no-abstract-expansion",                           no_argument,    NULL,   'e'},
+		{"no-method-precondition-pruning",                  no_argument,    NULL,   'm'},
+		{"future-caching-by-initially-matched-precondition",no_argument,    NULL,   'f'},
 
 		
 		{NULL,                            0,              NULL,   0},
@@ -49,9 +52,11 @@ int main (int argc, char * argv[])
 	bool removeUselessPredicates = true;
 	bool expandChoicelessAbstractTasks = true;
 	bool pruneEmptyMethodPreconditions = true;
+	bool futureCachingByPrecondition = false;
+	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlem", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -82,6 +87,12 @@ int main (int argc, char * argv[])
 			expandChoicelessAbstractTasks = false;
 		else if (c == 'm')
 			pruneEmptyMethodPreconditions = false;
+		else if (c == 'g')
+			outputForPlanner = false;
+		else if (c == 'f')
+			futureCachingByPrecondition = false;
+		else if (c == 't')
+			printTimings = false;
 	}
 	
 	if (!optionsValid)
@@ -203,7 +214,7 @@ int main (int argc, char * argv[])
 	}
 	else
 	{
-		run_grounding (domain, problem, *outputStream, enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, outputForPlanner , quietMode);
+		run_grounding (domain, problem, *outputStream, enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, futureCachingByPrecondition, outputForPlanner , printTimings, quietMode);
 	}
 
 }
