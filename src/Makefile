@@ -27,7 +27,7 @@ CXXFLAGS=$(CXXFLAGS_GENERAL) $(CXXFLAGS_PROD)
 
 # LDFlags
 LDFLAGS_GENERAL=
-LDFLAGS_PROD=$(OPTIMIZER_PROD) -flto
+LDFLAGS_PROD=$(OPTIMIZER_PROD) -flto -static -static-libgcc
 LDFLAGS_DEBUG=-g $(OPTIMIZER_DEBUG)
 LDFLAGS=$(LDFLAGS_GENERAL) $(LDFLAGS_PROD)
 
@@ -42,14 +42,21 @@ DEPENDENCIES=
 DEPENDENCIES_LD=
 PROGNAME=pandaPIgrounder
 
+H2OBJFILES=../h2-fd-preprocessor/src/axiom.cc.o ../h2-fd-preprocessor/src/causal_graph.cc.o ../h2-fd-preprocessor/src/domain_transition_graph.cc.o ../h2-fd-preprocessor/src/h2_mutexes.cc.o ../h2-fd-preprocessor/src/helper_functions.cc.o ../h2-fd-preprocessor/src/max_dag.cc.o ../h2-fd-preprocessor/src/mutex_group.cc.o ../h2-fd-preprocessor/src/operator.cc.o ../h2-fd-preprocessor/src/scc.cc.o ../h2-fd-preprocessor/src/state.cc.o ../h2-fd-preprocessor/src/successor_generator.cc.o ../h2-fd-preprocessor/src/variable.cc.o
+
+
 # Rules
 # ==================================================
 .PHONY: clean
 
 all: $(PROGNAME)
 
-$(PROGNAME): $(OBJFILES) $(DEPENDENCIES_LD)
-	$(LD) $(LDFLAGS) -o $(PROGNAME) $(OBJFILES) $(LIBS)
+$(PROGNAME): $(OBJFILES) $(H2OBJFILES) $(DEPENDENCIES_LD)
+	$(LD) $(LDFLAGS) -o $(PROGNAME) $(OBJFILES) $(H2OBJFILES) $(LIBS)
+
+# All object files depend on the source file and all header files
+../h2-fd-preprocessor/src/%.cc.o: ../h2-fd-preprocessor/src/%.cc
+	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
 # All object files depend on the source file and all header files
 %.o: %.cpp $(DEPENDENCIES) $(HFILES)

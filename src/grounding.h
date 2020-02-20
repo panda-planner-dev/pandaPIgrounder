@@ -12,6 +12,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
 		bool outputForPlanner, 
+		bool outputSASPlus, 
 		bool printTimings,
 		bool quietMode);
 

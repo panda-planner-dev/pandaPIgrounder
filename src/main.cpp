@@ -29,6 +29,7 @@ int main (int argc, char * argv[])
 		{"invariants",         	                            no_argument,    NULL,   'i'},
 		{"only-ground",         	                        no_argument,    NULL,   'g'},
 		{"h2", 			        	                        no_argument,    NULL,   '2'},
+		{"sasplus", 	        	                        no_argument,    NULL,   's'},
 		
 		{"no-hierarchy-typing",	                            no_argument,    NULL,   'h'},
 		{"no-literal-pruning", 	                            no_argument,    NULL,   'l'},
@@ -45,6 +46,7 @@ int main (int argc, char * argv[])
 	bool debugMode = false;
 	bool computeInvariants = false;
 	bool outputForPlanner = true; // don't output in 
+	bool outputSASPlus = false; 
 	bool optionsValid = true;
 	bool outputDomain = false;
 	
@@ -58,7 +60,7 @@ int main (int argc, char * argv[])
 	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2s", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -97,6 +99,8 @@ int main (int argc, char * argv[])
 			printTimings = false;
 		else if (c == '2')
 			h2mutexes = true;
+		else if (c == 's')
+			outputSASPlus = true;
 	}
 	
 	if (!optionsValid)
@@ -222,7 +226,8 @@ int main (int argc, char * argv[])
 				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
 				futureCachingByPrecondition, 
 				h2mutexes, 
-				outputForPlanner , printTimings, quietMode);
+				outputForPlanner, outputSASPlus, 
+				printTimings, quietMode);
 	}
 
 }

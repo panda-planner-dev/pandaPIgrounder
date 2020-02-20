@@ -5,6 +5,7 @@
 #include "postprocessing.h"
 #include "output.h"
 #include "sasplus.h"
+#include "h2mutexes.h"
 
 
 
@@ -16,6 +17,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
 		bool outputForPlanner, 
+		bool outputSASPlus, 
 		bool printTimings,
 		bool quietMode){
 	// run the lifted GPG to create an initial grounding of the domain
@@ -26,8 +28,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 
 
 	if (h2Mutextes){
-		std::ostream * sasOutput = &std::cout;
-		write_sasplus(*sasOutput, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
+		h2_mutexes(domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
 		return;
 	}
 
@@ -35,6 +36,11 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	// run postprocessing
 	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
 			removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, quietMode);	
+
+	if (outputSASPlus){
+		write_sasplus(pout, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
+		return;
+	}
 
 	// get statistics
 	int facts = 0;

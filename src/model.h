@@ -128,6 +128,7 @@ struct VariableConstraint
 	int var2;
 };
 
+#ifndef NO_OPERATOR
 /**
  * @brief ???
  */
@@ -154,10 +155,15 @@ protected:
 	Operator (void) {};
 };
 
+#endif
+
 /**
  * @brief A method that an abstract task can be decomposed to.
  */
-struct DecompositionMethod : Operator<TaskWithArguments>
+struct DecompositionMethod 
+#ifndef NO_OPERATOR
+: Operator<TaskWithArguments>
+#endif
 {
 	/// The index of the abstract task in the Domain.tasks vector that this method belongs to.
 	int taskNo;
@@ -185,7 +191,10 @@ struct GroundedTask;
 /**
  * @brief A task with variables, and optional preconditions and delete/add effects.
  */
-struct Task : Operator<PredicateWithArguments>
+struct Task
+#ifndef NO_OPERATOR
+: Operator<PredicateWithArguments>
+#endif
 {
 	enum Type
 	{
