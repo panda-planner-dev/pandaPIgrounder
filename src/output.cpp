@@ -66,8 +66,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		init_functions_map[init_function_literal.first] = init_function_literal.second;
 	}
 
-
-
 	pout << ";; Actions" << std::endl;
 	pout << primTask << std::endl; 
 	int ac = 0;
@@ -76,23 +74,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 		task.outputNo = ac++;
 		
-		// compute the costs for this ground actions
-		std::vector<std::variant<PredicateWithArguments,int>> additive_cost_expressions = domain.tasks[task.taskNo].costs;
-		int costs = 0;
-		for (std::variant<PredicateWithArguments,int> cost_element : additive_cost_expressions){
-			if (std::holds_alternative<int>(cost_element)){
-				costs += std::get<int>(cost_element);
-			} else {
-				PredicateWithArguments function_term = std::get<PredicateWithArguments>(cost_element);
-				// build fact representation of this term with respect to the grounding
-				Fact cost_fact;
-				cost_fact.predicateNo = function_term.predicateNo;
-				for (int & argument_variable : function_term.arguments)
-					cost_fact.arguments.push_back(task.arguments[argument_variable]);
-
-				costs += init_functions_map[cost_fact];
-			}
-		}
+		int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
 		pout << costs << std::endl;
 		
 		for (int & prec : task.groundedPreconditions)

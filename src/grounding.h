@@ -10,6 +10,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool expandChoicelessAbstractTasks,
 		bool pruneEmptyMethodPreconditions,
 		bool futureCachingByPrecondition,
+		bool h2Mutextes,
 		bool outputForPlanner, 
 		bool printTimings,
 		bool quietMode);

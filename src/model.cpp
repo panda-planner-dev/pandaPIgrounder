@@ -88,6 +88,29 @@ bool Task::doesFactFulfilPrecondition (VariableAssignment * outputVariableAssign
 	return true;
 }
 
+int Task::computeGroundCost(GroundedTask & task,std::map<Fact,int> & init_functions_map) const
+{
+	// compute the costs for this ground actions
+	std::vector<std::variant<PredicateWithArguments,int>> additive_cost_expressions = this->costs;
+	int costs = 0;
+	for (std::variant<PredicateWithArguments,int> cost_element : additive_cost_expressions){
+		if (std::holds_alternative<int>(cost_element)){
+			costs += std::get<int>(cost_element);
+		} else {
+			PredicateWithArguments function_term = std::get<PredicateWithArguments>(cost_element);
+			// build fact representation of this term with respect to the grounding
+			Fact cost_fact;
+			cost_fact.predicateNo = function_term.predicateNo;
+			for (int & argument_variable : function_term.arguments)
+				cost_fact.arguments.push_back(task.arguments[argument_variable]);
+			
+			costs += init_functions_map[cost_fact];
+		}
+	}
+	return costs;
+}
+
+
 VariableAssignment::VariableAssignment (size_t nVariables) : assignments (nVariables, NOT_ASSIGNED)
 {
 }
@@ -242,3 +265,5 @@ bool GroundedMethod::operator == (const GroundedMethod & other) const
 	return std::tie (methodNo, arguments) == std::tie (other.methodNo, other.arguments);
 }
 
+
+	

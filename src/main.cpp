@@ -28,6 +28,7 @@ int main (int argc, char * argv[])
 		{"print-timings",     	                            no_argument,    NULL,   't'},
 		{"invariants",         	                            no_argument,    NULL,   'i'},
 		{"only-ground",         	                        no_argument,    NULL,   'g'},
+		{"h2", 			        	                        no_argument,    NULL,   '2'},
 		
 		{"no-hierarchy-typing",	                            no_argument,    NULL,   'h'},
 		{"no-literal-pruning", 	                            no_argument,    NULL,   'l'},
@@ -53,10 +54,11 @@ int main (int argc, char * argv[])
 	bool expandChoicelessAbstractTasks = true;
 	bool pruneEmptyMethodPreconditions = true;
 	bool futureCachingByPrecondition = false;
+	bool h2mutexes = false;
 	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -90,9 +92,11 @@ int main (int argc, char * argv[])
 		else if (c == 'g')
 			outputForPlanner = false;
 		else if (c == 'f')
-			futureCachingByPrecondition = false;
+			futureCachingByPrecondition = true;
 		else if (c == 't')
 			printTimings = false;
+		else if (c == '2')
+			h2mutexes = true;
 	}
 	
 	if (!optionsValid)
@@ -214,7 +218,11 @@ int main (int argc, char * argv[])
 	}
 	else
 	{
-		run_grounding (domain, problem, *outputStream, enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, futureCachingByPrecondition, outputForPlanner , printTimings, quietMode);
+		run_grounding (domain, problem, *outputStream, 
+				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
+				futureCachingByPrecondition, 
+				h2mutexes, 
+				outputForPlanner , printTimings, quietMode);
 	}
 
 }

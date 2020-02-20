@@ -8,6 +8,7 @@
  * @{
  */
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -177,6 +178,10 @@ struct DecompositionMethod : Operator<TaskWithArguments>
 	DecompositionMethod (void) {};
 };
 
+// forward declaration
+struct GroundedTask;
+
+
 /**
  * @brief A task with variables, and optional preconditions and delete/add effects.
  */
@@ -217,6 +222,8 @@ struct Task : Operator<PredicateWithArguments>
 	 * If a VariableAssignmentVariableAssignment pointer is given, the variables assigned by using this fact to fulfil this precondition will be returned.
 	 */
 	bool doesFactFulfilPrecondition (struct VariableAssignment * outputVariableAssignment, const struct Domain & domain, const Fact & fact, int preconditionIdx) const;
+
+	int computeGroundCost(GroundedTask & task,std::map<Fact,int> & init_functions_map) const;
 };
 
 /**

@@ -4,6 +4,7 @@
 #include "groundedGPG.h"
 #include "postprocessing.h"
 #include "output.h"
+#include "sasplus.h"
 
 
 
@@ -13,6 +14,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool expandChoicelessAbstractTasks,
 		bool pruneEmptyMethodPreconditions,
 		bool futureCachingByPrecondition,
+		bool h2Mutextes,
 		bool outputForPlanner, 
 		bool printTimings,
 		bool quietMode){
@@ -21,6 +23,14 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			enableHierarchyTyping, futureCachingByPrecondition, printTimings, quietMode);
 	// run the grounded GPG until convergence to get the grounding smaller
 	auto [prunedFacts, prunedTasks, prunedMethods] = run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, quietMode);
+
+
+	if (h2Mutextes){
+		std::ostream * sasOutput = &std::cout;
+		write_sasplus(*sasOutput, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
+		return;
+	}
+
 
 	// run postprocessing
 	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
