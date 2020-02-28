@@ -96,17 +96,17 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 		}
 		std::sort (subtasksWithFrequency.begin (), subtasksWithFrequency.end (), std::greater<std::pair<size_t, int>> ());
 		std::vector<TaskWithArguments> subtasks (method.subtasks.size ());
+		std::vector<int> oldSubtaskIDToNewSubTaskID (method.subtasks.size());
 		for (size_t subtaskIdx = 0; subtaskIdx < method.subtasks.size (); ++subtaskIdx)
 		{
 			const auto & foo = subtasksWithFrequency[subtaskIdx];
 			subtasks[subtaskIdx] = method.subtasks[foo.second];
+			oldSubtaskIDToNewSubTaskID[foo.second] = subtaskIdx;
 		}
 		method.subtasks = subtasks;
 		std::vector<std::pair<int,int>> newOrdering;
 		for (auto & ord : method.orderingConstraints){
-			const auto & before = subtasksWithFrequency[ord.first];
-			const auto & after = subtasksWithFrequency[ord.second];
-			newOrdering.push_back(std::make_pair(before.second, after.second));
+			newOrdering.push_back(std::make_pair(oldSubtaskIDToNewSubTaskID[ord.first], oldSubtaskIDToNewSubTaskID[ord.second]));
 		}
 		method.orderingConstraints = newOrdering;
 	}
