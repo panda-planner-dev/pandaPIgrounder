@@ -4,7 +4,7 @@
 #include <ostream>
 #include "model.h"
 
-void run_grounding (const Domain & domain, const Problem & problem, std::ostream & pout,
+void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout,
 		bool enableHierarchyTyping, 
 		bool removeUselessPredicates,
 		bool expandChoicelessAbstractTasks,
@@ -12,6 +12,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
 		bool outputForPlanner, 
+		bool outputHDDL, 
 		bool outputSASPlus, 
 		bool printTimings,
 		bool quietMode);

@@ -71,6 +71,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	int ac = 0;
 	for (GroundedTask & task : reachableTasks){
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		//pout << domain.tasks[task.taskNo].name << std::endl;
 
 		task.outputNo = ac++;
 		
@@ -223,4 +224,255 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	if (!quietMode) std::cerr << "Exiting." << std::endl;
 	// exiting this way is faster ...
 	_exit (0);
+}
+
+
+
+void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const Domain & domain, const Problem & problem,
+		std::vector<Fact> & reachableFacts,
+		std::vector<GroundedTask> & reachableTasks,
+		std::vector<GroundedMethod> & reachableMethods,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedFacts,
+		std::vector<bool> & prunedMethods,
+		int facts,
+		int absTask,
+		int primTask,
+		int methods,
+		bool quietMode	
+		){
+	
+	dout << "(define (domain d)" << std::endl;
+	dout << "  (:requirements :typing)" << std::endl;
+	
+	dout << std::endl;
+
+	std::map<int,std::string> factname;
+
+	dout << "  (:predicates" << std::endl;
+	for (Fact & fact : reachableFacts){
+		if (prunedFacts[fact.groundedNo]) continue;
+		
+		dout << "    (";
+
+		std::string name = "";
+		if (domain.predicates[fact.predicateNo].name[0] == '+')
+			name += "plus_";
+		else if (domain.predicates[fact.predicateNo].name[0] == '-')
+			name += "minus_";
+		else name += domain.predicates[fact.predicateNo].name[0];
+
+		name += domain.predicates[fact.predicateNo].name.c_str()+1;
+		for (unsigned int i = 0; i < fact.arguments.size(); i++){
+			name += "_";
+			name += domain.constants[fact.arguments[i]];
+		}
+
+		factname[fact.groundedNo] = name;
+		dout << name << ")" << std::endl;
+	}
+	dout << "  )" << std::endl;
+
+	dout << std::endl;
+
+	for (GroundedTask & task : reachableTasks){
+		if (prunedTasks[task.groundedNo]) continue;
+		if (task.taskNo < domain.nPrimitiveTasks) continue;
+		
+		dout << "  (:task ";
+	
+		if (domain.tasks[task.taskNo].name[0] == '_') dout << "t"; 
+		dout << domain.tasks[task.taskNo].name;
+		// only output the original variables
+		for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
+			dout << "_" << domain.constants[task.arguments[i]];
+		}
+
+		dout << " :parameters ())" << std::endl;
+	}
+
+	dout << std::endl;
+
+	// methods
+
+	for (auto & method : reachableMethods){
+		if (prunedMethods[method.groundedNo]) continue;
+		// output their name
+		dout << "  (:method ";
+		if (domain.decompositionMethods[method.methodNo].name[0] == '_')
+		   dout << "m";	
+		dout << domain.decompositionMethods[method.methodNo].name << std::endl;
+		dout << "   :parameters ()" << std::endl;
+		
+		{
+			GroundedTask & task	= reachableTasks[method.groundedAddEffects[0]];
+
+			dout << "    :task (";
+			if (domain.tasks[task.taskNo].name[0] == '_') dout << "t"; 
+			dout << domain.tasks[task.taskNo].name;
+			// only output the original variables
+			for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
+				dout << "_" << domain.constants[task.arguments[i]];
+			}
+			dout << ")" << std::endl;
+		}
+
+
+		
+		std::map<int,int> subTaskIndexToOutputIndex;
+		// output subtasks in their topological ordering
+		dout << "    :subtasks (and" << std::endl;
+		for (size_t outputIndex = 0; outputIndex < method.preconditionOrdering.size(); outputIndex++){
+			int subtaskIndex = method.preconditionOrdering[outputIndex];
+			subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
+			
+			GroundedTask & task	= reachableTasks[method.groundedPreconditions[subtaskIndex]];
+			dout << "      (t" << outputIndex << " (";
+			if (domain.tasks[task.taskNo].name[0] == '_') dout << "t"; 
+			dout << domain.tasks[task.taskNo].name;
+			// only output the original variables
+			for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
+				dout << "_" << domain.constants[task.arguments[i]];
+			}
+			dout << "))" << std::endl;
+
+
+		}
+		dout << "    )" << std::endl;
+
+		auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;
+		auto last = std::unique(orderings.begin(), orderings.end());
+		orderings.erase(last, orderings.end());
+
+		
+		if (orderings.size()){
+			// ordering of subtasks
+			dout << "    :ordering (and" << std::endl;
+			for (auto & order : orderings){
+				dout << "      (t" << subTaskIndexToOutputIndex[order.first];
+		   		dout << " < t" << subTaskIndexToOutputIndex[order.second] << ")" << std::endl;
+			}
+			dout << "    )" << std::endl;
+		}
+		dout << "  )" << std::endl << std::endl;
+	}
+
+
+	for (GroundedTask & task : reachableTasks){
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		dout << "  (:action ";
+		if (domain.tasks[task.taskNo].name[0] == '_') dout << "t";
+		dout << domain.tasks[task.taskNo].name;
+		for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
+			dout << "_" << domain.constants[task.arguments[i]];
+		}
+
+		dout << std::endl;
+
+		//int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
+		//pout << costs << std::endl;
+		dout << "   :parameters ()" << std::endl;
+		
+
+		std::vector<std::string> precs;
+		std::vector<std::string> adds;
+		std::vector<std::string> dels;
+		for (int & prec : task.groundedPreconditions)
+			if (!prunedFacts[prec])
+				precs.push_back(factname[prec]);
+
+		for (int & add : task.groundedAddEffects)
+			if (!prunedFacts[add])
+				adds.push_back(factname[add]);
+		
+		for (int & del : task.groundedDelEffects)
+			if (!prunedFacts[del])
+				dels.push_back(factname[del]);
+
+		if (precs.size()){
+			dout << "    :precondition (and" << std::endl;
+			for (std::string p : precs)
+				dout << "      (" << p << ")" << std::endl;
+			dout << "    )" << std::endl;
+		}
+
+		if (adds.size() + dels.size()){
+			dout << "    :effect (and" << std::endl;
+			for (std::string a : adds)
+				dout << "      (" << a << ")" << std::endl;
+			for (std::string d : dels)
+				dout << "      (not (" << d << "))" << std::endl;
+			dout << "    )" << std::endl;
+		}
+		
+		dout << "  )" << std::endl << std::endl;
+	}
+
+	dout << ")" << std::endl;
+
+
+	// problem
+	pout << "(define" << std::endl;
+	pout << "  (problem p)" << std::endl;
+	pout << "  (:domain d)" << std::endl;
+
+	pout << "  (:htn" << std::endl;
+	pout << "    :parameters ()" << std::endl;
+	pout << "    :subtasks (and (t__top))" << std::endl;
+	pout << "  )" << std::endl;
+
+	pout << "  (:init" << std::endl;
+	std::set<int> initFacts; // needed for efficient goal checking
+	std::set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
+	std::set<Fact> reachableFactsSet(reachableFacts.begin(), reachableFacts.end());
+
+	for (const Fact & f : problem.init){
+		int groundNo = reachableFactsSet.find(f)->groundedNo;
+		if (prunedFacts[groundNo]){
+			initFactsPruned.insert(groundNo);
+			continue;
+		}
+		pout << "    (" << factname[groundNo] << ")" << std::endl;
+		initFacts.insert(groundNo);
+	}
+	pout << "  )" << std::endl;
+	
+	
+	
+	std::vector<std::string> goalFacts;
+	for (const Fact & f : problem.goal){
+		auto it = reachableFactsSet.find(f);
+		if (it == reachableFactsSet.end()){
+			// TODO detect this earlier and do something intelligent
+			std::cerr << "Goal is unreachable [never reachable] ... " << std::endl;
+			_exit(0);
+		}
+		if (prunedFacts[it->groundedNo]){
+			// check whether it is true ...
+			if (!initFactsPruned.count(it->groundedNo)){
+				// TODO detect this earlier and do something intelligent
+				std::cerr << "Goal is unreachable [pruned] ..." << std::endl;
+
+				std::cout << "Pruned, non-true fact: " << domain.predicates[f.predicateNo].name << "[";
+				for (unsigned int i = 0; i < f.arguments.size(); i++){
+					if (i) std::cout << ",";
+					std::cout << domain.constants[f.arguments[i]];
+				}
+				std::cout << "]" << std::endl;
+
+				_exit(0);
+			}
+			continue;
+		}
+		goalFacts.push_back(factname[it->groundedNo]);
+	}
+
+	if (goalFacts.size()){
+		pout << "  (:goal (and" << std::endl;
+		for (std::string gf : goalFacts)
+			pout << "    (" << gf << ")" << std::endl;
+		pout << "  )" << std::endl;
+	}
+	pout << ")" << std::endl;
+
 }

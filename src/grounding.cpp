@@ -9,7 +9,7 @@
 
 
 
-void run_grounding (const Domain & domain, const Problem & problem, std::ostream & pout, 
+void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, 
 		bool enableHierarchyTyping, 
 		bool removeUselessPredicates,
 		bool expandChoicelessAbstractTasks,
@@ -17,6 +17,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
 		bool outputForPlanner, 
+		bool outputHDDL, 
 		bool outputSASPlus, 
 		bool printTimings,
 		bool quietMode){
@@ -51,7 +52,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, quietMode);	
 
 	if (outputSASPlus){
-		write_sasplus(pout, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
+		write_sasplus(dout, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
 		return;
 	}
 
@@ -88,7 +89,11 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	if (!quietMode) std::cerr << "Statistics: " << facts << " " << primitiveTasks << " " << methodPreconditionPrimitiveTasks << " " << abstractTasks << " " << methods << std::endl;
 
 	if (outputForPlanner){
-		write_grounded_HTN(pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
+		if (outputHDDL)
+			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
+				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, quietMode);
+		else
+			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, quietMode);
 	
 	}

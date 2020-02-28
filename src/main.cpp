@@ -28,6 +28,7 @@ int main (int argc, char * argv[])
 		{"print-timings",     	                            no_argument,    NULL,   't'},
 		{"invariants",         	                            no_argument,    NULL,   'i'},
 		{"only-ground",         	                        no_argument,    NULL,   'g'},
+		{"output-hddl",         	                        no_argument,    NULL,   'H'},
 		{"h2", 			        	                        no_argument,    NULL,   '2'},
 		{"sasplus", 	        	                        no_argument,    NULL,   's'},
 		
@@ -46,6 +47,7 @@ int main (int argc, char * argv[])
 	bool debugMode = false;
 	bool computeInvariants = false;
 	bool outputForPlanner = true; // don't output in 
+	bool outputHDDL = false;
 	bool outputSASPlus = false; 
 	bool optionsValid = true;
 	bool outputDomain = false;
@@ -60,7 +62,7 @@ int main (int argc, char * argv[])
 	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2s", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sH", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -82,6 +84,9 @@ int main (int argc, char * argv[])
 			computeInvariants = true;
 		else if (c == 'O')
 			outputDomain = true;
+		
+		else if (c == 'H')
+			outputHDDL = true;
 		
 		else if (c == 'h')
 			enableHierarchyTyping = false;
@@ -123,15 +128,18 @@ int main (int argc, char * argv[])
 
 	std::string inputFilename = "-";
 	std::string outputFilename = "-";
+	std::string outputFilename2 = "-";
 
-	if (inputFiles.size() > 2){
-		std::cerr << "You may specify at most two files as parameters: the input and the output file" << std::endl;
+	if (inputFiles.size() > 3){
+		std::cerr << "You may specify at most two files as parameters: the input and two output file" << std::endl;
 		return 1;
 	} else {
 		if (inputFiles.size())
 			inputFilename = inputFiles[0];
 		if (inputFiles.size() > 1)
 			outputFilename = inputFiles[1];
+		if (inputFiles.size() > 2)
+			outputFilename2 = inputFiles[2];
 	}
 
 	std::istream * inputStream;
@@ -186,6 +194,30 @@ int main (int argc, char * argv[])
 		outputStream = fileOutput;
 	}
 
+	std::ostream * outputStream2;
+	if (outputFilename2 == "-")
+	{
+		if (!quietMode)
+			std::cerr << "Writing output to standard output." << std::endl;
+
+		outputStream2 = &std::cout;
+	}
+	else
+	{
+		if (!quietMode)
+			std::cerr << "Writing output to " << outputFilename2 << "." << std::endl;
+
+		std::ofstream * fileOutput  = new std::ofstream(outputFilename2);
+
+		if (!fileOutput->good ())
+		{
+			std::cerr << "Unable to open output file " << outputFilename << ": " << strerror (errno) << std::endl;
+			return 1;
+		}
+
+		outputStream2 = fileOutput;
+	}
+
 	if (!success)
 	{
 		std::cerr << "Failed to read input data!" << std::endl;
@@ -222,11 +254,11 @@ int main (int argc, char * argv[])
 	}
 	else
 	{
-		run_grounding (domain, problem, *outputStream, 
+		run_grounding (domain, problem, *outputStream, *outputStream2,  
 				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
 				futureCachingByPrecondition, 
 				h2mutexes, 
-				outputForPlanner, outputSASPlus, 
+				outputForPlanner, outputHDDL, outputSASPlus, 
 				printTimings, quietMode);
 	}
 
