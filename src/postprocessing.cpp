@@ -391,10 +391,13 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 	std::vector<bool> prunableMethodPrecondition(inputMethodsGroundedTdg.size());
 	for (GroundedTask & task : inputTasksGroundedPg){
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
-		if (domain.tasks[task.taskNo].name.rfind("method_precondition_",0) != 0) continue;
+		//std::cout << "Is prim " << domain.tasks[task.taskNo].name << std::endl;
+		if (domain.tasks[task.taskNo].name.rfind("__method_precondition_",0) != 0) continue;
 		bool unprunedPrecondition = false;
+		//std::cout << "checking " << domain.tasks[task.taskNo].name << " ... ";
 		for (int & pre : task.groundedPreconditions)
 			if (!prunedFacts[pre]) { unprunedPrecondition = true; break; }
+		//std::cout << unprunedPrecondition << std::endl;
 		if (unprunedPrecondition) continue;
 	
 		// this task is now pruned
@@ -435,6 +438,18 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 					if (order.second > subTaskIdx) order.second--;
 					liftedMethod.orderingConstraints.push_back(order);
 				}
+			
+			
+				std::vector<int> newOrder;
+				for (size_t i = 0; i < groundedMethod.preconditionOrdering.size(); i++){
+					if (groundedMethod.preconditionOrdering[i] != subTaskIdx){
+						bool afterDeleted = groundedMethod.preconditionOrdering[i] > subTaskIdx;
+						newOrder.push_back(groundedMethod.preconditionOrdering[i] - (afterDeleted?1:0));
+					}
+				}
+				groundedMethod.preconditionOrdering = newOrder;
+
+	
 			}
 
 			// write back the new method, i.e. add the lifted version to the domain

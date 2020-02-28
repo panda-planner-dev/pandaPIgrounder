@@ -1,3 +1,7 @@
 [submodule "h2-fd-preprocessor"]
 	path = h2-fd-preprocessor
 	url = git@github.com:galvusdamor/h2-fd-preprocessor.git
+[submodule "cpddl"]
+	path = cpddl
+	url = git@gitlab.com:danfis/cpddl.git
+	branch = aaai20
