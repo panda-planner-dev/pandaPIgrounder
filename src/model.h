@@ -37,6 +37,10 @@ struct Predicate
 
 	/// Vector of argument sorts. The i-th argument to this predicate has to be of sort argumentSorts[i].
 	std::vector<int> argumentSorts;
+
+	/// marks a predicate as artificial for conditional effects
+	bool guard_for_conditional_effect;
+
 };
 
 /**
@@ -202,6 +206,9 @@ struct Task: pandaPI::Operator<PredicateWithArguments>
 
 	int number_of_original_variables;
 
+	/// if true, this is an artificial task representing a conditional effect
+	bool isCompiledConditionalEffect;
+
 	/// The cost to execute this task.
 	std::vector<std::variant<PredicateWithArguments,int>> costs;
 
@@ -213,6 +220,12 @@ struct Task: pandaPI::Operator<PredicateWithArguments>
 
 	/// Predicates that will be added when this task is executed.
 	std::vector<PredicateWithArguments> effectsAdd;
+
+	/// Conditional Add effects. Will be added to the state if their condition is satisfied
+	std::vector<std::pair<std::vector<PredicateWithArguments>, PredicateWithArguments>> conditionalAdd;
+	
+	/// Conditional Del effects. Will be removed from the state if their condition is satisfied
+	std::vector<std::pair<std::vector<PredicateWithArguments>, PredicateWithArguments>> conditionalDel;
 
 	/// Decomposition methods for abstract tasks. Each element is an index into the Domain.decompositionMethods vector.
 	std::vector<int> decompositionMethods;

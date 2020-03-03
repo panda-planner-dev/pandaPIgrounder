@@ -4,6 +4,7 @@
 #include <map>
 #include <algorithm>
 #include <unistd.h>
+#include <cassert>
 
 #include "output.h"
 
@@ -28,6 +29,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	int fn = 0;
 	for (Fact & fact : reachableFacts){
 		if (prunedFacts[fact.groundedNo]) continue;
+		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 		fact.outputNo = fn++; // assign actual index to fact
 	}
 
@@ -35,6 +37,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	pout << facts << std::endl;
 	for (Fact & fact : reachableFacts){
 		if (prunedFacts[fact.groundedNo]) continue;
+		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 		pout << domain.predicates[fact.predicateNo].name << "[";
 		for (unsigned int i = 0; i < fact.arguments.size(); i++){
 			if (i) pout << ",";
@@ -50,6 +53,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	pout << facts << std::endl;
 	for (Fact & fact : reachableFacts){
 		if (prunedFacts[fact.groundedNo]) continue;
+		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 		pout << fact.outputNo << " " << fact.outputNo << " ";
 		pout << domain.predicates[fact.predicateNo].name << "[";
 		for (unsigned int i = 0; i < fact.arguments.size(); i++){
@@ -66,10 +70,32 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		init_functions_map[init_function_literal.first] = init_function_literal.second;
 	}
 
+	// gather conditional effect actions
+	std::map<int,GroundedTask> ce_effects;
+	for (GroundedTask & task : reachableTasks){
+		if (!domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+
+		int guardID = -1;
+		for (int & prec : task.groundedPreconditions)
+			if (domain.predicates[reachableFacts[prec].predicateNo].guard_for_conditional_effect){
+				guardID = prec;
+				break;
+			}
+
+		if (ce_effects.count(guardID)){
+			std::cerr << "Multiple assigned conditional effect groundings. I thought this cannot happen ..." << std::endl;
+			exit(-1);
+		}
+
+		ce_effects[guardID] = task;
+	}
+
 	pout << ";; Actions" << std::endl;
 	pout << primTask << std::endl; 
 	int ac = 0;
 	for (GroundedTask & task : reachableTasks){
+		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
 		//pout << domain.tasks[task.taskNo].name << std::endl;
 
@@ -82,15 +108,74 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			if (!prunedFacts[prec])
 				pout << reachableFacts[prec].outputNo << " ";
 		pout << -1 << std::endl;
-		
+
+		std::vector<int> ce_guards;
 		for (int & add : task.groundedAddEffects)
-			if (!prunedFacts[add])
-				pout << reachableFacts[add].outputNo << " ";
+			if (domain.predicates[reachableFacts[add].predicateNo].guard_for_conditional_effect)
+				ce_guards.push_back(add);
+			else {	
+				if (!prunedFacts[add])
+					pout << 0 << " " << reachableFacts[add].outputNo << "  ";
+			}
+
+
+		// compute conditional effects
+		std::vector<std::pair<std::vector<int>,int>> addCEs;
+		std::vector<std::pair<std::vector<int>,int>> delCEs;
+
+		for (int guard : ce_guards){
+			if (!ce_effects.count(guard)) continue; // CE condition might be unreachable
+			GroundedTask ce_task = ce_effects[guard];
+
+			int effectID; bool isAdd;
+			if (ce_task.groundedAddEffects.size()){
+				assert(ce_task.groundedDelEffects.size() == 0);
+				assert(ce_task.groundedAddEffects.size() == 1);
+				effectID = ce_task.groundedAddEffects[0];
+				isAdd = true;
+			} else {
+				assert(ce_task.groundedDelEffects.size() == 1);
+				assert(ce_task.groundedAddEffects.size() == 0);
+				effectID = ce_task.groundedDelEffects[0];
+				isAdd = false;
+			}
+
+			if (prunedFacts[effectID]) continue; // this effect is not necessary
+
+			std::vector<int> nonPrunedPrecs;
+			for (int & prec : ce_task.groundedPreconditions)
+				if (!domain.predicates[reachableFacts[prec].predicateNo].guard_for_conditional_effect) // don't output the guard
+					if (!prunedFacts[prec])
+						nonPrunedPrecs.push_back(reachableFacts[prec].outputNo);
+
+			
+			if (isAdd)
+				addCEs.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
+			else
+				delCEs.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
+
+		}
+
+		// output conditional adds
+		for (auto ce : addCEs){
+			pout  << ce.first.size();
+			for (int c : ce.first) pout << " " << c;
+			pout << " " << ce.second << "  ";
+		}
+
 		pout << -1 << std::endl;
 		
 		for (int & del : task.groundedDelEffects)
 			if (!prunedFacts[del])
-				pout << reachableFacts[del].outputNo << " ";
+				pout << 0 << " " << reachableFacts[del].outputNo << "  ";
+
+		// output conditional dels
+		for (auto ce : delCEs){
+			pout << ce.first.size();
+			for (int c : ce.first) pout << " " << c;
+			pout << " " << ce.second << "  ";
+		}
+
 		pout << -1 << std::endl;
 	}
 
@@ -144,7 +229,9 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	// count number of reachable  abstracts
 	for (GroundedTask & task : reachableTasks){
 		if (prunedTasks[task.groundedNo]) continue;
+		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
 		if (task.taskNo >= domain.nPrimitiveTasks) continue;
+		
 		pout << 0 << " ";
 		
 		
@@ -272,6 +359,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 	bool domainHasActionCosts = false;
 	for (GroundedTask & task : reachableTasks){
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
 		
 		if (domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map) != 1){
 			domainHasActionCosts = true;
@@ -280,6 +368,26 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 	}
 
 
+	// gather conditional effect actions
+	std::map<int,GroundedTask> ce_effects;
+	for (GroundedTask & task : reachableTasks){
+		if (!domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+
+		int guardID = -1;
+		for (int & prec : task.groundedPreconditions)
+			if (domain.predicates[reachableFacts[prec].predicateNo].guard_for_conditional_effect){
+				guardID = prec;
+				break;
+			}
+
+		if (ce_effects.count(guardID)){
+			std::cerr << "Multiple assigned conditional effect groundings. I thought this cannot happen ..." << std::endl;
+			exit(-1);
+		}
+
+		ce_effects[guardID] = task;
+	}
 
 
 	dout << "(define (domain d)" << std::endl;
@@ -293,6 +401,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 	bool somePredicate = false;
 	for (Fact & fact : reachableFacts){
 		if (prunedFacts[fact.groundedNo]) continue;
+		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 		somePredicate = true; break;
 	}
 
@@ -302,6 +411,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 	}
 	for (Fact & fact : reachableFacts){
 		if (prunedFacts[fact.groundedNo]) continue;
+		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 		
 		dout << "    (";
 
@@ -392,6 +502,8 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 
 	for (GroundedTask & task : reachableTasks){
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
+		
 		dout << "  (:action " << taskname[task.groundedNo] << std::endl;
 		dout << "   :parameters ()" << std::endl;
 		
@@ -403,13 +515,64 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 			if (!prunedFacts[prec])
 				precs.push_back(factname[prec]);
 
+		std::vector<int> ce_guards;
 		for (int & add : task.groundedAddEffects)
-			if (!prunedFacts[add])
-				adds.push_back(factname[add]);
-		
+			if (domain.predicates[reachableFacts[add].predicateNo].guard_for_conditional_effect)
+				ce_guards.push_back(add);
+			else {	
+				if (!prunedFacts[add])
+					adds.push_back(factname[add]);
+			}
+
 		for (int & del : task.groundedDelEffects)
 			if (!prunedFacts[del])
 				dels.push_back(factname[del]);
+
+
+
+		// compute conditional effects
+		std::vector<std::pair<std::vector<std::string>,std::string>> addCEs;
+		std::vector<std::pair<std::vector<std::string>,std::string>> delCEs;
+
+		for (int guard : ce_guards){
+			if (!ce_effects.count(guard)) continue; // CE condition might be unreachable
+			GroundedTask ce_task = ce_effects[guard];
+
+			int effectID; bool isAdd;
+			if (ce_task.groundedAddEffects.size()){
+				assert(ce_task.groundedDelEffects.size() == 0);
+				assert(ce_task.groundedAddEffects.size() == 1);
+				effectID = ce_task.groundedAddEffects[0];
+				isAdd = true;
+			} else {
+				assert(ce_task.groundedDelEffects.size() == 1);
+				assert(ce_task.groundedAddEffects.size() == 0);
+				effectID = ce_task.groundedDelEffects[0];
+				isAdd = false;
+			}
+
+			if (prunedFacts[effectID]) continue; // this effect is not necessary
+
+			std::vector<std::string> nonPrunedPrecs;
+			for (int & prec : ce_task.groundedPreconditions)
+				if (!domain.predicates[reachableFacts[prec].predicateNo].guard_for_conditional_effect) // don't output the guard
+					if (!prunedFacts[prec])
+						nonPrunedPrecs.push_back(factname[prec]);
+
+			if (nonPrunedPrecs.size()){
+				if (isAdd)
+					addCEs.push_back(std::make_pair(nonPrunedPrecs, factname[effectID]));
+				else
+					delCEs.push_back(std::make_pair(nonPrunedPrecs, factname[effectID]));
+			} else {
+				if (isAdd)
+					adds.push_back(factname[effectID]);
+				else
+					dels.push_back(factname[effectID]);
+			}
+		}
+
+
 
 		if (precs.size()){
 			dout << "    :precondition (and" << std::endl;
@@ -419,17 +582,34 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		}
 
 		int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
-		if ((adds.size() + dels.size()) || (domainHasActionCosts && costs)){
+		if ((adds.size() + dels.size() + addCEs.size() + delCEs.size()) || (domainHasActionCosts && costs)){
 			dout << "    :effect (and" << std::endl;
 
 			if (domainHasActionCosts && costs){
 				dout << "      (increase (total-cost) " << costs << ")" << std::endl;
 			}
+		
 
+			// add and conditional add
 			for (std::string a : adds)
 				dout << "      (" << a << ")" << std::endl;
+			for (auto ce : addCEs){
+				dout << "      (when (and";
+				for (std::string p : ce.first)
+					dout << " (" << p << ")";
+				dout << ") (" << ce.second << "))" << std::endl;
+			}
+			
+			// delete and conditional delete
 			for (std::string d : dels)
 				dout << "      (not (" << d << "))" << std::endl;
+			for (auto ce : delCEs){
+				dout << "      (when (and";
+				for (std::string p : ce.first)
+					dout << " (" << p << ")";
+				dout << ") (not (" << ce.second << ")))" << std::endl;
+			}
+
 			dout << "    )" << std::endl;
 		}
 		
@@ -499,7 +679,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		pout << "  (:goal (and" << std::endl;
 		for (std::string gf : goalFacts)
 			pout << "    (" << gf << ")" << std::endl;
-		pout << "  )" << std::endl;
+		pout << "  ))" << std::endl;
 	}
 	pout << ")" << std::endl;
 

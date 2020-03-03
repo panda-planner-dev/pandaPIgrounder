@@ -31,6 +31,11 @@ using PossibleConstants = std::vector<std::set<int>>;
 struct HierarchyTyping
 {
 	/**
+	 * @brief Reference to domain
+	 */
+	const Domain * domain;
+
+	/**
 	 * @brief Contains a list of PossibleConstants instances for each task in the domain.
 	 */
 	std::vector<std::vector<PossibleConstants>> possibleConstantsPerTask;

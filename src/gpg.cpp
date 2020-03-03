@@ -22,7 +22,7 @@ std::vector<size_t> htTests;
 
 
 // Returns the new number of the visited grounded task
-int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, const std::vector<GroundedTask> & inputTasks, const std::vector<GroundedMethod> & inputMethods, const Domain & domain, std::vector<int> & visitedTasks, size_t groundedTaskIdx)
+int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, const std::vector<GroundedTask> & inputTasks, const std::vector<GroundedMethod> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, std::vector<int> & visitedTasks, size_t groundedTaskIdx)
 {
 	if (visitedTasks[groundedTaskIdx] != -1)
 		return visitedTasks[groundedTaskIdx];
@@ -34,6 +34,14 @@ int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMe
 	GroundedTask taskCopy = groundedTask;
 	taskCopy.groundedNo = newTaskNo;
 	outputTasks.push_back (taskCopy);
+
+	// add effects that guard conditional effects
+	
+	for (int & groundNo : taskCopy.groundedAddEffects)
+		if (domain.predicates[reachableFactsList[groundNo].predicateNo].guard_for_conditional_effect){
+		reachableCEGuards.insert(groundNo);
+	}
+	
 
 	visitedTasks[groundedTaskIdx] = newTaskNo;
 
@@ -58,7 +66,7 @@ int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMe
 		for (size_t subtaskIdx = 0; subtaskIdx < groundedMethod.groundedPreconditions.size (); ++subtaskIdx)
 		{
 			int subtaskNo = groundedMethod.groundedPreconditions[subtaskIdx];
-			int newSubtaskNo = innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, domain, visitedTasks, subtaskNo);
+			int newSubtaskNo = innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, reachableFactsList, reachableCEGuards, domain, visitedTasks, subtaskNo);
 			outputMethods[newMethodNo].groundedPreconditions[subtaskIdx] = newSubtaskNo;
 		}
 	}
@@ -66,7 +74,7 @@ int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMe
 	return newTaskNo;
 }
 
-void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, const std::vector<GroundedMethod> & inputMethods, const Domain & domain, const Problem & problem)
+void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, const std::vector<GroundedMethod> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem)
 {
 	std::vector<int> visitedTasks (inputTasks.size (), -1);
 
@@ -74,6 +82,6 @@ void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod
 	{
 		if (task.taskNo != problem.initialAbstractTask)
 			continue;
-		innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, domain, visitedTasks, task.groundedNo);
+		innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, reachableFactsList, reachableCEGuards, domain, visitedTasks, task.groundedNo);
 	}
 }

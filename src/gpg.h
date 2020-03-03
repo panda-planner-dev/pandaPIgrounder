@@ -23,6 +23,8 @@
 #include <map>
 #include <cassert>
 #include <unistd.h>
+#include <unordered_set>
+
 
 #include "debug.h"
 #include "hierarchy-typing.h"
@@ -586,10 +588,11 @@ static void gpgAssignVariables (
 		// XXX TODO: insert ground preconditions and add effects
 		result.groundedPreconditions = matchedPreconditions;
 		// Still anything TODO?
-
+		
 		// Add "add" effects from this action to our known facts
 		for (const typename InstanceType::PreconditionType addEffect : action.getConsequences ())
 		{
+			
 			typename InstanceType::StateType addState;
 			addState.setHeadNo (addEffect.getHeadNo ());
 			for (int varIdx : addEffect.arguments)
@@ -1155,7 +1158,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 }
 
 
-void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, const std::vector<GroundedMethod> & inputMethods, const Domain & domain, const Problem & problem);
+void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, const std::vector<GroundedMethod> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem);
 
 
 

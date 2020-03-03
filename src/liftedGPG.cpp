@@ -48,6 +48,7 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 
 	if (!quietMode) std::cerr << "PG postprocessing done." << std::endl;
 	if (!quietMode) std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
+	
 
 	if (problem.initialAbstractTask == -1){
 		// create facts in the correct order
@@ -167,11 +168,30 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	}
 	);
 
+	// create facts in the correct order
+	std::vector<Fact> reachableFactsList  (reachableFacts.size ());
+	for (const Fact & fact : reachableFacts)
+		reachableFactsList[fact.groundedNo] = fact;
+
 	// Perform DFS
 	if (!quietMode) std::cerr << "Performing DFS." << std::endl;
 	std::vector<GroundedTask> reachableTasksDfs;
 	std::vector<GroundedMethod> reachableMethodsDfs;
-	tdgDfs (reachableTasksDfs, reachableMethodsDfs, groundedTasksTdg, groundedMethods, domain, problem);
+	std::unordered_set<int> reachableCEGuards;
+	tdgDfs (reachableTasksDfs, reachableMethodsDfs, groundedTasksTdg, groundedMethods, reachableFactsList, reachableCEGuards, domain, problem);
+
+	// add primitive tasks from conditional effects as reachable
+	for (GroundedTask gt : groundedTasksTdg){
+		if (!domain.tasks[gt.taskNo].isCompiledConditionalEffect) continue;
+		
+		for (int & pre : gt.groundedPreconditions)
+			if (reachableCEGuards.count(pre)){
+				gt.groundedNo = reachableTasksDfs.size();
+				reachableTasksDfs.push_back(gt);
+			}
+	}
+
+
 	if (!quietMode) std::cerr << "DFS done." << std::endl;
 	if (!quietMode) std::cerr << "After DFS: " << reachableTasksDfs.size () << " tasks, " << reachableMethodsDfs.size () << " methods." << std::endl;
 
@@ -181,11 +201,6 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 			++tmp;
 	std::cerr << "Primitive: " << tmp << std::endl;);
 
-
-	// create facts in the correct order
-	std::vector<Fact> reachableFactsList  (reachableFacts.size ());
-	for (const Fact & fact : reachableFacts)
-		reachableFactsList[fact.groundedNo] = fact;
 
 	// validate all lists
 	validateGroundedList (reachableTasksDfs);

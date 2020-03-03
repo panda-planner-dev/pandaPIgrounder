@@ -67,6 +67,7 @@ void readSort (const Domain & state, std::istream & input, Sort & outputSort)
 void readPredicate (const Domain & state, std::istream & input, Predicate & outputPredicate)
 {
 	input >> outputPredicate.name;
+	outputPredicate.guard_for_conditional_effect = false;
 	readMultiple (state, input, outputPredicate.argumentSorts, readPrimitive);
 }
 
@@ -76,6 +77,15 @@ void readPredicateWithArguments (const Domain & state, std::istream & input, Pre
 
 	size_t nArguments = state.predicates[outputPredicate.predicateNo].argumentSorts.size ();
 	readN (state, input, outputPredicate.arguments, readPrimitive, nArguments);
+}
+
+void readConditionalEffect (const Domain & state, std::istream & input, std::pair<std::vector<PredicateWithArguments>, PredicateWithArguments> & outputPredicate){
+
+	// read conditions
+	readMultiple(state,input,outputPredicate.first,readPredicateWithArguments);
+
+	// read the actual effect
+	readPredicateWithArguments(state,input,outputPredicate.second);
 }
 
 void readCostStatement (const Domain & state, std::istream & input, std::variant<PredicateWithArguments,int> & outputCosts)
@@ -142,6 +152,7 @@ void readVariableConstraint (const Domain & state, std::istream & input, Variabl
 void readPrimitiveTask (const Domain & state, std::istream & input, Task & outputTask)
 {
 	outputTask.type = Task::Type::PRIMITIVE;
+	outputTask.isCompiledConditionalEffect = false;
 
 	input >> outputTask.name;
 	input >> outputTask.number_of_original_variables;
@@ -158,12 +169,14 @@ void readPrimitiveTask (const Domain & state, std::istream & input, Task & outpu
 	// Add effects
 	readMultiple (state, input, outputTask.effectsAdd, readPredicateWithArguments);
 
-	int zero;
-	input >> zero;
+	// Conditional Add effects
+	readMultiple (state, input, outputTask.conditionalAdd, readConditionalEffect);
 
 	// Delete effects
 	readMultiple (state, input, outputTask.effectsDel, readPredicateWithArguments);
-	input >> zero;
+	
+	// Conditional Delete effects
+	readMultiple (state, input, outputTask.conditionalDel, readConditionalEffect);
 
 	// Variable constraints
 	readMultiple (state, input, outputTask.variableConstraints, readVariableConstraint);
@@ -172,6 +185,7 @@ void readPrimitiveTask (const Domain & state, std::istream & input, Task & outpu
 void readAbstractTask (const Domain & state, std::istream & input, Task & outputTask)
 {
 	outputTask.type = Task::Type::ABSTRACT;
+	outputTask.isCompiledConditionalEffect = false;
 
 	input >> outputTask.name;
 	input >> outputTask.number_of_original_variables;

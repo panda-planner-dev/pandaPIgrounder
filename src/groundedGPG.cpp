@@ -243,7 +243,7 @@ std::pair<size_t, size_t> groundedTdg (std::vector<bool> & taskReached, std::vec
 		}
 		else
 		{
-			prunedTasks[taskIdx] = true;
+				prunedTasks[taskIdx] = true;
 		}
 	}
 
@@ -297,7 +297,15 @@ std::pair<size_t, size_t> groundedTdgDfs (std::vector<bool> & prunedTasks, std::
 		}
 		else
 		{
-			prunedTasks[taskIdx] = true;
+			// check if this is a condition effect action
+			if (!prunedTasks[taskIdx] && domain.tasks[inputTasks[taskIdx].taskNo].isCompiledConditionalEffect)
+			{
+				reachedPrimitiveTasksCount++;
+			}
+			else
+			{
+				prunedTasks[taskIdx] = true;
+			}
 		}
 	}
 	for (size_t methodIdx = 0; methodIdx < inputMethods.size (); ++methodIdx)
@@ -350,7 +358,7 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 		{
 			const GroundedTask & task = reachableTasks[taskIdx];
 			assert (task.groundedNo == taskIdx);
-			std::cerr << "    Task " << taskIdx << " (" << task.groundedNo << ", " << ((task.taskNo < domain.nPrimitiveTasks) ? "primitive" : " abstract") << "): " << unfulfilledPreconditions[task.groundedNo] << " unfulfilled preconditions." << std::endl;
+			std::cerr << "    Task " << taskIdx << " " << domain.tasks[task.taskNo].name << " (" << task.groundedNo << ", " << ((task.taskNo < domain.nPrimitiveTasks) ? "primitive" : " abstract") << "): " << unfulfilledPreconditions[task.groundedNo] << " unfulfilled preconditions." << std::endl;
 		}
 #endif
 

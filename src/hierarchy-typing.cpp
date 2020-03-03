@@ -62,8 +62,9 @@ static void applyConstraints (PossibleConstants & possibleConstants, const std::
 	while (changed);
 }
 
-HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem) : possibleConstantsPerTask (domain.nTotalTasks), possibleConstantsPerMethod (domain.decompositionMethods.size ())
+HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem) : domain(&domain), possibleConstantsPerTask (domain.nTotalTasks), possibleConstantsPerMethod (domain.decompositionMethods.size ())
 {
+	assert(domain.tasks.size() > problem.initialAbstractTask);
 	const Task & topTask = domain.tasks[problem.initialAbstractTask];
 
 	// Initially determine possible constants for the top task
@@ -168,6 +169,8 @@ static bool isAssignmentCompatible (const std::vector<PossibleConstants> & possi
 template<>
 bool HierarchyTyping::isAssignmentCompatible<Task> (int taskNo, const VariableAssignment & assignedVariables) const
 {
+	if (domain->tasks[taskNo].isCompiledConditionalEffect) return true; // actions representing conditional effects will always be kept. Their main task already passed HT checking
+
 	return ::isAssignmentCompatible (possibleConstantsPerTask[taskNo], assignedVariables);
 }
 

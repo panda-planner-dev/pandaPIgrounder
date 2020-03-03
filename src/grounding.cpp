@@ -6,6 +6,7 @@
 #include "output.h"
 #include "sasplus.h"
 #include "h2mutexes.h"
+#include "conditional_effects.h"
 
 
 
@@ -21,6 +22,11 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool outputSASPlus, 
 		bool printTimings,
 		bool quietMode){
+	// if the instance contains conditional effects we have to compile them into additional primitive actions
+	// for this, we need to be able to write to the domain
+	expand_conditional_effects_into_artificial_tasks(const_cast<Domain &>(domain), const_cast<Problem &>(problem));
+	std::cout << "Conditional Effects expanded" << std::endl;
+
 	// run the lifted GPG to create an initial grounding of the domain
 	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, 
 			enableHierarchyTyping, futureCachingByPrecondition, printTimings, quietMode);
@@ -35,6 +41,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 
 
 	if (h2Mutextes){
+		// remove useless predicates to make the H2 inference easier
 		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
 			removeUselessPredicates, false, false, quietMode);	
 
