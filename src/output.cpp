@@ -210,6 +210,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		pout << "-1" << std::endl;
 
 		auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;
+		std::sort(orderings.begin(), orderings.end());
 		auto last = std::unique(orderings.begin(), orderings.end());
 		orderings.erase(last, orderings.end());
 
@@ -227,6 +228,27 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 }
 
 
+std::string toHDDLName(std::string name){
+	std::string result = "";
+	for (size_t i = 0; i < name.size(); i++){
+		char c = name[i];
+
+		if (c == '_' && !i) result += "US";
+
+		if (c == '<') result += "LA_";
+		else if (c == '>') result += "RA_";
+		else if (c == '[') result += "LB_";
+		else if (c == ']') result += "RB_";
+		else if (c == ';') result += "SEM_";
+		else if (c == ',') result += "COM_";
+		else if (c == '+') result += "PLUS_";
+		else if (c == '-') result += "MINUS_";
+		else result += c;
+	}
+
+	return result;
+}
+
 
 void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
@@ -241,31 +263,52 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		int methods,
 		bool quietMode	
 		){
-	
+
+	std::map<Fact,int> init_functions_map;
+	for (auto & init_function_literal : problem.init_functions){
+		init_functions_map[init_function_literal.first] = init_function_literal.second;
+	}
+
+	bool domainHasActionCosts = false;
+	for (GroundedTask & task : reachableTasks){
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+		
+		if (domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map) != 1){
+			domainHasActionCosts = true;
+			break;
+		}
+	}
+
+
+
+
 	dout << "(define (domain d)" << std::endl;
 	dout << "  (:requirements :typing)" << std::endl;
 	
 	dout << std::endl;
 
 	std::map<int,std::string> factname;
+	std::map<int,std::string> taskname;
+	
+	bool somePredicate = false;
+	for (Fact & fact : reachableFacts){
+		if (prunedFacts[fact.groundedNo]) continue;
+		somePredicate = true; break;
+	}
 
 	dout << "  (:predicates" << std::endl;
+	if (!somePredicate){
+		dout << "    (DUMMY)" << std::endl; // the Java PANDA cannot parse domains without predicates
+	}
 	for (Fact & fact : reachableFacts){
 		if (prunedFacts[fact.groundedNo]) continue;
 		
 		dout << "    (";
 
-		std::string name = "";
-		if (domain.predicates[fact.predicateNo].name[0] == '+')
-			name += "plus_";
-		else if (domain.predicates[fact.predicateNo].name[0] == '-')
-			name += "minus_";
-		else name += domain.predicates[fact.predicateNo].name[0];
-
-		name += domain.predicates[fact.predicateNo].name.c_str()+1;
+		std::string name = toHDDLName(domain.predicates[fact.predicateNo].name);
 		for (unsigned int i = 0; i < fact.arguments.size(); i++){
 			name += "_";
-			name += domain.constants[fact.arguments[i]];
+			name += toHDDLName(domain.constants[fact.arguments[i]]);
 		}
 
 		factname[fact.groundedNo] = name;
@@ -275,20 +318,31 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 
 	dout << std::endl;
 
+
+	if (domainHasActionCosts){
+		dout << "  (:functions" << std::endl;
+		dout << "    (total-cost) - number" << std::endl;
+		dout << "  )" << std::endl;
+		dout << std::endl;
+	}
+
+
+
 	for (GroundedTask & task : reachableTasks){
 		if (prunedTasks[task.groundedNo]) continue;
-		if (task.taskNo < domain.nPrimitiveTasks) continue;
-		
-		dout << "  (:task ";
-	
-		if (domain.tasks[task.taskNo].name[0] == '_') dout << "t"; 
-		dout << domain.tasks[task.taskNo].name;
+
+		// construct task name
+		std::string name = toHDDLName(domain.tasks[task.taskNo].name);
 		// only output the original variables
 		for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
-			dout << "_" << domain.constants[task.arguments[i]];
+			name += "_" + toHDDLName(domain.constants[task.arguments[i]]);
 		}
+		taskname[task.groundedNo] = name;
 
-		dout << " :parameters ())" << std::endl;
+		// if this one is not abstract, continue
+		if (task.taskNo < domain.nPrimitiveTasks) continue;
+		
+		dout << "  (:task " << taskname[task.groundedNo] << " :parameters ())" << std::endl;
 	}
 
 	dout << std::endl;
@@ -299,25 +353,11 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		if (prunedMethods[method.groundedNo]) continue;
 		// output their name
 		dout << "  (:method ";
-		if (domain.decompositionMethods[method.methodNo].name[0] == '_')
-		   dout << "m";	
-		dout << domain.decompositionMethods[method.methodNo].name << std::endl;
+		dout << toHDDLName(domain.decompositionMethods[method.methodNo].name) << std::endl;
 		dout << "   :parameters ()" << std::endl;
 		
-		{
-			GroundedTask & task	= reachableTasks[method.groundedAddEffects[0]];
-
-			dout << "    :task (";
-			if (domain.tasks[task.taskNo].name[0] == '_') dout << "t"; 
-			dout << domain.tasks[task.taskNo].name;
-			// only output the original variables
-			for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
-				dout << "_" << domain.constants[task.arguments[i]];
-			}
-			dout << ")" << std::endl;
-		}
-
-
+		GroundedTask & at = reachableTasks[method.groundedAddEffects[0]];
+		dout << "    :task (" << taskname[at.groundedNo] << ")" << std::endl;
 		
 		std::map<int,int> subTaskIndexToOutputIndex;
 		// output subtasks in their topological ordering
@@ -327,20 +367,12 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 			subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
 			
 			GroundedTask & task	= reachableTasks[method.groundedPreconditions[subtaskIndex]];
-			dout << "      (t" << outputIndex << " (";
-			if (domain.tasks[task.taskNo].name[0] == '_') dout << "t"; 
-			dout << domain.tasks[task.taskNo].name;
-			// only output the original variables
-			for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
-				dout << "_" << domain.constants[task.arguments[i]];
-			}
-			dout << "))" << std::endl;
-
-
+			dout << "      (t" << outputIndex << " (" << taskname[task.groundedNo] << "))" << std::endl;
 		}
 		dout << "    )" << std::endl;
 
 		auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;
+		std::sort(orderings.begin(), orderings.end());
 		auto last = std::unique(orderings.begin(), orderings.end());
 		orderings.erase(last, orderings.end());
 
@@ -360,17 +392,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 
 	for (GroundedTask & task : reachableTasks){
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
-		dout << "  (:action ";
-		if (domain.tasks[task.taskNo].name[0] == '_') dout << "t";
-		dout << domain.tasks[task.taskNo].name;
-		for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
-			dout << "_" << domain.constants[task.arguments[i]];
-		}
-
-		dout << std::endl;
-
-		//int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
-		//pout << costs << std::endl;
+		dout << "  (:action " << taskname[task.groundedNo] << std::endl;
 		dout << "   :parameters ()" << std::endl;
 		
 
@@ -396,8 +418,14 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 			dout << "    )" << std::endl;
 		}
 
-		if (adds.size() + dels.size()){
+		int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
+		if ((adds.size() + dels.size()) || (domainHasActionCosts && costs)){
 			dout << "    :effect (and" << std::endl;
+
+			if (domainHasActionCosts && costs){
+				dout << "      (increase (total-cost) " << costs << ")" << std::endl;
+			}
+
 			for (std::string a : adds)
 				dout << "      (" << a << ")" << std::endl;
 			for (std::string d : dels)
@@ -418,7 +446,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 
 	pout << "  (:htn" << std::endl;
 	pout << "    :parameters ()" << std::endl;
-	pout << "    :subtasks (and (t__top))" << std::endl;
+	pout << "    :subtasks (and (" << toHDDLName("__top") << "))" << std::endl;
 	pout << "  )" << std::endl;
 
 	pout << "  (:init" << std::endl;
