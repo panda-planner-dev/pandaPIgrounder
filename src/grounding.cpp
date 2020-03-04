@@ -6,6 +6,7 @@
 #include "output.h"
 #include "sasplus.h"
 #include "h2mutexes.h"
+#include "FAMmutexes.h"
 #include "conditional_effects.h"
 
 
@@ -22,6 +23,8 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool outputSASPlus, 
 		bool printTimings,
 		bool quietMode){
+	compute_FAM_mutexes(domain,problem,quietMode);
+
 	// if the instance contains conditional effects we have to compile them into additional primitive actions
 	// for this, we need to be able to write to the domain
 	expand_conditional_effects_into_artificial_tasks(const_cast<Domain &>(domain), const_cast<Problem &>(problem));

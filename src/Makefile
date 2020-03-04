@@ -18,7 +18,7 @@ CERROR=
 CXXFLAGS_LIBS=
 
 # CFlags for production and for debugging
-CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++17 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) -fconcepts
+CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++17 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) -fconcepts -I../cpddl/ -I../cpddl/third-party/boruvka/
 OPTIMIZER_PROD=-O3
 OPTIMIZER_DEBUG=-Og
 CXXFLAGS_PROD=$(OPTIMIZER_PROD) -g -DNDEBUG -flto
@@ -42,7 +42,7 @@ DEPENDENCIES=
 DEPENDENCIES_LD=
 PROGNAME=pandaPIgrounder
 
-H2OBJFILES=../h2-fd-preprocessor/src/axiom.cc.o ../h2-fd-preprocessor/src/causal_graph.cc.o ../h2-fd-preprocessor/src/domain_transition_graph.cc.o ../h2-fd-preprocessor/src/h2_mutexes.cc.o ../h2-fd-preprocessor/src/helper_functions.cc.o ../h2-fd-preprocessor/src/max_dag.cc.o ../h2-fd-preprocessor/src/mutex_group.cc.o ../h2-fd-preprocessor/src/operator.cc.o ../h2-fd-preprocessor/src/scc.cc.o ../h2-fd-preprocessor/src/state.cc.o ../h2-fd-preprocessor/src/successor_generator.cc.o ../h2-fd-preprocessor/src/variable.cc.o
+H2OBJFILES=../h2-fd-preprocessor/src/axiom.cc.o ../h2-fd-preprocessor/src/causal_graph.cc.o ../h2-fd-preprocessor/src/domain_transition_graph.cc.o ../h2-fd-preprocessor/src/h2_mutexes.cc.o ../h2-fd-preprocessor/src/helper_functions.cc.o ../h2-fd-preprocessor/src/max_dag.cc.o ../h2-fd-preprocessor/src/mutex_group.cc.o ../h2-fd-preprocessor/src/operator.cc.o ../h2-fd-preprocessor/src/scc.cc.o ../h2-fd-preprocessor/src/state.cc.o ../h2-fd-preprocessor/src/successor_generator.cc.o ../h2-fd-preprocessor/src/variable.cc.o ../cpddl/libpddl.a ../cpddl/third-party/boruvka/libboruvka.a
 
 
 # Rules
