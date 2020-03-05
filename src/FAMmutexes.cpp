@@ -201,16 +201,24 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	// cpddl needs a root type named object
 	pddlTypesAdd(&pddl.type,root_type_cppdl,-1);
 	
-	for (int sort : topsortTypesCPDDL(typeParents))
+	std::map<int,int> ourTypeIDToCPDDL;
+	ourTypeIDToCPDDL[-1] = 0;
+	for (int sort : topsortTypesCPDDL(typeParents)){
+		int newID = ourTypeIDToCPDDL.size();
+		ourTypeIDToCPDDL[sort] = newID;
+		DEBUG(std::cout << "Adding sort " << sort << " (\"" << domain.sorts[sort].name << "\")" << std::endl);
+		DEBUG(std::cout << "\tParent is " << typeParents[sort] << std::endl);
 			// +1 is for the artificial root sort
-		pddlTypesAdd(&pddl.type,domain.sorts[sort].name.c_str(),typeParents[sort]+1);
+		pddlTypesAdd(&pddl.type,domain.sorts[sort].name.c_str(),ourTypeIDToCPDDL[typeParents[sort]]);
+	}
+	
 	
 	bzero(&pddl.obj, sizeof(pddl.obj));
 	pddl.obj.htable = borHTableNew(objHash, objEq, NULL);
 	
 	// add objects
 	for (size_t o = 0; o < domain.constants.size(); o++)
-		cpddl_add_object_of_sort(pddl,domain.constants[o], objectType[o] + 1);
+		cpddl_add_object_of_sort(pddl,domain.constants[o], ourTypeIDToCPDDL[objectType[o]]);
 	
 /////////////////////////////////// COPIED FROM CPDDL/src/obj.c
     for (int i = 0; i < pddl.obj.obj_size; ++i){
@@ -230,7 +238,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 		p->param_size = pred.argumentSorts.size();
     	p->param = BOR_REALLOC_ARR(p->param, int, p->param_size);
         for (size_t i = 0; i < pred.argumentSorts.size(); i++)
-			p->param[i] = pred.argumentSorts[i] + 1; // +1 for __object
+			p->param[i] = ourTypeIDToCPDDL[pred.argumentSorts[i]];
 	}
 
 	// add dummy predicate to avoid pruning
@@ -251,7 +259,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 			pddl_param_t * p = pddlParamsAdd(&(a->param));
 			std::string paramName = "?var" + std::to_string(varidx++);
 			p->name = BOR_STRDUP(paramName.c_str());
-			p->type = parameter + 1; // +1 for object
+			p->type = ourTypeIDToCPDDL[parameter];
 			p->is_agent = 0;
 		}
 
