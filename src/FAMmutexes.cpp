@@ -2,12 +2,16 @@
 #include <iostream>
 #include <algorithm>
 
+#include "debug.h"
 #include "FAMmutexes.h"
 #include "pddl/pddl.h"
 
-static const char* root_type_cppdl = "__object_cpddl";
-static const char* eq_name_cppdl = "__equals_cpddl";
 
+// CPDDL has dome defined functions that we simply copy. They should be static to not clutter the name space (their library contains them as well, but I want to have them in an extra file)
+#include "cpddl.h"
+
+
+// BOR_ERR_INIT produces gcc warnings which I cannot change ...
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -36,7 +40,7 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 					subset[s2][s3] = false;
 	
 	
-	/*for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
+	DEBUG(for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
 		for (size_t s2 = 0; s2 < domain.sorts.size(); s2++){
 			if (subset[s1][s2]){
 				std::cout << domain.sorts[s2].name;
@@ -46,7 +50,7 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 			
 			}
 		}
-	}*/
+	});
 
 	// who is whose direct subset
 	std::vector<std::vector<int>> directsubset (domain.sorts.size());
@@ -72,11 +76,11 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 			}
 
 
-	/*for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
+	DEBUG(for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
 		std::cout << domain.sorts[s1].name;
    		if (parent[s1] != -1) std::cout << " - " << domain.sorts[parent[s1]].name;
 		std::cout << std::endl; 
-	}*/
+	});
 
 	// assign elements to sorts
 	std::vector<std::set<int>> directElements (domain.sorts.size());
@@ -142,76 +146,44 @@ std::vector<int> topsortTypesCPDDL(std::vector<int> & parent){
 }
 
 
-/////////////////////////////////// COPIED FROM CPDDL/src/obj.c
-struct obj_key {
-    pddl_obj_id_t obj_id;
-    const char *name;
-    uint32_t hash;
-    bor_list_t htable;
-};
-typedef struct obj_key obj_key_t;
-
-static bor_htable_key_t objHash(const bor_list_t *key, void *_)
-{
-    const obj_key_t *obj = bor_container_of(key, obj_key_t, htable);
-    return obj->hash;
+void cpddl_add_object_of_sort(pddl_t & pddl, const std::string & name, int type){
+	pddl_obj_t * obj = pddlObjsAdd(&pddl.obj,name.c_str());
+	obj->type = type;
+	obj->is_constant = true;
+	obj->is_private = 0;
+	obj->owner = PDDL_OBJ_ID_UNDEF;
+	obj->is_agent = 0;
 }
 
-static int objEq(const bor_list_t *key1, const bor_list_t *key2, void *_)
-{
-    const obj_key_t *obj1 = bor_container_of(key1, obj_key_t, htable);
-    const obj_key_t *obj2 = bor_container_of(key2, obj_key_t, htable);
-    return strcmp(obj1->name, obj2->name) == 0;
+pddl_cond_t* cpddl_create_atom(const PredicateWithArguments & lit, bool positive){
+	pddl_cond_atom_t * atom = condAtomNew();
+	atom->pred = lit.predicateNo + 1; // +1 for equals
+	atom->arg_size = lit.arguments.size();
+	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
+	atom->neg = !positive;
+	for (size_t i = 0; i < lit.arguments.size(); i++){
+		atom->arg[i].param = lit.arguments[i];
+		atom->arg[i].obj = PDDL_OBJ_ID_UNDEF;
+	}
+	return &atom->cls;
 }
 
-static void addEqPredicate(pddl_preds_t *ps)
-{
-    pddl_pred_t *p;
-
-    p = pddlPredsAdd(ps);
-    p->name = BOR_STRDUP(eq_name_cppdl);
-    p->param_size = 2;
-    p->param = BOR_CALLOC_ARR(int, 2);
-    ps->eq_pred = ps->pred_size - 1;
-}
-/////////////////////////////////// COPIED FROM CPDDL/src/obj.c
-
-/////////////////////////////////// COPIED FROM CPDDL/src/cond.c
-#define condNew(CTYPE, TYPE) \
-    (CTYPE *)_condNew(sizeof(CTYPE), TYPE)
-
-static pddl_cond_t *_condNew(int size, unsigned type)
-{
-    pddl_cond_t *c;
-
-    c = (pddl_cond_t*)BOR_MALLOC(size);
-    bzero(c, size);
-    c->type = type;
-    borListInit(&c->conn);
-    return c;
+void cpddl_add_atom_to_conjunction(const PredicateWithArguments & lit, bool positive, pddl_cond_part_t * conj){
+	condPartAdd(conj,cpddl_create_atom(lit,positive));
 }
 
-static pddl_cond_part_t *condPartNew(int type)
-{
-    pddl_cond_part_t *p;
-    p = condNew(pddl_cond_part_t, type);
-    borListInit(&p->part);
-    return p;
+void cpddl_add_fact_to_conjunction(const Fact & f, pddl_cond_part_t * conj, const Domain & domain, pddl_t & pddl){
+	pddl_cond_atom_t * atom = condAtomNew();
+	atom->pred = f.predicateNo + 1; // +1 for equals
+	atom->arg_size = f.arguments.size();
+	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
+	atom->neg = false;
+	for (size_t i = 0; i < f.arguments.size(); i++){
+		atom->arg[i].param = -1;
+		atom->arg[i].obj = pddlObjsGet(&pddl.obj, domain.constants[f.arguments[i]].c_str()); 
+	}
+	condPartAdd(conj,&atom->cls);
 }
-
-static pddl_cond_atom_t *condAtomNew(void)
-{
-    return condNew(pddl_cond_atom_t, PDDL_COND_ATOM);
-}
-
-static void condPartAdd(pddl_cond_part_t *p, pddl_cond_t *add)
-{
-    borListInit(&add->conn);
-    borListAppend(&p->part, &add->conn);
-}
-
-/////////////////////////////////// COPIED FROM CPDDL/src/cond.c
-
 
 void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode){
 	// create representation of the domain/problem
@@ -233,29 +205,13 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 			// +1 is for the artificial root sort
 		pddlTypesAdd(&pddl.type,domain.sorts[sort].name.c_str(),typeParents[sort]+1);
 	
-	std::cout << "Types added " << std::endl;
 	bzero(&pddl.obj, sizeof(pddl.obj));
 	pddl.obj.htable = borHTableNew(objHash, objEq, NULL);
 	
 	// add objects
-	for (size_t o = 0; o < domain.constants.size(); o++){
-		pddl_obj_t * obj = pddlObjsAdd(&pddl.obj,domain.constants[o].c_str());
-		obj->type = objectType[o] + 1; // +1 for root sort
-		obj->is_constant = true;
-		obj->is_private = 0;
-		obj->owner = PDDL_OBJ_ID_UNDEF;
-		obj->is_agent = 0;
-	}
-
+	for (size_t o = 0; o < domain.constants.size(); o++)
+		cpddl_add_object_of_sort(pddl,domain.constants[o], objectType[o] + 1);
 	
-	{
-		pddl_obj_t * obj = pddlObjsAdd(&pddl.obj,"FOO");
-		obj->type = 0; // +1 for root sort
-		obj->is_constant = true;
-		obj->is_private = 0;
-		obj->owner = PDDL_OBJ_ID_UNDEF;
-		obj->is_agent = 0;
-	}
 /////////////////////////////////// COPIED FROM CPDDL/src/obj.c
     for (int i = 0; i < pddl.obj.obj_size; ++i){
         pddlTypesAddObj(&pddl.type, i, pddl.obj.obj[i].type);
@@ -263,10 +219,10 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 /////////////////////////////////// COPIED FROM CPDDL/src/obj.c
 
 	// add equals predicate
-/////////////////////////////////// COPIED FROM CPDDL/src/obj.c
+/////////////////////////////////// COPIED FROM CPDDL/src/pred.c
     pddl.pred.eq_pred = -1;
     addEqPredicate(&pddl.pred);
-/////////////////////////////////// COPIED FROM CPDDL/src/obj.c
+/////////////////////////////////// COPIED FROM CPDDL/src/pred.c
 
 	for (const Predicate & pred : domain.predicates){
 		pddl_pred_t * p = pddlPredsAdd(&pddl.pred);
@@ -278,13 +234,10 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	}
 
 	// add dummy predicate to avoid pruning
-	{
-		pddl_pred_t * p = pddlPredsAdd(&pddl.pred);
-		p->name = BOR_STRDUP("dummy-goal");
-		p->param_size = 1;
-   		p->param = BOR_REALLOC_ARR(p->param, int, p->param_size);
-		p->param[0] = 0;
-	}
+	pddl_pred_t * dumm_goal_predicate = pddlPredsAdd(&pddl.pred);
+	dumm_goal_predicate->name = BOR_STRDUP("dummy-goal");
+	dumm_goal_predicate->param_size = 0;
+	dumm_goal_predicate->param = BOR_REALLOC_ARR(dumm_goal_predicate->param, int, dumm_goal_predicate->param_size);
 
 	// add actions to the model
 	for (size_t tid = 0; tid < domain.nPrimitiveTasks; tid++){
@@ -302,40 +255,22 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 			p->is_agent = 0;
 		}
 
-		// TODO other handling of empty preconditions ...
-		
 		if (t.preconditions.size() + t.variableConstraints.size() == 0){
 			a->pre = pddlCondNewEmptyAnd();
 		} else {
 			// add preconditions
 			pddl_cond_part_t * pre_conj = condPartNew(PDDL_COND_AND);
-			for (const PredicateWithArguments & pre : t.preconditions){
-				pddl_cond_atom_t * atom = condAtomNew();
-				atom->pred = pre.predicateNo + 1; // +1 for equals
-				atom->arg_size = pre.arguments.size();
-		    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-				atom->neg = false;
-				for (size_t i = 0; i < pre.arguments.size(); i++){
-					atom->arg[i].param = pre.arguments[i];
-					atom->arg[i].obj = PDDL_OBJ_ID_UNDEF;
-				}
-				condPartAdd(pre_conj,&atom->cls);
-			}
+			for (const PredicateWithArguments & pre : t.preconditions)
+				cpddl_add_atom_to_conjunction(pre, true, pre_conj); // true = positive
 			
 			// add the variable constraints
 			for (const VariableConstraint & vc : t.variableConstraints){
-				pddl_cond_atom_t * atom = condAtomNew();
-				atom->pred = 0; // equals
-				atom->arg_size = 2;
-		    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-				atom->neg = vc.type == VariableConstraint::Type::NOT_EQUAL;
-
-				atom->arg[0].param = vc.var1;
-				atom->arg[1].param = vc.var1;
-				atom->arg[0].obj = PDDL_OBJ_ID_UNDEF;
-				atom->arg[1].obj = PDDL_OBJ_ID_UNDEF;
-
-				condPartAdd(pre_conj,&atom->cls);
+				PredicateWithArguments equalsLiteral;
+				equalsLiteral.predicateNo = -1; // equals	
+				equalsLiteral.arguments.clear();
+				equalsLiteral.arguments.push_back(vc.var1);
+				equalsLiteral.arguments.push_back(vc.var2);
+				cpddl_add_atom_to_conjunction(equalsLiteral, vc.type == VariableConstraint::Type::EQUAL, pre_conj);
 			}
 			
 			
@@ -345,80 +280,39 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 
 
 
-		// add effect
+		// effects
 		pddl_cond_part_t * eff_conj = condPartNew(PDDL_COND_AND);
-		std::vector<std::pair<bool,PredicateWithArguments>> normal_eff;
+		PredicateWithArguments goalLiteral;
+		goalLiteral.predicateNo = domain.predicates.size();	
+		goalLiteral.arguments.clear();
+		cpddl_add_atom_to_conjunction(goalLiteral, true, eff_conj);
+
+		// unconditional add and delete effects
 		for (auto & add : t.effectsAdd)
-			normal_eff.push_back(std::make_pair(true,add));
+			cpddl_add_atom_to_conjunction(add, true, eff_conj);
+		
 		for (auto & del : t.effectsDel)
-			normal_eff.push_back(std::make_pair(false,del));
-
-		{ // artificial goal predicate
-			pddl_cond_atom_t * atom = condAtomNew();
-			atom->pred = domain.predicates.size() + 1;
-			atom->arg_size = 1;
-	    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-			atom->neg = false;
-			atom->arg[0].param = -1;
-			atom->arg[0].obj = pddlObjsGet(&pddl.obj, "FOO"); 
-			condPartAdd(eff_conj,&atom->cls);
-		}
-
-
-		for (auto & eff : normal_eff){
-			pddl_cond_atom_t * atom = condAtomNew();
-			atom->pred = eff.second.predicateNo + 1; // +1 for equals
-			atom->arg_size = eff.second.arguments.size();
-	    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-			atom->neg = !eff.first;
-			for (size_t i = 0; i < eff.second.arguments.size(); i++){
-				atom->arg[i].param = eff.second.arguments[i];
-				atom->arg[i].obj = PDDL_OBJ_ID_UNDEF;
-			}
-			condPartAdd(eff_conj,&atom->cls);
-		}
+			cpddl_add_atom_to_conjunction(del, false, eff_conj);
 		
 		
-		
+		// copy conditional effects into data structure to handle them uniformly
 		std::vector<std::pair<bool,std::pair<std::vector<PredicateWithArguments>, PredicateWithArguments>>> cond_eff;
 		for (auto & add : t.conditionalAdd)
 			cond_eff.push_back(std::make_pair(true,add));
 		for (auto & del : t.conditionalDel)
 			cond_eff.push_back(std::make_pair(false,del));
 
-
 		for (auto & eff : cond_eff){
 			pddl_cond_when_t * w = condNew(pddl_cond_when_t, PDDL_COND_WHEN);
 
 			// build precondition of CE
 			pddl_cond_part_t * pre_conj = condPartNew(PDDL_COND_AND);
-			for (const PredicateWithArguments & pre : eff.second.first){
-				pddl_cond_atom_t * atom = condAtomNew();
-				atom->pred = pre.predicateNo + 1; // +1 for equals
-				atom->arg_size = pre.arguments.size();
-		    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-				atom->neg = false;
-				for (size_t i = 0; i < pre.arguments.size(); i++){
-					atom->arg[i].param = pre.arguments[i];
-					atom->arg[i].obj = PDDL_OBJ_ID_UNDEF;
-				}
-				condPartAdd(pre_conj,&atom->cls);
-			}
+			for (const PredicateWithArguments & pre : eff.second.first)
+				cpddl_add_atom_to_conjunction(pre, true, pre_conj);
 			w->pre = &pre_conj->cls;
 
-
 			// build conditional effect
-			pddl_cond_atom_t * eff_atom = condAtomNew();
-			eff_atom->pred = eff.second.second.predicateNo + 1; // +1 for equals
-			eff_atom->arg_size = eff.second.second.arguments.size();
-	    	eff_atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, eff_atom->arg_size);
-			eff_atom->neg = !eff.first;
-			for (size_t i = 0; i < eff.second.second.arguments.size(); i++){
-				eff_atom->arg[i].param = eff.second.second.arguments[i];
-				eff_atom->arg[i].obj = PDDL_OBJ_ID_UNDEF;
-			}
-
-			w->eff = &eff_atom->cls;
+			w->eff = cpddl_create_atom(eff.second.second,eff.first);
 			condPartAdd(eff_conj,&w->cls);
 		}
 
@@ -434,129 +328,60 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 
 	// init
 	pddl.init = condPartNew(PDDL_COND_AND);
-	for (const Fact & f : problem.init){
-		pddl_cond_atom_t * atom = condAtomNew();
-		atom->pred = f.predicateNo + 1; // +1 for equals
-		atom->arg_size = f.arguments.size();
-    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-		atom->neg = false;
-		for (size_t i = 0; i < f.arguments.size(); i++){
-			atom->arg[i].param = -1;
-			atom->arg[i].obj = pddlObjsGet(&pddl.obj, domain.constants[f.arguments[i]].c_str()); 
-		}
-		condPartAdd(pddl.init,&atom->cls);
+	for (const Fact & f : problem.init)
+		cpddl_add_fact_to_conjunction(f,pddl.init, domain, pddl);
+
+	
+	// set all atoms in into to be in init (else normalisation will not work)	
+/////////////////////////////////// COPIED FROM CPDDL/src/pddl.c
+	{
+		pddl_cond_const_it_atom_t it;
+    	const pddl_cond_atom_t *atom;
+	    PDDL_COND_FOR_EACH_ATOM(&pddl.init->cls, &it, atom)
+        	pddl.pred.pred[atom->pred].in_init = 1;
 	}
+/////////////////////////////////// COPIED FROM CPDDL/src/pddl.c
 
 
-	// goal
+// goal
 	pddl_cond_part_t * goal = condPartNew(PDDL_COND_AND);
-	{ // artificial goal predicate
-		pddl_cond_atom_t * atom = condAtomNew();
-		atom->pred = domain.predicates.size() + 1;
-		atom->arg_size = 1;
-    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-		atom->neg = false;
+	// artificial goal predicate
+	Fact goalFact;
+	goalFact.predicateNo = domain.predicates.size();
+	goalFact.arguments.clear();
+	cpddl_add_fact_to_conjunction(goalFact, goal, domain, pddl);
 
-		atom->arg[0].param = -1;
-		atom->arg[0].obj = pddlObjsGet(&pddl.obj, "FOO"); 
-		condPartAdd(goal,&atom->cls);
-	}
-	for (const Fact & f : problem.goal){
-		pddl_cond_atom_t * atom = condAtomNew();
-		atom->pred = f.predicateNo + 1; // +1 for equals
-		atom->arg_size = f.arguments.size();
-    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
-		atom->neg = false;
-		for (size_t i = 0; i < f.arguments.size(); i++){
-			atom->arg[i].param = -1;
-			atom->arg[i].obj = pddlObjsGet(&pddl.obj, domain.constants[f.arguments[i]].c_str()); 
-		}
-		condPartAdd(goal,&atom->cls);
-	}
+	for (const Fact & f : problem.goal)
+		cpddl_add_fact_to_conjunction(f, goal, domain, pddl);
 	pddl.goal = &(goal->cls);
 
 	pddlTypesBuildObjTypeMap(&pddl.type, pddl.obj.obj_size);
 
-	
-	pddlPrintPDDLDomain(&pddl,stdout);
-	pddlPrintPDDLProblem(&pddl,stdout);
+	// Normalize pddl, i.e. remove stuff and so on
+	pddlNormalize(&pddl);
+
+	DEBUG(pddlPrintPDDLDomain(&pddl,stdout));
+	DEBUG(pddlPrintPDDLProblem(&pddl,stdout));
+
 
 	//////////////////// Mutex computation
-	//pddlNormalize(&pddl);
-    int ret = 0;
-    for (int ai = 0; ai < pddl.action.action_size;){
-        pddl_action_t *a = pddl.action.action + ai;
-        int remove = 0;
-        for (int pi = 0; pi < a->param.param_size; ++pi){
-            if (pddlTypeNumObjs(&pddl.type, a->param.param[pi].type) == 0){
-                remove = 1;
-                break;
-            }
-        }
-
-        if (remove){
-            pddlActionFree(a);
-            if (ai != pddl.action.action_size - 1)
-                *a = pddl.action.action[pddl.action.action_size - 1];
-            --pddl.action.action_size;
-            ret = 1;
-        }else{
-            ++ai;
-        }
-    }
-
-
-	for (int i = 0; i < pddl.action.action_size; ++i){
-        auto a = pddl.action.action + i;
-		std::cout << domain.tasks[i].name << std::endl;
-		a->eff = pddlCondNormalize(a->eff, &pddl, &a->param);
-		std::cout << std::endl;
-	    //pddl_cond_t *c = a->eff;
-
-    	//pddlCondInstantiateQuant(&c, &pddl->type);
-		//pddlCondRebuild(&c, NULL, instantiateForall, (void *)&(pddl->type));
-
-    	/*pddlCondRebuild(&c, NULL, removeNonStaticImply, (void *)&pddl);
-    	removeStaticImply(&c, &pddl, &a->params);
-    	pddlCondRebuild(&c, NULL, removeBool, (void *)&pddl);
-    	pddlCondRebuild(&c, NULL, flatten, NULL);
-    	pddlCondRebuild(&c, NULL, moveDisjunctionsUp, NULL);
-    	pddlCondRebuild(&c, NULL, flatten, NULL);*/
-    	//a->eff = pddlCondDeduplicate(c, &pddl);
-	
-		//pddlActionNormalize(pddl.action.action + i, &pddl);
-	}
-
-	pddlPrintPDDLDomain(&pddl,stdout);
-	pddlPrintPDDLProblem(&pddl,stdout);
-
-
 	pddl_lifted_mgroups_infer_limits_t limits = PDDL_LIFTED_MGROUPS_INFER_LIMITS_INIT;
-	limits.max_candidates = 10000; //o.max_candidates;
-	limits.max_mgroups = 10000; //o.max_mgroups;
+	limits.max_candidates = 10000;
+	limits.max_mgroups = 10000;
 	pddl_lifted_mgroups_t lifted_mgroups;
-	pddl_lifted_mgroups_t monotonicity_invariants;
 	pddlLiftedMGroupsInit(&lifted_mgroups);
-	pddlLiftedMGroupsInit(&monotonicity_invariants);
 	bor_err_t err = BOR_ERR_INIT;
+	if (!quietMode)
+		std::cout << "Computing Lifted FAM-Groups [Fiser, AAAI 2020]" << std::endl;
 	pddlLiftedMGroupsInferFAMGroups(&pddl, &limits, &lifted_mgroups, &err);
 
-	std::cout << "LG " << lifted_mgroups.mgroup_size << std::endl;
-	std::cout << "MON " << monotonicity_invariants.mgroup_size << std::endl;
+	if (!quietMode)
+		std::cout << "Found " << lifted_mgroups.mgroup_size << " Lifted FAM-Groups" << std::endl;
 
-    for (int li = 0; li < lifted_mgroups.mgroup_size; ++li){
+	DEBUG(for (int li = 0; li < lifted_mgroups.mgroup_size; ++li){
         fprintf(stdout, "M:%d: ", li);
         pddlLiftedMGroupPrint(&pddl, lifted_mgroups.mgroup + li, stdout);
-    }
-
-    for (int li = 0; li < monotonicity_invariants.mgroup_size; ++li){
-        const pddl_lifted_mgroup_t *m = monotonicity_invariants.mgroup + li;
-        fprintf(stdout, "I:%d: ", li);
-        pddlLiftedMGroupPrint(&pddl, m, stdout);
-    }
-
-
-
+    });
 
 	exit(-1);
 }
