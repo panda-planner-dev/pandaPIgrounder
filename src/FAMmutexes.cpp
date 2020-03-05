@@ -8,6 +8,8 @@
 static const char* root_type_cppdl = "__object_cpddl";
 static const char* eq_name_cppdl = "__equals_cpddl";
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const Domain & domain, const Problem & problem){
 	// find subset relations between sorts
@@ -211,7 +213,6 @@ static void condPartAdd(pddl_cond_part_t *p, pddl_cond_t *add)
 /////////////////////////////////// COPIED FROM CPDDL/src/cond.c
 
 
-
 void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode){
 	// create representation of the domain/problem
 	pddl_t pddl;
@@ -245,6 +246,16 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 		obj->owner = PDDL_OBJ_ID_UNDEF;
 		obj->is_agent = 0;
 	}
+
+	
+	{
+		pddl_obj_t * obj = pddlObjsAdd(&pddl.obj,"FOO");
+		obj->type = 0; // +1 for root sort
+		obj->is_constant = true;
+		obj->is_private = 0;
+		obj->owner = PDDL_OBJ_ID_UNDEF;
+		obj->is_agent = 0;
+	}
 /////////////////////////////////// COPIED FROM CPDDL/src/obj.c
     for (int i = 0; i < pddl.obj.obj_size; ++i){
         pddlTypesAddObj(&pddl.type, i, pddl.obj.obj[i].type);
@@ -270,8 +281,9 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	{
 		pddl_pred_t * p = pddlPredsAdd(&pddl.pred);
 		p->name = BOR_STRDUP("dummy-goal");
-		p->param_size = 0;
+		p->param_size = 1;
    		p->param = BOR_REALLOC_ARR(p->param, int, p->param_size);
+		p->param[0] = 0;
 	}
 
 	// add actions to the model
@@ -328,6 +340,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 			
 			
 			a->pre = &(pre_conj->cls);
+			pddlCondSetPredRead(a->pre, &pddl.pred);
 		}
 
 
@@ -343,9 +356,11 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 		{ // artificial goal predicate
 			pddl_cond_atom_t * atom = condAtomNew();
 			atom->pred = domain.predicates.size() + 1;
-			atom->arg_size = 0;
+			atom->arg_size = 1;
 	    	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
 			atom->neg = false;
+			atom->arg[0].param = -1;
+			atom->arg[0].obj = pddlObjsGet(&pddl.obj, "FOO"); 
 			condPartAdd(eff_conj,&atom->cls);
 		}
 
@@ -408,6 +423,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 		}
 
 		a->eff = &(eff_conj->cls);
+		pddlCondSetPredReadWriteEff(a->eff, &pddl.pred);
 	}
 
 
@@ -437,9 +453,12 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	{ // artificial goal predicate
 		pddl_cond_atom_t * atom = condAtomNew();
 		atom->pred = domain.predicates.size() + 1;
-		atom->arg_size = 0;
+		atom->arg_size = 1;
     	atom->arg = BOR_ALLOC_ARR(pddl_cond_atom_arg_t, atom->arg_size);
 		atom->neg = false;
+
+		atom->arg[0].param = -1;
+		atom->arg[0].obj = pddlObjsGet(&pddl.obj, "FOO"); 
 		condPartAdd(goal,&atom->cls);
 	}
 	for (const Fact & f : problem.goal){
@@ -463,13 +482,55 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	pddlPrintPDDLProblem(&pddl,stdout);
 
 	//////////////////// Mutex computation
-	pddlNormalize(&pddl);
+	//pddlNormalize(&pddl);
+    int ret = 0;
+    for (int ai = 0; ai < pddl.action.action_size;){
+        pddl_action_t *a = pddl.action.action + ai;
+        int remove = 0;
+        for (int pi = 0; pi < a->param.param_size; ++pi){
+            if (pddlTypeNumObjs(&pddl.type, a->param.param[pi].type) == 0){
+                remove = 1;
+                break;
+            }
+        }
+
+        if (remove){
+            pddlActionFree(a);
+            if (ai != pddl.action.action_size - 1)
+                *a = pddl.action.action[pddl.action.action_size - 1];
+            --pddl.action.action_size;
+            ret = 1;
+        }else{
+            ++ai;
+        }
+    }
+
+
+	for (int i = 0; i < pddl.action.action_size; ++i){
+        auto a = pddl.action.action + i;
+		std::cout << domain.tasks[i].name << std::endl;
+		a->eff = pddlCondNormalize(a->eff, &pddl, &a->param);
+		std::cout << std::endl;
+	    //pddl_cond_t *c = a->eff;
+
+    	//pddlCondInstantiateQuant(&c, &pddl->type);
+		//pddlCondRebuild(&c, NULL, instantiateForall, (void *)&(pddl->type));
+
+    	/*pddlCondRebuild(&c, NULL, removeNonStaticImply, (void *)&pddl);
+    	removeStaticImply(&c, &pddl, &a->params);
+    	pddlCondRebuild(&c, NULL, removeBool, (void *)&pddl);
+    	pddlCondRebuild(&c, NULL, flatten, NULL);
+    	pddlCondRebuild(&c, NULL, moveDisjunctionsUp, NULL);
+    	pddlCondRebuild(&c, NULL, flatten, NULL);*/
+    	//a->eff = pddlCondDeduplicate(c, &pddl);
+	
+		//pddlActionNormalize(pddl.action.action + i, &pddl);
+	}
 
 	pddlPrintPDDLDomain(&pddl,stdout);
 	pddlPrintPDDLProblem(&pddl,stdout);
 
 
-	exit(0);
 	pddl_lifted_mgroups_infer_limits_t limits = PDDL_LIFTED_MGROUPS_INFER_LIMITS_INIT;
 	limits.max_candidates = 10000; //o.max_candidates;
 	limits.max_mgroups = 10000; //o.max_mgroups;
