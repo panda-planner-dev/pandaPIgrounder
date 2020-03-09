@@ -2,7 +2,8 @@
 #define FAMMUTEX_H_INCLUDED
 
 #include "model.h"
+#include "sasinvariants.h"
 
-void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode);
+std::vector<FAMGroup> compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode);
 
 #endif

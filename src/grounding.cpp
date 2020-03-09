@@ -18,12 +18,17 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool pruneEmptyMethodPreconditions,
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
+		bool computeInvariants,
 		bool outputForPlanner, 
 		bool outputHDDL, 
 		bool outputSASPlus, 
 		bool printTimings,
 		bool quietMode){
-	compute_FAM_mutexes(domain,problem,quietMode);
+
+  	std::vector<FAMGroup> famGroups;	
+	if (computeInvariants){
+		famGroups = compute_FAM_mutexes(domain,problem,quietMode);
+	}
 
 	// if the instance contains conditional effects we have to compile them into additional primitive actions
 	// for this, we need to be able to write to the domain
@@ -102,9 +107,12 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		if (outputHDDL)
 			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, quietMode);
-		else
+		else {
+			auto [sas_groups,further_mutex_groups] = compute_sas_groups(domain, problem, famGroups, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
+			
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
-				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, quietMode);
+				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, sas_groups, further_mutex_groups, quietMode);
+		}
 	
 	}
 

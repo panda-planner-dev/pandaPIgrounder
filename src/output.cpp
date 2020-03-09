@@ -7,6 +7,7 @@
 #include <cassert>
 
 #include "output.h"
+#include "debug.h"
 
 void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
@@ -19,23 +20,50 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		int absTask,
 		int primTask,
 		int methods,
+		std::vector<std::unordered_set<int>> sas_groups,
+		std::vector<std::unordered_set<int>> further_mutex_groups,
 		bool quietMode	
 		){
 	if (!quietMode) std::cerr << "Writing instance to output." << std::endl;
 
 	std::set<Fact> reachableFactsSet(reachableFacts.begin(), reachableFacts.end());
 
+
 	// assign fact numbers
 	int fn = 0;
+	for (Fact & fact : reachableFacts) fact.outputNo = -1;
+
+	std::vector<int> orderedFacts;
+
+	int number_of_sas_groups = 0;
+	// elements of sas groups have to be handled together
+	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
+		number_of_sas_groups++;
+		for (int elem : sas_groups[sas_g]){
+			Fact & f = reachableFacts[elem];
+			assert(!prunedFacts[f.groundedNo]);
+			assert(!domain.predicates[f.predicateNo].guard_for_conditional_effect);
+			f.outputNo = fn++; // assign actual index to fact
+			orderedFacts.push_back(elem);
+		}
+	}
+
+	DEBUG(std::cout << fn << " of " << facts << " facts covered by SAS+ groups" << std::endl);
+
 	for (Fact & fact : reachableFacts){
+		if (fact.outputNo != -1) continue; // is covered by sas+ 
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 		fact.outputNo = fn++; // assign actual index to fact
+		orderedFacts.push_back(fact.groundedNo);
+		number_of_sas_groups++; // these variables are groups by themselves
 	}
+
 
 	pout << ";; #state features" << std::endl;
 	pout << facts << std::endl;
-	for (Fact & fact : reachableFacts){
+	for (int factID : orderedFacts){
+		Fact & fact = reachableFacts[factID];
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 		pout << domain.predicates[fact.predicateNo].name << "[";
@@ -48,12 +76,27 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	pout << std::endl;
 
 
-	// as long as we can't output true SAS+, we simply output the fact list again
 	pout << ";; Mutex Groups" << std::endl;
-	pout << facts << std::endl;
-	for (Fact & fact : reachableFacts){
+	pout << number_of_sas_groups << std::endl;
+	
+	int current_fact_position = 0;
+	int variable_number = 0;
+	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
+		int group_size = sas_groups[sas_g].size();
+
+		pout << current_fact_position << " " << current_fact_position + group_size - 1 << " var" << std::to_string(++variable_number) << std::endl;
+		current_fact_position += group_size;
+	}
+	
+	
+	// as long as we can't output true SAS+, we simply output the fact list again
+	for (int factID : orderedFacts){
+		Fact & fact = reachableFacts[factID];
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
+		// is part of mutex group?
+		if (fact.outputNo <= current_fact_position) continue;
+		
 		pout << fact.outputNo << " " << fact.outputNo << " ";
 		pout << domain.predicates[fact.predicateNo].name << "[";
 		for (unsigned int i = 0; i < fact.arguments.size(); i++){
@@ -64,7 +107,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	pout << std::endl;
 
-	
 	std::map<Fact,int> init_functions_map;
 	for (auto & init_function_literal : problem.init_functions){
 		init_functions_map[init_function_literal.first] = init_function_literal.second;

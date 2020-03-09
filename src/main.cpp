@@ -15,7 +15,6 @@
 #include "model.h"
 #include "parser.h"
 #include "planning-graph.h"
-#include "sasinvariants.h"
 
 int main (int argc, char * argv[])
 {
@@ -232,13 +231,6 @@ int main (int argc, char * argv[])
 		return 1;
 	}
 
-
-	std::vector<invariant> invariants;
-	if (computeInvariants)
-	{
-		invariants = computeSASPlusInvariants(domain, problem);
-	}
-
 	// Run the actual grounding procedure
 	if (primitiveMode)
 	{
@@ -257,7 +249,7 @@ int main (int argc, char * argv[])
 		run_grounding (domain, problem, *outputStream, *outputStream2,  
 				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
 				futureCachingByPrecondition, 
-				h2mutexes, 
+				h2mutexes, computeInvariants,  
 				outputForPlanner, outputHDDL, outputSASPlus, 
 				printTimings, quietMode);
 	}

@@ -11,6 +11,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool pruneEmptyMethodPreconditions,
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
+		bool computeInvariants,
 		bool outputForPlanner, 
 		bool outputHDDL, 
 		bool outputSASPlus, 

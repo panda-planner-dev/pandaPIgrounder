@@ -3,6 +3,7 @@
 
 
 #include "model.h"
+#include <unordered_set>
 
 void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
@@ -15,6 +16,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		int absTask,
 		int primTask,
 		int methods,
+		std::vector<std::unordered_set<int>> sas_groups,
+		std::vector<std::unordered_set<int>> further_mutex_groups,
 		bool quietMode);
 
 void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const Domain & domain, const Problem & problem,

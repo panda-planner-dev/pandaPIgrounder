@@ -146,8 +146,8 @@ std::vector<int> topsortTypesCPDDL(std::vector<int> & parent){
 }
 
 
-void cpddl_add_object_of_sort(pddl_t & pddl, const std::string & name, int type){
-	pddl_obj_t * obj = pddlObjsAdd(&pddl.obj,name.c_str());
+void cpddl_add_object_of_sort(pddl_t * pddl, const std::string & name, int type){
+	pddl_obj_t * obj = pddlObjsAdd(&pddl->obj,name.c_str());
 	obj->type = type;
 	obj->is_constant = true;
 	obj->is_private = 0;
@@ -172,7 +172,7 @@ void cpddl_add_atom_to_conjunction(const PredicateWithArguments & lit, bool posi
 	condPartAdd(conj,cpddl_create_atom(lit,positive));
 }
 
-void cpddl_add_fact_to_conjunction(const Fact & f, pddl_cond_part_t * conj, const Domain & domain, pddl_t & pddl){
+void cpddl_add_fact_to_conjunction(const Fact & f, pddl_cond_part_t * conj, const Domain & domain, pddl_t * pddl){
 	pddl_cond_atom_t * atom = condAtomNew();
 	atom->pred = f.predicateNo + 1; // +1 for equals
 	atom->arg_size = f.arguments.size();
@@ -180,60 +180,64 @@ void cpddl_add_fact_to_conjunction(const Fact & f, pddl_cond_part_t * conj, cons
 	atom->neg = false;
 	for (size_t i = 0; i < f.arguments.size(); i++){
 		atom->arg[i].param = -1;
-		atom->arg[i].obj = pddlObjsGet(&pddl.obj, domain.constants[f.arguments[i]].c_str()); 
+		atom->arg[i].obj = pddlObjsGet(&pddl->obj, domain.constants[f.arguments[i]].c_str()); 
 	}
 	condPartAdd(conj,&atom->cls);
 }
 
-void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode){
+std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode){
 	// create representation of the domain/problem
-	pddl_t pddl;
-	bzero(&pddl,sizeof(pddl_t));
+	pddl_t * pddl = new pddl_t;
+	bzero(pddl,sizeof(pddl_t));
 	std::string name = "dom";
-	pddl.domain_name = const_cast<char*>(name.c_str());
+	pddl->domain_name = const_cast<char*>(name.c_str());
 	std::string name2 = "prob";
-	pddl.problem_name = const_cast<char*>(name2.c_str());
-	pddl.require = PDDL_REQUIRE_TYPING + PDDL_REQUIRE_CONDITIONAL_EFF;
+	pddl->problem_name = const_cast<char*>(name2.c_str());
+	pddl->require = PDDL_REQUIRE_TYPING + PDDL_REQUIRE_CONDITIONAL_EFF;
 	
 	// compute a local type hierarchy
 	auto [typeParents,objectType] = compute_local_type_hierarchy(domain,problem);
 	
 	// cpddl needs a root type named object
-	pddlTypesAdd(&pddl.type,root_type_cppdl,-1);
+	pddlTypesAdd(&pddl->type,root_type_cppdl,-1);
 	
 	std::map<int,int> ourTypeIDToCPDDL;
+	std::vector<int> cpddlTypesToOurs;
 	ourTypeIDToCPDDL[-1] = 0;
+	cpddlTypesToOurs.push_back(-1);
 	for (int sort : topsortTypesCPDDL(typeParents)){
 		int newID = ourTypeIDToCPDDL.size();
 		ourTypeIDToCPDDL[sort] = newID;
+		cpddlTypesToOurs.push_back(sort);
 		DEBUG(std::cout << "Adding sort " << sort << " (\"" << domain.sorts[sort].name << "\")" << std::endl);
 		DEBUG(std::cout << "\tParent is " << typeParents[sort] << std::endl);
 			// +1 is for the artificial root sort
-		pddlTypesAdd(&pddl.type,domain.sorts[sort].name.c_str(),ourTypeIDToCPDDL[typeParents[sort]]);
+		pddlTypesAdd(&pddl->type,domain.sorts[sort].name.c_str(),ourTypeIDToCPDDL[typeParents[sort]]);
 	}
 	
 	
-	bzero(&pddl.obj, sizeof(pddl.obj));
-	pddl.obj.htable = borHTableNew(objHash, objEq, NULL);
+	bzero(&pddl->obj, sizeof(pddl->obj));
+	pddl->obj.htable = borHTableNew(objHash, objEq, NULL);
 	
 	// add objects
 	for (size_t o = 0; o < domain.constants.size(); o++)
 		cpddl_add_object_of_sort(pddl,domain.constants[o], ourTypeIDToCPDDL[objectType[o]]);
 	
 /////////////////////////////////// COPIED FROM CPDDL/src/obj.c
-    for (int i = 0; i < pddl.obj.obj_size; ++i){
-        pddlTypesAddObj(&pddl.type, i, pddl.obj.obj[i].type);
+    for (int i = 0; i < pddl->obj.obj_size; ++i){
+        pddlTypesAddObj(&pddl->type, i, pddl->obj.obj[i].type);
 	}
 /////////////////////////////////// COPIED FROM CPDDL/src/obj.c
 
 	// add equals predicate
 /////////////////////////////////// COPIED FROM CPDDL/src/pred.c
-    pddl.pred.eq_pred = -1;
-    addEqPredicate(&pddl.pred);
+    pddl->pred.eq_pred = -1;
+    addEqPredicate(&pddl->pred);
 /////////////////////////////////// COPIED FROM CPDDL/src/pred.c
 
+
 	for (const Predicate & pred : domain.predicates){
-		pddl_pred_t * p = pddlPredsAdd(&pddl.pred);
+		pddl_pred_t * p = pddlPredsAdd(&pddl->pred);
 		p->name = BOR_STRDUP(pred.name.c_str());
 		p->param_size = pred.argumentSorts.size();
     	p->param = BOR_REALLOC_ARR(p->param, int, p->param_size);
@@ -242,7 +246,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	}
 
 	// add dummy predicate to avoid pruning
-	pddl_pred_t * dumm_goal_predicate = pddlPredsAdd(&pddl.pred);
+	pddl_pred_t * dumm_goal_predicate = pddlPredsAdd(&pddl->pred);
 	dumm_goal_predicate->name = BOR_STRDUP("dummy-goal");
 	dumm_goal_predicate->param_size = 0;
 	dumm_goal_predicate->param = BOR_REALLOC_ARR(dumm_goal_predicate->param, int, dumm_goal_predicate->param_size);
@@ -251,7 +255,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	for (size_t tid = 0; tid < domain.nPrimitiveTasks; tid++){
 		const Task & t = domain.tasks[tid];
     	pddl_action_t *a;
-    	a = pddlActionsAddEmpty(&pddl.action);
+    	a = pddlActionsAddEmpty(&pddl->action);
 		a->name = BOR_STRDUP(t.name.c_str());
 
 		int varidx = 0;
@@ -283,7 +287,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 			
 			
 			a->pre = &(pre_conj->cls);
-			pddlCondSetPredRead(a->pre, &pddl.pred);
+			pddlCondSetPredRead(a->pre, &pddl->pred);
 		}
 
 
@@ -325,7 +329,7 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 		}
 
 		a->eff = &(eff_conj->cls);
-		pddlCondSetPredReadWriteEff(a->eff, &pddl.pred);
+		pddlCondSetPredReadWriteEff(a->eff, &pddl->pred);
 	}
 
 
@@ -335,9 +339,9 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	//// PROBLEM DEFINITION
 
 	// init
-	pddl.init = condPartNew(PDDL_COND_AND);
+	pddl->init = condPartNew(PDDL_COND_AND);
 	for (const Fact & f : problem.init)
-		cpddl_add_fact_to_conjunction(f,pddl.init, domain, pddl);
+		cpddl_add_fact_to_conjunction(f,pddl->init, domain, pddl);
 
 	
 	// set all atoms in into to be in init (else normalisation will not work)	
@@ -345,8 +349,8 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	{
 		pddl_cond_const_it_atom_t it;
     	const pddl_cond_atom_t *atom;
-	    PDDL_COND_FOR_EACH_ATOM(&pddl.init->cls, &it, atom)
-        	pddl.pred.pred[atom->pred].in_init = 1;
+	    PDDL_COND_FOR_EACH_ATOM(&pddl->init->cls, &it, atom)
+        	pddl->pred.pred[atom->pred].in_init = 1;
 	}
 /////////////////////////////////// COPIED FROM CPDDL/src/pddl.c
 
@@ -361,15 +365,15 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 
 	for (const Fact & f : problem.goal)
 		cpddl_add_fact_to_conjunction(f, goal, domain, pddl);
-	pddl.goal = &(goal->cls);
+	pddl->goal = &(goal->cls);
 
-	pddlTypesBuildObjTypeMap(&pddl.type, pddl.obj.obj_size);
+	pddlTypesBuildObjTypeMap(&pddl->type, pddl->obj.obj_size);
 
 	// Normalize pddl, i.e. remove stuff and so on
-	pddlNormalize(&pddl);
+	pddlNormalize(pddl);
 
-	DEBUG(pddlPrintPDDLDomain(&pddl,stdout));
-	DEBUG(pddlPrintPDDLProblem(&pddl,stdout));
+	DEBUG(pddlPrintPDDLDomain(pddl,stdout));
+	DEBUG(pddlPrintPDDLProblem(pddl,stdout));
 
 
 	//////////////////// Mutex computation
@@ -381,16 +385,248 @@ void compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool qu
 	bor_err_t err = BOR_ERR_INIT;
 	if (!quietMode)
 		std::cout << "Computing Lifted FAM-Groups [Fiser, AAAI 2020]" << std::endl;
-	pddlLiftedMGroupsInferFAMGroups(&pddl, &limits, &lifted_mgroups, &err);
+	pddlLiftedMGroupsInferFAMGroups(pddl, &limits, &lifted_mgroups, &err);
 
 	if (!quietMode)
 		std::cout << "Found " << lifted_mgroups.mgroup_size << " Lifted FAM-Groups" << std::endl;
 
 	DEBUG(for (int li = 0; li < lifted_mgroups.mgroup_size; ++li){
         fprintf(stdout, "M:%d: ", li);
-        pddlLiftedMGroupPrint(&pddl, lifted_mgroups.mgroup + li, stdout);
+        pddlLiftedMGroupPrint(pddl, lifted_mgroups.mgroup + li, stdout);
     });
 
-	exit(-1);
+
+	return std::make_tuple(lifted_mgroups,pddl,cpddlTypesToOurs);
 }
 
+
+bool is_mutex_group_contained_in_assignement(pddl_lifted_mgroup_t * m1, pddl_lifted_mgroup_t *m2, std::vector<int> & m1VarTom2Var, std::vector<bool> & m2VarAssigned, pddl_t * pddl, int pos = 0){
+
+	if (pos == m1VarTom2Var.size()){
+		DEBUG(std::cout << "Assignment:";
+		for (size_t m1V = 0; m1V < m1VarTom2Var.size(); m1V++)
+			std::cout << " " << m1V << " -> " << m1VarTom2Var[m1V];
+		std::cout << std::endl;);
+
+
+		// we have to search for every condition in m1 a mirror partner in m2
+		for (size_t m1i = 0; m1i < m1->cond.size; m1i++){
+			bool matchFound = false;
+			for (size_t m2i = 0; !matchFound && m2i < m2->cond.size; m2i++){
+				// get both atoms
+				pddl_cond_atom_t *a1 = PDDL_COND_CAST(m1->cond.cond[m1i], atom);
+				pddl_cond_atom_t *a2 = PDDL_COND_CAST(m2->cond.cond[m2i], atom);
+
+				// must have the same predicate
+				if (a1->pred != a2->pred) continue;
+
+				bool paramsMatch = true;
+				// iterate through the parameters
+				for (size_t param = 0; paramsMatch && param < a1->arg_size; param++){
+					// get both parameters
+					pddl_cond_atom_arg_t *p1 = a1->arg + param;
+					pddl_cond_atom_arg_t *p2 = a2->arg + param;
+
+					// cases
+					if (p1->param < 0){
+						// parameter p1 of a1 is a constant
+						if (p2->param < 0) {
+							// p2 is also a constant
+							if (p1->obj != p2->obj){
+								paramsMatch = false;
+								break;
+							} // else ok
+						} else {
+							// p2 is a variable
+							const pddl_param_t *v2 = m2->param.param + p2->param;
+							//pddl_type_t * t2 = pddl->type.type[v2->type];
+							if (!pddlTypesObjHasType(&(pddl->type), v2->type,
+										p1->obj)){
+								paramsMatch = false;
+								break;
+							} // else object is in type, so ok
+						}
+					} else {
+						// super mutex cannot have a constant here
+						if (p2->param < 0){
+							paramsMatch = false;
+							break;
+						}
+						
+						// test whether the variable of m1 is mapped to the one of m2
+						if (m1VarTom2Var[p1->param] != p2->param){
+							paramsMatch = false;
+							break;
+						}
+
+						// mapped to the same variable so ok.
+					}
+				}
+				if (paramsMatch) {
+					matchFound = true;
+					DEBUG(std::cout << "Match for " << m1i << " is " << m2i << std::endl);
+				}
+			}
+
+			if (! matchFound) {
+				DEBUG(std::cout << "Conjunct " << m1i << " has no match " << std::endl);
+				return false;
+			}
+		
+		}
+	
+		// here we have found a match for every condition	
+		DEBUG(std::cout << "Given m1 is a sub-mutex of m2." << std::endl);
+		return true;
+	}
+
+	// iterate through all possible remaining variables
+	for (size_t m2Var = 0; m2Var < m2VarAssigned.size(); m2Var++){
+		if (m2VarAssigned[m2Var]) continue;
+						
+		const pddl_param_t *v1 = m1->param.param + pos;
+		const pddl_param_t *v2 = m2->param.param + m2Var;
+
+		// we cannot map a counted var to an uncounted one ...
+		if (v1->is_counted_var && !v2->is_counted_var)
+			continue;
+
+		// situation is either (C,C), (V,V) or (V,C)
+		// in any case now m2 is at least as strong if the types are subtypes of each other (i.e. v1->type \subseteq v2->type)
+		if (v1->type != v2->type)
+			if (!pddlTypesIsParent(&(pddl->type),v1->type,v2->type))
+				continue;
+
+
+		// try is
+		m1VarTom2Var[pos] = m2Var;
+		m2VarAssigned[m2Var] = true;
+		if (is_mutex_group_contained_in_assignement(m1,m2,m1VarTom2Var,m2VarAssigned,pddl,pos+1))
+			return true;
+		m2VarAssigned[m2Var] = false;
+	}
+
+
+	return false;
+}
+
+
+
+// tests whether the mgroup m1 is fully contained in m2
+bool is_mutex_group_contained_in(pddl_lifted_mgroup_t * m1, pddl_lifted_mgroup_t *m2, pddl_t * pddl){
+	// if m1 has *more* parameters it cannot be a subset of m2
+	if (m1->param.param_size > m2->param.param_size)
+		return false;
+
+	std::vector<int>  m1VarTom2Var  (m1->param.param_size);
+	std::vector<bool> m2VarAssigned (m2->param.param_size);
+
+	return is_mutex_group_contained_in_assignement(m1,m2,m1VarTom2Var,m2VarAssigned,pddl);
+} 
+
+
+
+
+std::vector<FAMGroup> compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode){
+	// pddl_lifted_mgroups_t ; pddl_t*, map<int,int>
+	auto [lifted_mgroups,pddl,cpddlTypesToOurs] = cpddl_compute_FAM_mutexes(domain,problem,quietMode);
+
+
+	std::vector<bool> pruned (lifted_mgroups.mgroup_size);
+	for (int i = 0; i < lifted_mgroups.mgroup_size; ++i)
+		for (int j = 0; j < lifted_mgroups.mgroup_size; ++j)
+			if (i != j && !pruned[i] && !pruned[j]){
+				DEBUG(std::cout << "Testing whether M" << i << " < M" << j << std::endl);
+
+				if (is_mutex_group_contained_in(lifted_mgroups.mgroup + i, lifted_mgroups.mgroup + j, pddl)){
+					DEBUG(std::cout << "Yes. So we prune m1." << std::endl);
+					pruned[i] = true;
+				}
+			}
+
+	DEBUG(
+		std::cout << std::endl << std::endl << "FAM-Mutexes after reduction" << std::endl;
+		for (int li = 0; li < lifted_mgroups.mgroup_size; ++li){
+		if (pruned[li]) continue;
+        fprintf(stdout, "M:%d: ", li);
+        pddlLiftedMGroupPrint(pddl, lifted_mgroups.mgroup + li, stdout);
+    });
+
+
+
+	// convert CPDDL FAM mutexes into a representation of pandaPIgrounder
+	std::vector<FAMGroup> groups;
+	for (int li = 0; li < lifted_mgroups.mgroup_size; ++li){
+		if (pruned[li]) continue;
+		FAMGroup g;
+
+		// translate parameters
+		pddl_lifted_mgroup_t * m = lifted_mgroups.mgroup + li;
+		for(size_t v = 0; v < m->param.param_size; v++){
+			const pddl_param_t *cpddl_v = m->param.param + v;
+			FAMVariable var;
+			var.sort = cpddlTypesToOurs[cpddl_v->type];
+			var.isCounted = cpddl_v->is_counted_var;
+
+			if (var.isCounted) {
+				g.vars_to_pos_in_separated_lists.push_back(g.counted_vars.size());
+				g.counted_vars.push_back(v);
+			} else {
+				g.vars_to_pos_in_separated_lists.push_back(g.free_vars.size());
+				g.free_vars.push_back(v);
+			}
+			
+			g.vars.push_back(var);
+		}
+
+		// translate elements
+		for (size_t mi = 0; mi < m->cond.size; mi++){
+			FAMGroupLiteral l;
+			pddl_cond_atom_t *a = PDDL_COND_CAST(m->cond.cond[mi], atom);
+			l.predicateNo = a->pred - 1; // artificial sort
+			// add parameters
+			for (size_t param = 0;param < a->arg_size; param++){
+				pddl_cond_atom_arg_t *p = a->arg + param;
+				if (p->param < 0){
+					// get the object
+					l.args.push_back(p->obj);
+					l.isConstant.push_back(true);	
+				} else {
+					l.args.push_back(p->param);
+					l.isConstant.push_back(false);	
+				}
+			}
+
+			g.literals.push_back(l);
+		}
+		groups.push_back(g);
+	}
+
+	DEBUG(
+		std::cout << "FAM Groups in pandaPI's format." << std::endl;
+		for (FAMGroup & g : groups){
+			std::cout << "Group:" << std::endl;
+			for (size_t vid = 0; vid < g.vars.size(); vid++)
+				if (!g.vars[vid].isCounted)
+					std::cout << " V" << vid << ":" << domain.sorts[g.vars[vid].sort].name;
+			for (size_t vid = 0; vid < g.vars.size(); vid++)
+				if (g.vars[vid].isCounted)
+					std::cout << " C" << vid << ":" << domain.sorts[g.vars[vid].sort].name;
+
+			std::cout << " :";
+			for (FAMGroupLiteral & l : g.literals){
+				std::cout << " (" << domain.predicates[l.predicateNo].name;
+				for (size_t a = 0; a < l.args.size(); a++){
+					if (l.isConstant[a]) std::cout << " " << domain.constants[l.args[a]];
+					else std::cout << " " << l.args[a];
+				}
+				
+				std::cout << ")";
+			}
+
+			std::cout << std::endl;	
+		}
+	);
+		
+	return groups;
+}
