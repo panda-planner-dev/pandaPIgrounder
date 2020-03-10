@@ -32,6 +32,9 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
+		std::unordered_set<int> initFacts,
+		std::unordered_set<Fact> reachableFactsSet,
+		bool outputSASVariablesOnly,
 		bool quietMode){
 
 	DEBUG(std::cout << "Computing SAS+ groups" << std::endl);
@@ -39,7 +42,6 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 	// number of FAM group, values of free variables -> number of facts in this FAM mutex
 	std::vector<std::map<std::vector<int>,std::unordered_set<int>>> factsPerFAMInstance (groups.size());
-
 
 	for (size_t factID = 0; factID < reachableFacts.size(); factID++) if (!prunedFacts[factID]){
 		const Fact & f = reachableFacts[factID];
@@ -89,16 +91,14 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		}
 	}
 
-
-
 	// create SAS+ representation, i.e. the ground mutex groups that we will actually use.
 	// We do this greedily, by taking the largest mutex group first
 
-	std::vector<std::tuple<int,int,std::vector<int>>> mutex_groups_by_size;
-
+	std::vector<std::unordered_set<int>> mutex_groups_by_size;
 	for (size_t gID = 0; gID < factsPerFAMInstance.size(); gID++){
 		for (auto & keyValue : factsPerFAMInstance[gID]){
 			const std::vector<int> & free_variable_assignment = keyValue.first;
+			const std::unordered_set<int> & facts = keyValue.second;
 
 			DEBUG(
 				std::cout << "Mutex Group " << gID << " Free vars:";
@@ -110,20 +110,61 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 
 			// negative size, to get largest groups first
-			mutex_groups_by_size.push_back(std::make_tuple(-keyValue.second.size(), gID, free_variable_assignment));
+			mutex_groups_by_size.push_back(facts);
 		}
 	}
 
+
+
+	// add mutex groups from known predicate mutexes
+	std::map<int,int> predicate_mutex_partner;
+	for (const std::pair<int,int> & predicate_mutex : domain.predicateMutexes)
+		predicate_mutex_partner[predicate_mutex.first] = predicate_mutex.second;
+
+	for (size_t factID = 0; factID < reachableFacts.size(); factID++) if (!prunedFacts[factID]){
+		const Fact & f = reachableFacts[factID];
+
+		// continue, if this is not a predicate in a mutex
+		if (!predicate_mutex_partner.count(f.predicateNo)) continue;
+		
+		// check if the partner is also still reachable
+		Fact partner = f;
+		partner.predicateNo = predicate_mutex_partner[f.predicateNo];
+		auto partnerIterator = reachableFactsSet.find(partner);
+		if (partnerIterator == reachableFactsSet.end()) continue;
+
+		int partnerGroundNo = partnerIterator->groundedNo;
+		if (prunedFacts[partnerGroundNo]) continue;
+
+
+		// I my partner are mutex and unpruned, so we are a mutex
+		std::unordered_set<int> mutex;
+		mutex.insert(f.groundedNo);
+		mutex.insert(partnerGroundNo);
+		mutex_groups_by_size.push_back(mutex);
+	}
+
+
+
+
 	// sort groups by size
-	std::sort(mutex_groups_by_size.begin(), mutex_groups_by_size.end());
+	std::sort(mutex_groups_by_size.begin(), mutex_groups_by_size.end(), [](const auto& one, const auto& two ){return one.size() > two.size();});
 
 	std::vector<bool> factCovered (reachableFacts.size());
 	for (size_t i = 0; i < factCovered.size(); i++) factCovered[i] = false;
 	std::vector<std::unordered_set<int>> ground_mutex_groups;
 	std::vector<std::unordered_set<int>> orthogonal_mutex_groups;
 
-	for (auto & [_,gID,free_variable_assignment] : mutex_groups_by_size){
-		std::unordered_set<int> covered_facts = factsPerFAMInstance[gID][free_variable_assignment];
+	for (auto & covered_facts : mutex_groups_by_size){
+		DEBUG(std::cout << "Consider mutex group of size " << covered_facts.size());
+
+		// check how many of them are in the initial state
+		int number_in_init = 0;
+		for (int f : covered_facts)
+			if (initFacts.count(f)) number_in_init++;
+		DEBUG(std::cout << " of which " << number_in_init << " are true in init." << std::endl);
+		if (number_in_init > 1) continue; // can't handle this
+
 
 		// check whether all facts are not-covered
 		bool alreadyCovered = false;
@@ -137,5 +178,92 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		for (int f : covered_facts) factCovered[f] = true;
 	}
 
+	// add mutex groups for all uncovered variables, if we want to output everything as SAS+
+	if (outputSASVariablesOnly){
+		for (size_t f = 0; f < reachableFacts.size(); f++) if (!prunedFacts[f] && !factCovered[f]){
+			std::unordered_set<int> s;
+			s.insert(f);
+			ground_mutex_groups.push_back(s);
+		}
+	}
+
 	return std::make_pair(ground_mutex_groups,orthogonal_mutex_groups);
 }
+
+
+
+std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem & problem,
+		std::vector<Fact> & reachableFacts,
+		std::vector<GroundedTask> & reachableTasks,
+		std::vector<GroundedMethod> & reachableMethods,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedFacts,
+		std::vector<bool> & prunedMethods,
+		std::unordered_set<int> & initFacts,
+		std::vector<std::unordered_set<int>> & sas_mutexes,
+		std::vector<std::unordered_set<int>> & other_mutexes,
+		bool quietMode){
+	// identify those mutexes, which need the element "none-of-them"
+	std::vector<bool> mutexes_needing_none_of_them (sas_mutexes.size());
+	for (size_t i = 0; i < mutexes_needing_none_of_them.size(); i++)
+		mutexes_needing_none_of_them[i] = false;
+	
+	std::vector<std::vector<int>> mutex_groups_per_fact (reachableFacts.size());
+	for (size_t m = 0; m < sas_mutexes.size(); m++){
+		bool initContainsOne = false;
+		for (const int & f : sas_mutexes[m]){
+			mutex_groups_per_fact[f].push_back(m);
+			initContainsOne |= initFacts.count(f);
+		}
+		// if it is not set in init, we definitely one
+		if (!initContainsOne) mutexes_needing_none_of_them[m] = true;
+	}
+	
+	for (size_t m = 0; m < other_mutexes.size(); m++)
+		for (const int & f : other_mutexes[m])
+			mutex_groups_per_fact[f].push_back(-m-1); // negative numbers are other mutexes
+
+	for (size_t aID = 0; aID < reachableTasks.size(); aID++) {
+		if (prunedTasks[aID]) continue;
+		if (domain.nPrimitiveTasks <= reachableTasks[aID].taskNo) continue; // abstract
+
+		// check whether the preconditions violate one of the mutexes
+		std::map<int,int> mutex_required_count;
+		for (const int & pre : reachableTasks[aID].groundedPreconditions)
+			for (const int & m : mutex_groups_per_fact[pre])
+				mutex_required_count[m]++;
+
+		for (const auto & entry : mutex_required_count){
+			DEBUG(std::cout << "Action " << aID << "'s preconditions refer mutex " << entry.first << " " << entry.second << " times " << std::endl);
+			if (entry.second == 1) continue; // ok
+			DEBUG(std::cout << "Pruning action " << aID << " as its preconditions violate a mutex" << std::endl);
+			prunedTasks[aID] = true;
+		}
+
+		if (prunedTasks[aID]) continue;
+
+		// action can be executable. Thus its effects won't violate mutexes, else the mutex is not a real mutex
+
+
+		// determine for the sas_mutexes whether this action can make all elements of the mutex false
+		// This is the case, if it does not add, but deletes
+		// Here we look at the conditional effect actions on a one-by-one-basis. This is an approximation (i.e. one conditional delete will lead to detection), but I guess this happens rarely?
+		std::unordered_set<int> add,del;
+		for (const int & a : reachableTasks[aID].groundedAddEffects)
+			for (const int & m : mutex_groups_per_fact[a])
+				if (m >= 0) add.insert(m);
+		for (const int & d : reachableTasks[aID].groundedDelEffects)
+			for (const int & m : mutex_groups_per_fact[d])
+				if (m >= 0) del.insert(m);
+		
+		for (const int & d : del) if (!add.count(d)){
+			mutexes_needing_none_of_them[d]	= true;
+			reachableTasks[aID].noneOfThoseEffect.push_back(d);
+		}
+	}
+
+	return mutexes_needing_none_of_them;
+}
+
+
+

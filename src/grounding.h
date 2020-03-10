@@ -2,6 +2,7 @@
 #define GROUNDING_H_INCLUDED
 
 #include <ostream>
+#include "main.h"
 #include "model.h"
 
 void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout,
@@ -12,6 +13,9 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
 		bool computeInvariants,
+		bool outputSASVariablesOnly,
+		sas_delete_output_mode sas_mode,
+		bool compileNegativeSASVariables,
 		bool outputForPlanner, 
 		bool outputHDDL, 
 		bool outputSASPlus, 

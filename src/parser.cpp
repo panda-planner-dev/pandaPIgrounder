@@ -71,6 +71,11 @@ void readPredicate (const Domain & state, std::istream & input, Predicate & outp
 	readMultiple (state, input, outputPredicate.argumentSorts, readPrimitive);
 }
 
+void readPredicateMutex (const Domain & state, std::istream & input, std::pair<int,int> & mutex)
+{
+	input >> mutex.first >> mutex.second;
+}
+
 void readPredicateWithArguments (const Domain & state, std::istream & input, PredicateWithArguments & outputPredicate)
 {
 	input >> outputPredicate.predicateNo;
@@ -247,6 +252,9 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 
 	// Read predicates
 	readMultiple (state, input, output.predicates, readPredicate);
+
+	// read predicate mutexes
+	readMultiple (state, input, output.predicateMutexes, readPredicateMutex);
 
 	// Read functions
 	readMultiple (state, input, output.functions, readPredicate);

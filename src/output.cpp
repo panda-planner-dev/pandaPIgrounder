@@ -9,6 +9,35 @@
 #include "output.h"
 #include "debug.h"
 
+
+void instantiate_cover_pruned_dfs(std::map<int,int> & cover_pruned_precs, std::map<int,std::vector<int>> & cover_pruned, std::vector<int> & cover_pruned_facts, int curpos, std::vector<int> & current_assignment, std::vector<std::vector<int>> & all_assignments){
+	if (curpos == cover_pruned_facts.size()){
+		all_assignments.push_back(current_assignment);
+		return;
+	}
+
+	int cur_f = cover_pruned_facts[curpos];
+	for (const int & v : cover_pruned[cur_f]){
+		current_assignment[cover_pruned_precs[cur_f]] = v;
+		instantiate_cover_pruned_dfs(cover_pruned_precs,cover_pruned,cover_pruned_facts,curpos+1, current_assignment, all_assignments);
+	}
+}
+
+std::vector<std::vector<int>> instantiate_cover_pruned(std::map<int,int> & cover_pruned_precs, std::map<int,std::vector<int>> & cover_pruned){
+
+	std::vector<int> cover_pruned_facts;
+	for (const auto & entry : cover_pruned_precs) cover_pruned_facts.push_back(entry.first);
+
+	std::vector<int> current_assignment (cover_pruned_facts.size());
+	std::vector<std::vector<int>> all_assignments;
+
+	instantiate_cover_pruned_dfs(cover_pruned_precs,cover_pruned,cover_pruned_facts,0,current_assignment, all_assignments);
+
+	return all_assignments;
+}
+
+
+
 void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
@@ -20,14 +49,87 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		int absTask,
 		int primTask,
 		int methods,
+		std::unordered_set<int> initFacts,
+		std::unordered_set<int> initFactsPruned,
+		std::unordered_set<Fact> reachableFactsSet,
 		std::vector<std::unordered_set<int>> sas_groups,
 		std::vector<std::unordered_set<int>> further_mutex_groups,
+		std::vector<bool> & sas_variables_needing_none_of_them,
+		bool compileNegativeSASVariables,
+		sas_delete_output_mode sas_mode,
 		bool quietMode	
 		){
 	if (!quietMode) std::cerr << "Writing instance to output." << std::endl;
 
-	std::set<Fact> reachableFactsSet(reachableFacts.begin(), reachableFacts.end());
+	// find candidates for fact elimination by duplication
+	std::map<int,std::vector<int>> cover_pruned;
+	std::unordered_set<int> pruned_sas_groups;
+	if (compileNegativeSASVariables){
+		for (const std::unordered_set<int> & m_g : further_mutex_groups){
+			if (m_g.size() != 2) continue; // only pairs of facts are eligible
+			int fact_in_large_group = -1;
+			int og_large = -1;
+			int other_fact = -1;
+			int og_small = -1;
+			bool two_large = false;
+			for (const int & elem : m_g){
+				bool found = false;
+				for (size_t ogID = 0; ogID < sas_groups.size(); ogID++){
+					const std::unordered_set<int> & og = sas_groups[ogID];
+					if (!og.count(elem)) continue;
+					found = true;
+					if (og.size() == 1) {
+						other_fact = elem;
+						og_small = ogID;
+						continue; // contains only this fact, i.e. is artificial
+					}
 
+					if (fact_in_large_group != -1){
+						two_large = true;
+						break;
+					}
+
+					fact_in_large_group = elem;
+					og_large = ogID;
+				}
+				if (two_large) break;
+				if (!found) other_fact = elem;
+			}
+			if (two_large) continue;
+			if (fact_in_large_group == -1) continue;
+
+			std::vector<int> other_values;
+			for (const int & val : sas_groups[og_large]) if (val != fact_in_large_group)
+				other_values.push_back(val);
+			// might need a none-of-those
+			if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-1);
+			cover_pruned[other_fact] = other_values;
+			pruned_sas_groups.insert(og_small);
+
+			DEBUG(std::cout << "Fact " << other_fact << " is eligible for pruning as opposite of " << fact_in_large_group << std::endl;
+				Fact & f1 = reachableFacts[other_fact];
+				std::cout << "Pruning: " << domain.predicates[f1.predicateNo].name << "[";
+				for (unsigned int i = 0; i < f1.arguments.size(); i++){
+					if (i) std::cout << ",";
+					std::cout << domain.constants[f1.arguments[i]];
+				}
+				std::cout << "]" << std::endl;
+				Fact & f2 = reachableFacts[fact_in_large_group];
+				std::cout << "Negation of " << domain.predicates[f2.predicateNo].name << "[";
+				for (unsigned int i = 0; i < f2.arguments.size(); i++){
+					if (i) std::cout << ",";
+					std::cout << domain.constants[f2.arguments[i]];
+				}
+				std::cout << "]" << std::endl;
+	
+				std::cout << "Possible facts are:";
+				for (int x : other_values) std::cout << " " << x;
+				std::cout << std::endl;
+					);
+		}
+	}
+
+	DEBUG(std::cout << "Cover Pruned size = " << cover_pruned.size() << std::endl);
 
 	// assign fact numbers
 	int fn = 0;
@@ -38,6 +140,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	int number_of_sas_groups = 0;
 	// elements of sas groups have to be handled together
 	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
+		if (pruned_sas_groups.count(sas_g)) continue; // is obsolete
+		
 		number_of_sas_groups++;
 		for (int elem : sas_groups[sas_g]){
 			Fact & f = reachableFacts[elem];
@@ -46,14 +150,24 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			f.outputNo = fn++; // assign actual index to fact
 			orderedFacts.push_back(elem);
 		}
+		if (sas_variables_needing_none_of_them[sas_g]){
+			fn++;
+			orderedFacts.push_back(-1);
+		}
 	}
+
 
 	DEBUG(std::cout << fn << " of " << facts << " facts covered by SAS+ groups" << std::endl);
 
+	// to distinguish between SAS+ and STRIPS facts later on
+	const int number_of_sas_covered_facts = fn;
+
+	// facts that are not translated into SAS+
 	for (Fact & fact : reachableFacts){
 		if (fact.outputNo != -1) continue; // is covered by sas+ 
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
+		if (cover_pruned.count(fact.groundedNo)) continue; // removed
 		fact.outputNo = fn++; // assign actual index to fact
 		orderedFacts.push_back(fact.groundedNo);
 		number_of_sas_groups++; // these variables are groups by themselves
@@ -61,11 +175,18 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 
 	pout << ";; #state features" << std::endl;
-	pout << facts << std::endl;
+	pout << fn << std::endl;
 	for (int factID : orderedFacts){
+		// artificial member for SAS groups
+		if (factID == -1){
+			pout << "none-of-them" << std::endl;
+			continue;
+		}
+		// real fact
 		Fact & fact = reachableFacts[factID];
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
+
 		pout << domain.predicates[fact.predicateNo].name << "[";
 		for (unsigned int i = 0; i < fact.arguments.size(); i++){
 			if (i) pout << ",";
@@ -81,23 +202,33 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	
 	int current_fact_position = 0;
 	int variable_number = 0;
+	std::vector<int> none_of_them_per_sas_group (sas_groups.size());
 	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
-		int group_size = sas_groups[sas_g].size();
+		if (pruned_sas_groups.count(sas_g)) continue;
+		int group_size = sas_groups[sas_g].size() + (sas_variables_needing_none_of_them[sas_g] ? 1 : 0);
+		if (sas_variables_needing_none_of_them[sas_g])
+			none_of_them_per_sas_group[sas_g] = current_fact_position + group_size - 1;
+		else
+			none_of_them_per_sas_group[sas_g] = -1;
 
-		pout << current_fact_position << " " << current_fact_position + group_size - 1 << " var" << std::to_string(++variable_number) << std::endl;
+		pout << current_fact_position << " ";
+		pout << current_fact_position + group_size - 1;
+	   	pout << " var" << std::to_string(++variable_number) << std::endl;
 		current_fact_position += group_size;
 	}
 	
 	
-	// as long as we can't output true SAS+, we simply output the fact list again
+	// these are the facts, that do not belong to a SAS+ group, we have to output them on their own.
 	for (int factID : orderedFacts){
+		if (factID == -1) continue;
 		Fact & fact = reachableFacts[factID];
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
-		// is part of mutex group?
-		if (fact.outputNo <= current_fact_position) continue;
+		// is part of mutex group? or pruned? Then it will still have -1
+		if (fact.outputNo < current_fact_position) continue;
 		
-		pout << fact.outputNo << " " << fact.outputNo << " ";
+		pout << fact.outputNo << " ";
+		pout << fact.outputNo << " ";
 		pout << domain.predicates[fact.predicateNo].name << "[";
 		for (unsigned int i = 0; i < fact.arguments.size(); i++){
 			if (i) pout << ",";
@@ -106,6 +237,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		pout << "]" << std::endl;
 	}
 	pout << std::endl;
+
 
 	std::map<Fact,int> init_functions_map;
 	for (auto & init_function_literal : problem.init_functions){
@@ -132,39 +264,60 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 		ce_effects[guardID] = task;
 	}
-
+	
 	pout << ";; Actions" << std::endl;
 	pout << primTask << std::endl; 
 	int ac = 0;
 	for (GroundedTask & task : reachableTasks){
 		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
-		//pout << domain.tasks[task.taskNo].name << std::endl;
-
-		task.outputNo = ac++;
 		
 		int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
-		pout << costs << std::endl;
 		
-		for (int & prec : task.groundedPreconditions)
-			if (!prunedFacts[prec])
-				pout << reachableFacts[prec].outputNo << " ";
-		pout << -1 << std::endl;
+		std::map<int,int> cover_pruned_precs;
+		// find facts that were cover pruned
+		for (int & prec : task.groundedPreconditions){
+			if (cover_pruned.count(prec)){
+				int pos = cover_pruned_precs.size();
+				cover_pruned_precs[prec] = pos;
+			}
+		}
+		
+		// analyse precondition
+		std::vector<int> prec_out;
+		for (int & prec : task.groundedPreconditions) if (!prunedFacts[prec]){
+			if (! cover_pruned_precs.count(prec))
+				prec_out.push_back(reachableFacts[prec].outputNo);
+			else
+				prec_out.push_back(-cover_pruned_precs[prec]-1); // marker
+		}
+
+		std::vector<std::pair<std::vector<int>,int>> add_out;
+		std::vector<std::pair<std::vector<int>,int>> del_out;
 
 		std::vector<int> ce_guards;
+		std::vector<int> _empty;
 		for (int & add : task.groundedAddEffects)
 			if (domain.predicates[reachableFacts[add].predicateNo].guard_for_conditional_effect)
 				ce_guards.push_back(add);
 			else {	
-				if (!prunedFacts[add])
-					pout << 0 << " " << reachableFacts[add].outputNo << "  ";
+				if (!prunedFacts[add]){
+					add_out.push_back(std::make_pair(_empty,reachableFacts[add].outputNo));
+				}
 			}
+
+		for (const int & sas_g : task.noneOfThoseEffect){
+			assert(none_of_them_per_sas_group[sas_g] != -1);
+			add_out.push_back(std::make_pair(_empty,none_of_them_per_sas_group[sas_g])); 
+		}
+
+		for (int & del : task.groundedDelEffects) if (!prunedFacts[del]){
+			if (sas_mode == SAS_NONE && reachableFacts[del].outputNo < number_of_sas_covered_facts) continue; // if the user want's it, don't output delete effects on SAS variables
+			del_out.push_back(std::make_pair(_empty,reachableFacts[del].outputNo));
+		}
 
 
 		// compute conditional effects
-		std::vector<std::pair<std::vector<int>,int>> addCEs;
-		std::vector<std::pair<std::vector<int>,int>> delCEs;
-
 		for (int guard : ce_guards){
 			if (!ce_effects.count(guard)) continue; // CE condition might be unreachable
 			GroundedTask ce_task = ce_effects[guard];
@@ -183,59 +336,105 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			}
 
 			if (prunedFacts[effectID]) continue; // this effect is not necessary
+			if (sas_mode == SAS_NONE && reachableFacts[effectID].outputNo < number_of_sas_covered_facts) continue; // if the user want's it, don't output delete effects on SAS variables
 
 			std::vector<int> nonPrunedPrecs;
 			for (int & prec : ce_task.groundedPreconditions)
 				if (!domain.predicates[reachableFacts[prec].predicateNo].guard_for_conditional_effect) // don't output the guard
-					if (!prunedFacts[prec])
-						nonPrunedPrecs.push_back(reachableFacts[prec].outputNo);
+					if (!prunedFacts[prec]){
+						if (!cover_pruned.count(prec))
+							nonPrunedPrecs.push_back(reachableFacts[prec].outputNo);
+						else {
+							int pos;
+							if (cover_pruned_precs.count(prec)) // might also be in prec, or coordinated between conditions ...
+								pos = cover_pruned_precs[prec];
+							else
+								pos = cover_pruned_precs.size();
+
+							cover_pruned_precs[prec] = pos;
+
+							nonPrunedPrecs.push_back(-pos-1); // marker
+						}
+					}
 
 			
 			if (isAdd)
-				addCEs.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
+				add_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
 			else
-				delCEs.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
+				del_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
 
 		}
-
-		// output conditional adds
-		for (auto ce : addCEs){
-			pout  << ce.first.size();
-			for (int c : ce.first) pout << " " << c;
-			pout << " " << ce.second << "  ";
-		}
-
-		pout << -1 << std::endl;
 		
-		for (int & del : task.groundedDelEffects)
-			if (!prunedFacts[del])
-				pout << 0 << " " << reachableFacts[del].outputNo << "  ";
+		
+		
+		if (cover_pruned_precs.size() == 0)
+			task.outputNo = ac;
+		else 
+			task.outputNo = -2; // marker for additionally needed task
 
-		// output conditional dels
-		for (auto ce : delCEs){
-			pout << ce.first.size();
-			for (int c : ce.first) pout << " " << c;
-			pout << " " << ce.second << "  ";
+		for (const std::vector<int> cover_assignment : instantiate_cover_pruned(cover_pruned_precs, cover_pruned)){
+			///////////////////////////// ACTUAL OUTPUT
+			task.outputNosForCover.push_back(ac++);
+			pout << costs << std::endl;
+			// preconditions
+			for (const int & prec : prec_out)
+				if (prec >= 0)
+					pout << prec << " ";
+				else
+					pout << reachableFacts[cover_assignment[-prec-1]].outputNo << " ";
+
+			pout << -1 << std::endl;
+
+			// output add effects
+			for (const auto & add : add_out){
+				pout << add.first.size();
+				for (const int & p : add.first) 
+					if (p >= 0)
+						pout << p << " ";
+					else
+						pout << reachableFacts[cover_assignment[-p-1]].outputNo << " ";
+				pout << " " << add.second << "  ";
+			}
+			pout << -1 << std::endl;
+
+			// output del effects
+			for (const auto & del : del_out){
+				pout << del.first.size();
+				for (const int & p : del.first)
+					if (p >= 0)
+						pout << p << " ";
+					else
+						pout << reachableFacts[cover_assignment[-p-1]].outputNo << " ";
+				pout << " " << del.second << "  ";
+			}
+			pout << -1 << std::endl;
 		}
-
-		pout << -1 << std::endl;
-	}
-
-	pout << std::endl << ";; initial state" << std::endl;
-	std::set<int> initFacts; // needed for efficient goal checking
-	std::set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
-
-	for (const Fact & f : problem.init){
-		int groundNo = reachableFactsSet.find(f)->groundedNo;
-		if (prunedFacts[groundNo]){
-			initFactsPruned.insert(groundNo);
-			continue;
-		}
-		pout << reachableFacts[groundNo].outputNo << " ";
-		initFacts.insert(groundNo);
 	}
 	
+	//exit(-2);
+
+
+	pout << std::endl << ";; initial state" << std::endl;
+	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
+		bool didOutput = false;
+		for (const int & f : sas_groups[sas_g]) if (initFacts.count(f)){
+			pout << reachableFacts[f].outputNo << " ";
+			didOutput = true;
+		}
+		if (!didOutput){
+			assert(none_of_them_per_sas_group[sas_g] != -1);
+			pout << none_of_them_per_sas_group[sas_g] << " ";
+		}
+	}
+	
+
+	for (int fID : initFacts){
+		int outputNo = reachableFacts[fID].outputNo;
+		if (outputNo < number_of_sas_covered_facts) continue; // is a sas+ fact
+		pout << outputNo << " ";
+	}
 	pout << -1 << std::endl;
+	
 	pout << std::endl << ";; goal" << std::endl;
 	for (const Fact & f : problem.goal){
 		auto it = reachableFactsSet.find(f);

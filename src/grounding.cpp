@@ -19,6 +19,9 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool futureCachingByPrecondition,
 		bool h2Mutextes,
 		bool computeInvariants,
+		bool outputSASVariablesOnly,
+		sas_delete_output_mode sas_mode,
+		bool compileNegativeSASVariables,
 		bool outputForPlanner, 
 		bool outputHDDL, 
 		bool outputSASPlus, 
@@ -108,15 +111,44 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, quietMode);
 		else {
-			auto [sas_groups,further_mutex_groups] = compute_sas_groups(domain, problem, famGroups, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
+			// prepare data structures that are needed for efficient access
+			std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
+			
+			std::unordered_set<int> initFacts; // needed for efficient goal checking
+			std::unordered_set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
+
+			for (const Fact & f : problem.init){
+				int groundNo = reachableFactsSet.find(f)->groundedNo;
+				if (prunedFacts[groundNo]){
+					initFactsPruned.insert(groundNo);
+					continue;
+				}
+				initFacts.insert(groundNo);
+			}
+
+
+
+			auto [sas_groups,further_mutex_groups] = compute_sas_groups(domain, problem, famGroups, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
+					initFacts, reachableFactsSet,
+					outputSASVariablesOnly,
+					quietMode);
+			
+			
+			std::vector<bool> sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
+					initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
+					prunedTasks, prunedFacts, prunedMethods,
+					initFacts,
+					sas_groups,further_mutex_groups,
+					quietMode);
 			
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
-				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, sas_groups, further_mutex_groups, quietMode);
+				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, 
+				initFacts, initFactsPruned, reachableFactsSet,
+				sas_groups, further_mutex_groups, sas_variables_needing_none_of_them,
+				compileNegativeSASVariables, sas_mode,
+				quietMode);
 		}
 	
 	}
-
-
-
 }
 

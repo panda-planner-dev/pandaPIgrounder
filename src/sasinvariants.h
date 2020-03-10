@@ -34,6 +34,21 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
+		std::unordered_set<int> initFacts,
+		std::unordered_set<Fact> reachableFactsSet,
+		bool outputSASVariablesOnly,
+		bool quietMode);
+
+std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem & problem,
+		std::vector<Fact> & reachableFacts,
+		std::vector<GroundedTask> & reachableTasks,
+		std::vector<GroundedMethod> & reachableMethods,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedFacts,
+		std::vector<bool> & prunedMethods,
+		std::unordered_set<int> & initFacts,
+		std::vector<std::unordered_set<int>> & sas_mutexes,
+		std::vector<std::unordered_set<int>> & other_mutexes,
 		bool quietMode);
 
 

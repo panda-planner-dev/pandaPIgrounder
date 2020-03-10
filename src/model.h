@@ -96,6 +96,21 @@ struct Fact
 	bool operator == (const Fact & other) const;
 };
 
+/// hash function s.t. facts can be put into unordered sets
+namespace std {
+    template<> struct hash<Fact>
+    {
+        std::size_t operator()(const Fact& f) const noexcept
+        {
+			std::size_t h = f.predicateNo;
+			for (const int & a : f.arguments) h = h*601 + a;
+
+			return h;
+        }
+    };
+}
+
+
 /**
  * @brief A task where a method's variables are used as arguments to the task.
  */
@@ -260,6 +275,10 @@ struct Domain
 	/// Predicates
 	std::vector<Predicate> predicates;
 
+	/// Predicate-level mutexes, contains pairs of IDs of predicates for which instances are mutex. Can only involve mutexes of identical arity
+	/// These are essentially +/- pairs of predicates 
+	std::vector<std::pair<int,int>> predicateMutexes;
+
 	/// Functions
 	std::vector<Predicate> functions;
 
@@ -406,6 +425,9 @@ struct GroundedTask
 	/// Number of this fact in an output
 	int outputNo = -1;
 
+	/// outputNos if we compiled cover facts
+	std::vector<int> outputNosForCover;
+
 	/// The number of the task that was grounded.
 	int taskNo;
 
@@ -423,6 +445,9 @@ struct GroundedTask
 
 	/// List of grounded del effects
 	std::vector<int> groundedDelEffects;
+
+	/// number of mutex groups for which this action should have the none-of-those effect
+	std::vector<int> noneOfThoseEffect;
 
 	void setHeadNo (int headNo);
 

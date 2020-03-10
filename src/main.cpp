@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include "main.h"
 #include "debug.h"
 #include "grounding.h"
 #include "hierarchy-typing.h"
@@ -26,6 +27,11 @@ int main (int argc, char * argv[])
 		{"quiet",              	                            no_argument,    NULL,   'q'},
 		{"print-timings",     	                            no_argument,    NULL,   't'},
 		{"invariants",         	                            no_argument,    NULL,   'i'},
+		{"force-sas-only",    	                            no_argument,    NULL,   'S'},
+		{"no-sas-deletes",    	                            no_argument,    NULL,   'n'},
+		//{"all-sas-deletes",    	                            no_argument,    NULL,   'a'}, // does not really work with conditional effects, or does it?
+		{"force-sas-only",    	                            no_argument,    NULL,   'S'},
+		{"compile-negative-sas",                            no_argument,    NULL,   'N'},
 		{"only-ground",         	                        no_argument,    NULL,   'g'},
 		{"output-hddl",         	                        no_argument,    NULL,   'H'},
 		{"h2", 			        	                        no_argument,    NULL,   '2'},
@@ -45,12 +51,14 @@ int main (int argc, char * argv[])
 	bool quietMode = false;
 	bool debugMode = false;
 	bool computeInvariants = false;
+	bool outputSASVariablesOnly = false;
+	bool compileNegativeSASVariables = false;
 	bool outputForPlanner = true; // don't output in 
 	bool outputHDDL = false;
 	bool outputSASPlus = false; 
 	bool optionsValid = true;
 	bool outputDomain = false;
-	
+	sas_delete_output_mode sas_mode = SAS_AS_INPUT;	
 
 	bool enableHierarchyTyping = true;
 	bool removeUselessPredicates = true;
@@ -61,7 +69,7 @@ int main (int argc, char * argv[])
 	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sH", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNn", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -81,6 +89,14 @@ int main (int argc, char * argv[])
 			quietMode = true;
 		else if (c == 'i')
 			computeInvariants = true;
+		else if (c == 'S')
+			outputSASVariablesOnly = true;
+		else if (c == 'n')
+			sas_mode = SAS_NONE;
+		//else if (c == 'a')
+		//	sas_mode = SAS_ALL;
+		else if (c == 'N')
+			compileNegativeSASVariables = true;
 		else if (c == 'O')
 			outputDomain = true;
 		
@@ -249,7 +265,8 @@ int main (int argc, char * argv[])
 		run_grounding (domain, problem, *outputStream, *outputStream2,  
 				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
 				futureCachingByPrecondition, 
-				h2mutexes, computeInvariants,  
+				h2mutexes,
+				computeInvariants, outputSASVariablesOnly, sas_mode, compileNegativeSASVariables,
 				outputForPlanner, outputHDDL, outputSASPlus, 
 				printTimings, quietMode);
 	}
