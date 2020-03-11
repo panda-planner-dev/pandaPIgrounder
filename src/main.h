@@ -2,8 +2,9 @@
 #define MAIN_H_INCLUDED
 
 enum sas_delete_output_mode{
-	SAS_AS_INPUT, SAS_NONE, 
-	SAS_ALL // not supported
+	SAS_AS_INPUT,
+	SAS_NONE, 
+	SAS_ALL 
 };
 
 #endif

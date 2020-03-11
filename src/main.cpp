@@ -29,7 +29,7 @@ int main (int argc, char * argv[])
 		{"invariants",         	                            no_argument,    NULL,   'i'},
 		{"force-sas-only",    	                            no_argument,    NULL,   'S'},
 		{"no-sas-deletes",    	                            no_argument,    NULL,   'n'},
-		//{"all-sas-deletes",    	                            no_argument,    NULL,   'a'}, // does not really work with conditional effects, or does it?
+		{"all-sas-deletes",    	                            no_argument,    NULL,   'a'},
 		{"force-sas-only",    	                            no_argument,    NULL,   'S'},
 		{"compile-negative-sas",                            no_argument,    NULL,   'N'},
 		{"only-ground",         	                        no_argument,    NULL,   'g'},
@@ -69,7 +69,7 @@ int main (int argc, char * argv[])
 	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNn", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNna", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -93,8 +93,8 @@ int main (int argc, char * argv[])
 			outputSASVariablesOnly = true;
 		else if (c == 'n')
 			sas_mode = SAS_NONE;
-		//else if (c == 'a')
-		//	sas_mode = SAS_ALL;
+		else if (c == 'a')
+			sas_mode = SAS_ALL;
 		else if (c == 'N')
 			compileNegativeSASVariables = true;
 		else if (c == 'O')

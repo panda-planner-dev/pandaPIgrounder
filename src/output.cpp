@@ -75,71 +75,72 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	// find candidates for fact elimination by duplication
 	std::map<int,std::vector<int>> cover_pruned;
 	std::unordered_set<int> pruned_sas_groups;
-	if (compileNegativeSASVariables){
-		for (const std::unordered_set<int> & m_g : further_mutex_groups){
-			if (m_g.size() != 2) continue; // only pairs of facts are eligible
-			int fact_in_large_group = -1;
-			int og_large = -1;
-			int other_fact = -1;
-			int og_small = -1;
-			bool two_large = false;
-			for (const int & elem : m_g){
-				bool found = false;
-				for (size_t ogID = 0; ogID < sas_groups.size(); ogID++){
-					const std::unordered_set<int> & og = sas_groups[ogID];
-					if (!og.count(elem)) continue;
-					found = true;
-					if (og.size() == 1) {
-						other_fact = elem;
-						og_small = ogID;
-						continue; // contains only this fact, i.e. is artificial
-					}
-
-					if (fact_in_large_group != -1){
-						two_large = true;
-						break;
-					}
-
-					fact_in_large_group = elem;
-					og_large = ogID;
+	for (const std::unordered_set<int> & m_g : further_mutex_groups){
+		if (m_g.size() != 2) continue; // only pairs of facts are eligible
+		int fact_in_large_group = -1;
+		int og_large = -1;
+		int other_fact = -1;
+		int og_small = -1;
+		bool two_large = false;
+		for (const int & elem : m_g){
+			bool found = false;
+			for (size_t ogID = 0; ogID < sas_groups.size(); ogID++){
+				const std::unordered_set<int> & og = sas_groups[ogID];
+				if (!og.count(elem)) continue;
+				found = true;
+				if (og.size() == 1) {
+					other_fact = elem;
+					og_small = ogID;
+					continue; // contains only this fact, i.e. is artificial
 				}
-				if (two_large) break;
-				if (!found) other_fact = elem;
+
+				if (fact_in_large_group != -1){
+					two_large = true;
+					break;
+				}
+
+				fact_in_large_group = elem;
+				og_large = ogID;
 			}
-			if (two_large) continue;
-			if (fact_in_large_group == -1) continue;
-
-			std::vector<int> other_values;
-			for (const int & val : sas_groups[og_large]) if (val != fact_in_large_group)
-				other_values.push_back(val);
-			// might need a none-of-those
-			if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-1);
-			cover_pruned[other_fact] = other_values;
-			pruned_sas_groups.insert(og_small);
-
-			DEBUG(std::cout << "Fact " << other_fact << " is eligible for pruning as opposite of " << fact_in_large_group << std::endl;
-				Fact & f1 = reachableFacts[other_fact];
-				std::cout << "Pruning: " << domain.predicates[f1.predicateNo].name << "[";
-				for (unsigned int i = 0; i < f1.arguments.size(); i++){
-					if (i) std::cout << ",";
-					std::cout << domain.constants[f1.arguments[i]];
-				}
-				std::cout << "]" << std::endl;
-				Fact & f2 = reachableFacts[fact_in_large_group];
-				std::cout << "Negation of " << domain.predicates[f2.predicateNo].name << "[";
-				for (unsigned int i = 0; i < f2.arguments.size(); i++){
-					if (i) std::cout << ",";
-					std::cout << domain.constants[f2.arguments[i]];
-				}
-				std::cout << "]" << std::endl;
-	
-				std::cout << "Possible facts are:";
-				for (int x : other_values) std::cout << " " << x;
-				std::cout << std::endl;
-					);
+			if (two_large) break;
+			if (!found) other_fact = elem;
 		}
-	}
+		if (two_large) continue;
+		if (fact_in_large_group == -1) continue;
 
+		std::vector<int> other_values;
+		for (const int & val : sas_groups[og_large]) if (val != fact_in_large_group)
+			other_values.push_back(val);
+		
+		// always use implications, where there is just one other option
+		if (other_values.size() != 1 && !compileNegativeSASVariables) continue;
+		
+		// might need a none-of-those
+		if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-1);
+		cover_pruned[other_fact] = other_values;
+		pruned_sas_groups.insert(og_small);
+
+		DEBUG(std::cout << "Fact " << other_fact << " is eligible for pruning as opposite of " << fact_in_large_group << std::endl;
+			Fact & f1 = reachableFacts[other_fact];
+			std::cout << "Pruning: " << domain.predicates[f1.predicateNo].name << "[";
+			for (unsigned int i = 0; i < f1.arguments.size(); i++){
+				if (i) std::cout << ",";
+				std::cout << domain.constants[f1.arguments[i]];
+			}
+			std::cout << "]" << std::endl;
+			Fact & f2 = reachableFacts[fact_in_large_group];
+			std::cout << "Negation of " << domain.predicates[f2.predicateNo].name << "[";
+			for (unsigned int i = 0; i < f2.arguments.size(); i++){
+				if (i) std::cout << ",";
+				std::cout << domain.constants[f2.arguments[i]];
+			}
+			std::cout << "]" << std::endl;
+
+			std::cout << "Possible facts are:";
+			for (int x : other_values) std::cout << " " << x;
+			std::cout << std::endl;
+				);
+	}
 	DEBUG(std::cout << "Cover Pruned size = " << cover_pruned.size() << std::endl);
 
 	// assign fact numbers
@@ -147,6 +148,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	for (Fact & fact : reachableFacts) fact.outputNo = -1;
 
 	std::vector<int> orderedFacts;
+	std::vector<std::pair<int,int>> per_sas_fact_from_to;
 
 	int number_of_sas_groups = 0;
 	// elements of sas groups have to be handled together
@@ -154,6 +156,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		if (pruned_sas_groups.count(sas_g)) continue; // is obsolete
 		
 		number_of_sas_groups++;
+		int from = fn;
 		for (int elem : sas_groups[sas_g]){
 			Fact & f = reachableFacts[elem];
 			assert(!prunedFacts[f.groundedNo]);
@@ -165,6 +168,9 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			fn++;
 			orderedFacts.push_back(-sas_g-1); // to get the correct fact
 		}
+		int to = fn-1;
+		for (int x = from; x <= to; x++)
+			per_sas_fact_from_to.push_back(std::make_pair(from,to));
 	}
 
 
@@ -328,7 +334,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 
 		for (int & del : task.groundedDelEffects) if (!prunedFacts[del]){
-			if (sas_mode == SAS_NONE && reachableFacts[del].outputNo < number_of_sas_covered_facts) continue; // if the user want's it, don't output delete effects on SAS variables
+			if (sas_mode != SAS_AS_INPUT && reachableFacts[del].outputNo < number_of_sas_covered_facts) 
+				continue; // if the user instructed us to do something else than keeping, we will do it
 			del_out.push_back(std::make_pair(_empty,reachableFacts[del].outputNo));
 		}
 
@@ -352,7 +359,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			}
 
 			if (prunedFacts[effectID]) continue; // this effect is not necessary
-			if (sas_mode == SAS_NONE && reachableFacts[effectID].outputNo < number_of_sas_covered_facts) continue; // if the user want's it, don't output delete effects on SAS variables
+			if (sas_mode != SAS_AS_INPUT && reachableFacts[effectID].outputNo < number_of_sas_covered_facts)
+				continue; // see above
 
 			std::vector<int> nonPrunedPrecs;
 			for (int & prec : ce_task.groundedPreconditions)
@@ -378,9 +386,18 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				add_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
 			else
 				del_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
-
 		}
 		
+		if (sas_mode == SAS_ALL){
+			for (const auto & add : add_out){
+				if (add.second >= number_of_sas_covered_facts) continue; // this is not a SAS+ fact
+				// add delete effects for everything that is not *this* add
+				auto [from,to] = per_sas_fact_from_to[add.second];
+				for (int other = from; other <= to; other++) if (other != add.second)
+					del_out.push_back(std::make_pair(add.first, other)); 
+			}
+		}
+
 		
 		std::vector<std::vector<int>> instances = instantiate_cover_pruned(cover_pruned_precs, cover_pruned);
 
