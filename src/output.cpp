@@ -37,6 +37,17 @@ std::vector<std::vector<int>> instantiate_cover_pruned(std::map<int,int> & cover
 }
 
 
+void write_task_name(std::ostream & pout, const Domain & domain, GroundedTask & task){
+	pout << domain.tasks[task.taskNo].name << "[";
+	// only output the original variables
+	for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
+		if (i) pout << ",";
+		pout << domain.constants[task.arguments[i]];
+	}
+	pout << "]" << std::endl;
+}
+
+
 
 void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
@@ -152,7 +163,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 		if (sas_variables_needing_none_of_them[sas_g]){
 			fn++;
-			orderedFacts.push_back(-1);
+			orderedFacts.push_back(-sas_g-1); // to get the correct fact
 		}
 	}
 
@@ -265,9 +276,14 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		ce_effects[guardID] = task;
 	}
 	
-	pout << ";; Actions" << std::endl;
-	pout << primTask << std::endl; 
-	int ac = 0;
+	// if we add extra actions for removal of facts, we might have to add more actions ...
+	// so first gather them all, and then output
+	std::vector<std::tuple<int,int,std::vector<int>,
+						   std::vector<std::pair<std::vector<int>,int>>,
+						   std::vector<std::pair<std::vector<int>,int>>,
+						   std::vector<std::vector<int>>
+							   >> output_actions;
+	int number_of_actions_in_output = 0;
 	for (GroundedTask & task : reachableTasks){
 		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
@@ -366,13 +382,30 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 		
 		
-		
-		if (cover_pruned_precs.size() == 0)
-			task.outputNo = ac;
-		else 
-			task.outputNo = -2; // marker for additionally needed task
+		std::vector<std::vector<int>> instances = instantiate_cover_pruned(cover_pruned_precs, cover_pruned);
 
-		for (const std::vector<int> cover_assignment : instantiate_cover_pruned(cover_pruned_precs, cover_pruned)){
+		number_of_actions_in_output += instances.size();
+		output_actions.push_back(std::make_tuple(task.groundedNo,costs,prec_out,add_out,del_out,instances));
+	}
+	
+
+	// actual output of actions
+
+	pout << ";; Actions" << std::endl;
+	pout << number_of_actions_in_output << std::endl; 
+	int ac = 0;
+	int number_of_additional_abstracts = 0;
+
+	for (const auto & [tID, costs, prec_out, add_out, del_out, instances] : output_actions){
+		GroundedTask & task = reachableTasks[tID];
+		if (instances.size() == 1)
+			task.outputNo = ac;
+		else {
+			number_of_additional_abstracts++;
+			task.outputNo = -2; // marker for additionally needed task
+		}
+
+		for (const std::vector<int> & cover_assignment : instances){
 			///////////////////////////// ACTUAL OUTPUT
 			task.outputNosForCover.push_back(ac++);
 			pout << costs << std::endl;
@@ -380,8 +413,13 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			for (const int & prec : prec_out)
 				if (prec >= 0)
 					pout << prec << " ";
-				else
-					pout << reachableFacts[cover_assignment[-prec-1]].outputNo << " ";
+				else {
+					int alternate = cover_assignment[-prec-1];
+					if (alternate >= 0)
+						pout << reachableFacts[alternate].outputNo << " ";
+					else
+						pout << none_of_them_per_sas_group[-alternate-1] << " ";
+				}
 
 			pout << -1 << std::endl;
 
@@ -391,8 +429,13 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				for (const int & p : add.first) 
 					if (p >= 0)
 						pout << p << " ";
-					else
-						pout << reachableFacts[cover_assignment[-p-1]].outputNo << " ";
+					else {
+						int alternate = cover_assignment[-p-1];
+						if (alternate >= 0)
+							pout << reachableFacts[alternate].outputNo << " ";
+						else
+							pout << none_of_them_per_sas_group[-alternate-1] << " ";
+					}
 				pout << " " << add.second << "  ";
 			}
 			pout << -1 << std::endl;
@@ -403,15 +446,18 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				for (const int & p : del.first)
 					if (p >= 0)
 						pout << p << " ";
-					else
-						pout << reachableFacts[cover_assignment[-p-1]].outputNo << " ";
+					else {
+						int alternate = cover_assignment[-p-1];
+						if (alternate >= 0)
+							pout << reachableFacts[alternate].outputNo << " ";
+						else
+							pout << none_of_them_per_sas_group[-alternate-1] << " ";
+					}
 				pout << " " << del.second << "  ";
 			}
 			pout << -1 << std::endl;
 		}
 	}
-	
-	//exit(-2);
 
 
 	pout << std::endl << ";; initial state" << std::endl;
@@ -466,23 +512,16 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 	
 	pout << std::endl << ";; tasks (primitive and abstract)" << std::endl;
-	pout << ac + absTask << std::endl;
-	// count number of reachable  abstracts
-	for (GroundedTask & task : reachableTasks){
-		if (prunedTasks[task.groundedNo]) continue;
-		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
-		if (task.taskNo >= domain.nPrimitiveTasks) continue;
-		
-		pout << 0 << " ";
-		
-		
-		pout << domain.tasks[task.taskNo].name << "[";
-		// only output the original variables
-		for (unsigned int i = 0; i < domain.tasks[task.taskNo].number_of_original_variables; i++){
-			if (i) pout << ",";
-			pout << domain.constants[task.arguments[i]];
+	pout << number_of_actions_in_output +  absTask + number_of_additional_abstracts << std::endl;
+	// output names of primitives
+	
+	for (const auto & [tID, costs, prec_out, add_out, del_out, instances] : output_actions){
+		GroundedTask & task = reachableTasks[tID];
+
+		for (const std::vector<int> cover_assignment : instances){
+			pout << 0 << " ";
+			write_task_name(pout,domain,task);
 		}
-		pout << "]" << std::endl;
 	}
 
 	int initialAbstract = -1;
@@ -493,26 +532,25 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		if (task.taskNo == problem.initialAbstractTask) initialAbstract = task.outputNo; 
 
 		pout << 1 << " ";
-
-		pout << domain.tasks[task.taskNo].name << "[";
-		for (unsigned int i = 0; i < task.arguments.size(); i++){
-			if (i) pout << ",";
-			pout << domain.constants[task.arguments[i]];
-		}
-		pout << "]" << std::endl;
+		write_task_name(pout,domain,task);
 	}
-
+	
+	// artificial tasks
+	int number_of_additional_methods = 0;
+	for (GroundedTask & task : reachableTasks) if (task.outputNo == -2){
+		pout << 1 << " __sas";
+		task.outputNo = -(ac++) - 2;
+		write_task_name(pout,domain,task);
+		number_of_additional_methods += task.outputNosForCover.size();
+	}
 
 	pout << std::endl << ";; initial abstract task" << std::endl;
 	pout << initialAbstract << std::endl;
 
-
 	pout << std::endl << ";; methods" << std::endl;
-	pout << methods << std::endl;
-	int mc = 0;
+	pout << methods + number_of_additional_methods << std::endl;
 	for (auto & method : reachableMethods){
 		if (prunedMethods[method.groundedNo]) continue;
-		mc++;
 		// output their name
 		pout << domain.decompositionMethods[method.methodNo].name << std::endl;
 		/* method names may not contained variables for verification
@@ -548,6 +586,17 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		pout << "-1" << std::endl;
 	}
 
+	for (GroundedTask & task : reachableTasks) if (task.outputNo <= -2){
+		int at = -task.outputNo -2;
+	
+		for (const int & prim : task.outputNosForCover){
+			pout << "sas_method_";
+			write_task_name(pout,domain,task);
+			pout << at << std::endl;
+			pout << prim << " " << -1 << std::endl;
+			pout << -1 << std::endl;
+		}
+	}
 
 	// exiting this way is faster as data structures will not be cleared ... who needs this anyway
 	if (!quietMode) std::cerr << "Exiting." << std::endl;
