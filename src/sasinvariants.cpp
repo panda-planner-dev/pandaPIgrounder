@@ -131,7 +131,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 			const std::vector<int> & free_variable_assignment = keyValue.first;
 			const std::unordered_set<int> & facts = keyValue.second;
 
-			//DEBUG(
+			DEBUG(
 				std::cout << "Mutex Group " << gID << " Free vars:";
 				for (size_t v = 0; v < groups[gID].free_vars.size(); v++){
 					std::cout << " v=" << v << " fva[v]=" << free_variable_assignment[v];
@@ -140,7 +140,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 					std::cout << " = " <<  domain.constants[free_variable_assignment[v]];
 				}
 				std::cout << " -> " << keyValue.second.size() << std::endl;
-			//	);
+				);
 
 			if (mutex_groups_set.count(facts)){
 				DEBUG(std::cout << "Duplicate FAM mutex:";
