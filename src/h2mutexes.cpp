@@ -2,7 +2,9 @@
 
 #include <unordered_set>
 #include <unistd.h>
+#include <cassert>
 
+#include "debug.h"
 #include "h2mutexes.h"
 #include "../h2-fd-preprocessor/src/domain_transition_graph.h"
 #include "../h2-fd-preprocessor/src/state.h"
@@ -13,18 +15,21 @@
 #include "../h2-fd-preprocessor/src/h2_mutexes.h"
 
 
-bool h2_mutexes(const Domain & domain, const Problem & problem,
+std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<int>>> compute_h2_mutexes(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
-		bool quietMode){
+		std::vector<std::unordered_set<int>> sas_groups,
+		std::vector<std::unordered_set<int>> further_mutex_groups,
+		std::vector<bool> & sas_variables_needing_none_of_them,
+	bool quietMode){
     
-	int h2_mutex_time = 300; // 5 minutes to compute mutexes by default
+	int h2_mutex_time = 10; // 10 seconds to compute mutexes by default
     bool disable_bw_h2 = false;
 
 	std::vector<Variable *> variables;
-	std::map<Variable *,int> variableIndex;
+	std::map<Variable *,std::map<string,int>> variableIndex;
 	std::vector<Variable> internal_variables;
     State initial_state;
 	std::vector<std::pair<Variable *, int>> goals;
@@ -36,44 +41,82 @@ bool h2_mutexes(const Domain & domain, const Problem & problem,
 	/////////////////////////// FILL THE MODEL, partially coped from FD
 	// determine the number of unpruned facts
 	int unprunedFacts = 0;
-	for (bool x : prunedFacts) if (!x) unprunedFacts++;
-	int numberOfFacts = unprunedFacts + (problem.initialAbstractTask == -1? 0 : 1);
-	
-	internal_variables.reserve(numberOfFacts);
-	
+
+
 	// contains mapping from output IDs to internal IDS
 	std::vector<int> factOutput;
-	std::vector<int> factIDtoOutputOutput;
+	std::vector<std::pair<int,int>> factIDtoVarVal (reachableFacts.size());
+	for (size_t i = 0; i < reachableFacts.size(); i++)
+		factIDtoVarVal[i] = std::make_pair(-1,-1); // all pruned unless otherwise noted
 	std::set<Fact> outputFactsSet;
-	for(size_t factID = 0; factID < reachableFacts.size(); factID++){
-		if (prunedFacts[factID]) {
-			factIDtoOutputOutput.push_back(-1);
-			continue;
-		}
-		int factOut = factOutput.size();
-		factOutput.push_back(factID);
-		factIDtoOutputOutput.push_back(factOut);
+	
+	// build init together with the variables
+	std::set<Fact> initFacts (problem.init.begin(), problem.init.end());
+	std::set<Fact> goalFacts (problem.goal.begin(), problem.goal.end());
 
-		Fact & fact = reachableFacts[factID];
-		outputFactsSet.insert(fact);
-		std::string factName = domain.predicates[fact.predicateNo].name + "[";
-		for (unsigned int i = 0; i < fact.arguments.size(); i++){
-			if (i) factName += ",";
-			factName += domain.constants[fact.arguments[i]];
-		}
-		factName += "]";
+	// first add the variables for true SAS+ groups
+	std::unordered_set<int> facts_covered_by_sas_groups;
+	internal_variables.reserve(sas_groups.size() + (problem.initialAbstractTask != -1));
 
+	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
+		int size_of_sas_group = sas_groups[sas_g].size() + sas_variables_needing_none_of_them[sas_g];
+		
 		// construct variable
-	    Variable var(2);
-		var.name = "var" + factOut;
+	    Variable var(size_of_sas_group);
+		var.name = "var" + internal_variables.size();
 		var.layer = -1;
-		var.values[0] = "Atom " + factName;
-		var.values[1] = "Not Atom " + factName;
 
+		int valPos = 0;
+		int initialValue = -1;
+		int goalValue = -1;
+		for (int elem : sas_groups[sas_g]){
+			Fact & f = reachableFacts[elem];
+			assert(!prunedFacts[f.groundedNo]);
+			assert(!domain.predicates[f.predicateNo].guard_for_conditional_effect);
+			// assemble the name of this fact
+			std::string factName = domain.predicates[f.predicateNo].name + "[";
+			for (unsigned int i = 0; i < f.arguments.size(); i++){
+				if (i) factName += ",";
+				factName += domain.constants[f.arguments[i]];
+			}
+			factName += "]";
+
+			var.values[valPos] = factName;
+	
+			factIDtoVarVal[elem].first = variables.size();
+			factIDtoVarVal[elem].second = valPos;
+
+			if (initFacts.count(f)) initialValue = valPos;
+			if (goalFacts.count(f)) goalValue = valPos;
+			valPos++;
+		}
+
+		if (sas_variables_needing_none_of_them[sas_g]){
+			var.values[valPos] = "none-of-those";
+			if (initialValue == -1) initialValue = valPos;
+		}
+
+
+		// add variable to data structures
 		internal_variables.push_back(var);
-        variables.push_back(&internal_variables.back());
-		variableIndex[&internal_variables.back()] = factID;
+		variables.push_back(&internal_variables.back());
+
+		// set the initial value of this variable
+		assert(initialValue != -1);
+		initial_state.values[variables.back()] = initialValue;
+
+		// goal
+		if (goalValue != -1)
+			goals.push_back(std::make_pair(&internal_variables.back(),0));
+
+		// add variable to back translation table		
+		valPos = 0;
+		for (int elem : sas_groups[sas_g])
+			variableIndex[&internal_variables.back()][var.values[valPos++]] = elem;
+		if (sas_variables_needing_none_of_them[sas_g])
+			variableIndex[&internal_variables.back()][var.values[valPos]] = -sas_g - 3; // none of those
 	}
+
 	
 	if (problem.initialAbstractTask != -1){
 		// construct variable
@@ -85,37 +128,15 @@ bool h2_mutexes(const Domain & domain, const Problem & problem,
 
 		internal_variables.push_back(var);
         variables.push_back(&internal_variables.back());
-		variableIndex[&internal_variables.back()] = -1;
+		variableIndex[&internal_variables.back()]["GOAL"] = -1;
+		variableIndex[&internal_variables.back()]["NOT GOAL"] = -2;
+	   
+		// set the initial state to unreached
+		initial_state.values[&internal_variables.back()] = 1;
+		// and that it must be reached in the goal
+		goals.push_back(std::make_pair(&internal_variables.back(),0));
 	}
 
-	// initial state
-	std::set<Fact> initFacts (problem.init.begin(), problem.init.end());
-	for (int & factID : factOutput){
-		Fact & fact = reachableFacts[factID];
-		int fdID = factIDtoOutputOutput[factID];
-
-		auto initFactIterator = initFacts.find(fact);
-		if (initFactIterator != initFacts.end())
-			initial_state.values[variables[fdID]] = 0;
-		else
-			initial_state.values[variables[fdID]] = 1;
-	}
-	if (problem.initialAbstractTask != -1)
-	   initial_state.values[variables[unprunedFacts]] = 1;
-
-
-	// goal
-	for (const Fact & f : problem.goal){
-		auto it = outputFactsSet.find(f);
-		if (it == outputFactsSet.end()) continue; // might be unsolvable, but we shall detect this at another place.
-		if (prunedFacts[it->groundedNo]) continue; // same as above
-
-		int fdID = factIDtoOutputOutput[it->groundedNo];
-		goals.push_back(std::make_pair(variables[fdID],0));
-	}
-	
-	if (problem.initialAbstractTask != -1)
-		goals.push_back(std::make_pair(variables[unprunedFacts],0));
 
 
 	// create operators
@@ -139,44 +160,43 @@ bool h2_mutexes(const Domain & domain, const Problem & problem,
 		}
 		actionName += "]";
 
-		// determine the prevail  
-		std::unordered_set<int> pre,add,del;
+		// TODO consider conditional effects, if we can parse and ground them
+	
+		// determine the prevail and changing conditions
+		std::map<int,int> pre,add;
 		for (int & prec : task.groundedPreconditions)
 			if (!prunedFacts[prec])
-				pre.insert(factIDtoOutputOutput[prec]);
+				pre[factIDtoVarVal[prec].first] = factIDtoVarVal[prec].second;
 		
 		for (int & addf : task.groundedAddEffects)
 			if (!prunedFacts[addf])
-				add.insert(factIDtoOutputOutput[addf]);
-		
-		for (int & delf : task.groundedDelEffects)
-			if (!prunedFacts[delf])
-				del.insert(factIDtoOutputOutput[delf]);
+				add[factIDtoVarVal[addf].first] = factIDtoVarVal[addf].second;
 
-		std::unordered_set<int> prevail;
-		for (const int & p : pre) if (!del.count(p)) prevail.insert(p);
+		for (const int & sas_g : task.noneOfThoseEffect)
+			add[sas_g] = variables[sas_g]->values.size() - 1; 
+
+		std::map<int,int> prevail;
+		for (const auto & p : pre)
+			if (!add.count(p.first))
+				prevail[p.first] = p.second;
 
 
 		// create FD operator
 		::Operator op;
 		op.operatorID = taskID;
 		op.name = actionName;
-		for (const int & p : prevail) 
-			op.prevail.push_back(Operator::Prevail(variables[p],0));
+		for (const auto & p : prevail) 
+			op.prevail.push_back(Operator::Prevail(variables[p.first],p.second));
 
-		for (const int & x : add) {
-			// TODO consider conditional effects, if we can parse and ground them
-			op.pre_post.push_back(Operator::PrePost(variables[x],-1,0));
+		for (const auto & x : add) {
+			int precondition = -1;
+			if (pre.count(x.first)) precondition = pre[x.first];
+			op.pre_post.push_back(Operator::PrePost(variables[x.first],precondition,x.second));
 		}
 
-		for (const int & x : del) {
-			// TODO consider conditional effects, if we can parse and ground them
-			op.pre_post.push_back(Operator::PrePost(variables[x],(pre.count(x)?0:-1),1));
-		}
+		if (problem.initialAbstractTask != -1)
+			op.pre_post.push_back(Operator::PrePost(&internal_variables.back(),-1,0));
 
-		if (problem.initialAbstractTask != -1){
-			op.pre_post.push_back(Operator::PrePost(variables[unprunedFacts],-1,0));
-		}
 
 		op.cost = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
 		operators.push_back(op);
@@ -279,6 +299,8 @@ bool h2_mutexes(const Domain & domain, const Problem & problem,
 	// H2 inference produces output to std, so re-endable cout
 	if (quietMode)
 		std::cout.clear();
+	
+	DEBUG(std::cout << "Finished H2 mutex computation" << std::endl);
 
 	// find out which operators and facts were pruned
 	int afterwardsUnprunedFacts = 0;
@@ -288,10 +310,13 @@ bool h2_mutexes(const Domain & domain, const Problem & problem,
 	for (size_t factID = 0; factID < prunedFacts.size(); factID++)
 		prunedFacts[factID] = true;
 	for (Variable* var : causal_graph.get_variable_ordering()){
-		int variableID = variableIndex[var];
-		if (variableID == -1) continue; // artificial goal fact
-		prunedFacts[variableID] = false;
-		afterwardsUnprunedFacts++;
+		for (int val = 0; val < var->values.size(); val++){
+			if (!var->is_reachable(val)) continue;
+			int factID = variableIndex[var][var->values[val]]; // identification via string
+			if (factID < 0) continue; // artificial goal fact or "non-of-those"
+			prunedFacts[factID] = false;
+			afterwardsUnprunedFacts++;
+		}
 	}
 
 	// set all primitives to pruned	
@@ -304,9 +329,84 @@ bool h2_mutexes(const Domain & domain, const Problem & problem,
 		prunedTasks[op.operatorID] = false;
 		afterwardsUnprunedActions++;
 	}
+	
 
-	//return (afterwardsUnprunedActions != unprunedActions) || (afterwardsUnprunedFacts != unprunedFacts);
-	return afterwardsUnprunedActions != unprunedActions;
+	std::vector<unordered_set<int>> h2_mutexes;	
+	std::vector<unordered_set<int>> h2_invariants;	
+	
+
+	
+	for (const MutexGroup & mutex :  mutexes){
+		std::unordered_set<int> facts;
+		bool irrelevant = false;
+		bool invariant = false;
+		DEBUG(std::cout << "H2 Mutex Group:");
+		for (auto & f : mutex.getFacts()){
+			int factID = variableIndex[const_cast<Variable*>(f.first)][f.first->values[f.second]];
+			if (factID == -1 || factID == -2) irrelevant = true; // artificial goal fact
+			if (factID < -2) invariant	= true; // none-of-those
+			if (factID >= 0 && prunedFacts[factID]) irrelevant = true;
+			DEBUG(std::cout << " " << factID);	
+			facts.insert(factID);
+
+			DEBUG(
+				if (factID == -1 || factID == -2) continue; // goal
+				if (factID < 0) {
+					for (int elem : sas_groups[-factID - 3]){
+						Fact & fact = reachableFacts[elem];
+						std::string factName = domain.predicates[fact.predicateNo].name + "[";
+						for (unsigned int i = 0; i < fact.arguments.size(); i++){
+							if (i) factName += ",";
+							factName += domain.constants[fact.arguments[i]];
+						}
+						factName += "]";
+	
+						std::cout << " " << factName;
+					}
+				} else {
+					Fact & fact = reachableFacts[factID];
+					std::string factName = domain.predicates[fact.predicateNo].name + "[";
+					for (unsigned int i = 0; i < fact.arguments.size(); i++){
+						if (i) factName += ",";
+						factName += domain.constants[fact.arguments[i]];
+					}
+					factName += "]";
+
+					std::cout << " " << factName;
+				}
+			);
+		}
+		DEBUG(std::cout << std::endl);
+
+		if (irrelevant) continue; // don't add it
+		
+		if (!invariant){
+			// true mutex
+			DEBUG(std::cout << "Add as mutex" << std::endl);
+			h2_mutexes.push_back(facts);
+		} else {
+			DEBUG(std::cout << "Add as invariant:");
+			std::unordered_set<int> inv;
+			
+			for (const int & elem : facts){
+				if (elem >= 0){
+					DEBUG(std::cout << " " << (-elem-1));
+					inv.insert(-elem-1); // not this one
+				} else {
+					for (int e : sas_groups[-elem - 3]){
+						DEBUG(std::cout << " " << e);
+						inv.insert(e);
+					}
+				}
+			}
+			h2_invariants.push_back(inv);
+			DEBUG(std::cout << std::endl);
+		}
+	}
+
+	return std::make_tuple(afterwardsUnprunedActions != unprunedActions,
+			h2_mutexes,
+			h2_invariants);
 }
 
 

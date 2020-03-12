@@ -28,6 +28,7 @@ struct FAMGroup{
 
 std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<int>>> compute_sas_groups(const Domain & domain, const Problem & problem,
 		std::vector<FAMGroup> & groups,
+		std::vector<std::unordered_set<int>> & known_mutex_groups,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<GroundedMethod> & reachableMethods,

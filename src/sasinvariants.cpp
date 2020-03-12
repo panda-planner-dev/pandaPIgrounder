@@ -5,6 +5,25 @@
 #include "sasinvariants.h"
 #include "debug.h"
 
+
+
+/// hash function s.t. mutex groups can be put into unordered sets
+namespace std {
+    template<> struct hash<std::unordered_set<int>>
+    {
+        std::size_t operator()(const std::unordered_set<int> & m) const noexcept
+        {
+			std::vector<int> v;
+			for (const int & a : m) v.push_back(a);
+			std::sort(v.begin(),v.end());
+			std::size_t h = 0;
+			for (const int & a : v) h = h*601 + a;
+			return h;
+        }
+    };
+}
+
+
 void add_fact_to_FAM_instance(const Domain & domain, std::vector<std::map<std::vector<int>,std::unordered_set<int>>> & factsPerFAMInstance, int factID, const FAMGroup & g, int gID, std::vector<int> & free_variable_assignment){
 
 	for (size_t vIDX = 0; vIDX < free_variable_assignment.size(); vIDX++){
@@ -26,6 +45,7 @@ void add_fact_to_FAM_instance(const Domain & domain, std::vector<std::map<std::v
 
 std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<int>>> compute_sas_groups(const Domain & domain, const Problem & problem,
 		std::vector<FAMGroup> & groups,
+		std::vector<std::unordered_set<int>> & known_mutex_groups,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<GroundedMethod> & reachableMethods,
@@ -94,7 +114,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 	// create SAS+ representation, i.e. the ground mutex groups that we will actually use.
 	// We do this greedily, by taking the largest mutex group first
 
-	std::vector<std::unordered_set<int>> mutex_groups_by_size;
+	std::unordered_set<std::unordered_set<int>> mutex_groups_set;
 	for (size_t gID = 0; gID < factsPerFAMInstance.size(); gID++){
 		for (auto & keyValue : factsPerFAMInstance[gID]){
 			const std::vector<int> & free_variable_assignment = keyValue.first;
@@ -109,8 +129,10 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 				);
 
 
-			// negative size, to get largest groups first
-			mutex_groups_by_size.push_back(facts);
+			DEBUG(std::cout << "Insert (FAM):";
+					for (int m : facts) std::cout << " " << m;
+					std::cout << std::endl);
+			mutex_groups_set.insert(facts);
 		}
 	}
 
@@ -141,11 +163,34 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		std::unordered_set<int> mutex;
 		mutex.insert(f.groundedNo);
 		mutex.insert(partnerGroundNo);
-		mutex_groups_by_size.push_back(mutex);
+		if (mutex_groups_set.count(mutex))
+			DEBUG(std::cout << "Duplicate negation mutex for factID " << factID << std::endl);
+		else {
+			DEBUG(std::cout << "Insert (PRED):";
+					for (int m : mutex) std::cout << " " << m;
+					std::cout << std::endl);
+			mutex_groups_set.insert(mutex);
+		}
+	}
+
+	// add known mutex groups
+	for (const auto & mgroup : known_mutex_groups){
+		if (mutex_groups_set.count(mgroup)){
+			DEBUG(std::cout << "Duplicate H2-mutex:";
+					for (const int &x : mgroup) std::cout << " " << x;
+					std::cout << std::endl;	
+					);
+		} else {
+			DEBUG(std::cout << "Insert (H2):";
+					for (int m : mgroup) std::cout << " " << m;
+					std::cout << std::endl);
+			mutex_groups_set.insert(mgroup);
+		}
 	}
 
 
-
+	std::vector<std::unordered_set<int>> mutex_groups_by_size;
+	mutex_groups_by_size.assign(mutex_groups_set.begin(), mutex_groups_set.end());
 
 	// sort groups by size
 	std::sort(mutex_groups_by_size.begin(), mutex_groups_by_size.end(), [](const auto& one, const auto& two ){return one.size() > two.size();});
@@ -226,6 +271,7 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 	for (size_t aID = 0; aID < reachableTasks.size(); aID++) {
 		if (prunedTasks[aID]) continue;
 		if (domain.nPrimitiveTasks <= reachableTasks[aID].taskNo) continue; // abstract
+		reachableTasks[aID].noneOfThoseEffect.clear();
 
 		// check whether the preconditions violate one of the mutexes
 		std::map<int,int> mutex_required_count;

@@ -50,20 +50,67 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			prunedFacts, prunedTasks, prunedMethods,
 			quietMode);
 
-
+////////////////////// H2 mutexes
+	std::vector<std::unordered_set<int>> h2_mutexes;
+	std::vector<std::unordered_set<int>> h2_invariants;
 	if (h2Mutextes){
 		// remove useless predicates to make the H2 inference easier
 		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
 			removeUselessPredicates, false, false, quietMode);	
 
-		if (h2_mutexes(domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode)){
+
+		// H2 mutexes need the maximum amount of information possible, so we have to compute SAS groups at this point
+
+		// prepare data structures that are needed for efficient access
+		std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
+		
+		std::unordered_set<int> initFacts; // needed for efficient goal checking
+		std::unordered_set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
+
+		for (const Fact & f : problem.init){
+			int groundNo = reachableFactsSet.find(f)->groundedNo;
+			if (prunedFacts[groundNo]){
+				initFactsPruned.insert(groundNo);
+				continue;
+			}
+			initFacts.insert(groundNo);
+		}
+
+
+
+		auto [sas_groups,further_mutex_groups] = compute_sas_groups(domain, problem, 
+				famGroups, h2_mutexes,
+				initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
+				initFacts, reachableFactsSet,
+				true, // outputSASVariablesOnly -> force SAS+ here. This makes the implementation easier
+				quietMode);
+		
+		
+		std::vector<bool> sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
+				initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
+				prunedTasks, prunedFacts, prunedMethods,
+				initFacts,
+				sas_groups,further_mutex_groups,
+				quietMode);
+
+
+		// run H2 mutex analysis
+		auto [has_pruned, _h2_mutexes, _h2_invariants] = 
+			compute_h2_mutexes(domain,problem,initiallyReachableFacts,initiallyReachableTasks,
+					prunedFacts, prunedTasks, 
+					sas_groups, further_mutex_groups,sas_variables_needing_none_of_them,
+					quietMode);
+		h2_mutexes = _h2_mutexes;
+		h2_invariants = _h2_invariants;
+
+		if (has_pruned){
 			// if we have pruned actions, rerun the PGP and HTN stuff
 			run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 				prunedFacts, prunedTasks, prunedMethods,
 				quietMode);
 		}
 	}
-
+//////////////////////// end of H2 mutexes
 
 	// run postprocessing
 	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
@@ -128,12 +175,13 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 
 
 
-			auto [sas_groups,further_mutex_groups] = compute_sas_groups(domain, problem, famGroups, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
+			auto [sas_groups,further_mutex_groups] = compute_sas_groups(domain, problem, 
+					famGroups, h2_mutexes,
+					initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
 					initFacts, reachableFactsSet,
 					outputSASVariablesOnly,
 					quietMode);
-			
-			
+
 			std::vector<bool> sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
 					initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
 					prunedTasks, prunedFacts, prunedMethods,
@@ -144,7 +192,8 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, 
 				initFacts, initFactsPruned, reachableFactsSet,
-				sas_groups, further_mutex_groups, sas_variables_needing_none_of_them,
+				sas_groups, further_mutex_groups, h2_invariants,
+				sas_variables_needing_none_of_them,
 				compileNegativeSASVariables, sas_mode,
 				quietMode);
 		}

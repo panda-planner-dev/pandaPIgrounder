@@ -22,6 +22,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::unordered_set<Fact> reachableFactsSet,
 		std::vector<std::unordered_set<int>> sas_groups,
 		std::vector<std::unordered_set<int>> further_mutex_groups,
+		std::vector<std::unordered_set<int>> invariants,
 		std::vector<bool> & sas_variables_needing_none_of_them,
 		bool compileNegativeSASVariables,
 		sas_delete_output_mode sas_mode,

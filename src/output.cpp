@@ -65,6 +65,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::unordered_set<Fact> reachableFactsSet,
 		std::vector<std::unordered_set<int>> sas_groups,
 		std::vector<std::unordered_set<int>> further_mutex_groups,
+		std::vector<std::unordered_set<int>> invariants,
 		std::vector<bool> & sas_variables_needing_none_of_them,
 		bool compileNegativeSASVariables,
 		sas_delete_output_mode sas_mode,
@@ -149,6 +150,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 	std::vector<int> orderedFacts;
 	std::vector<std::pair<int,int>> per_sas_fact_from_to;
+	std::vector<int> sas_g_per_fact;
 
 	int number_of_sas_groups = 0;
 	// elements of sas groups have to be handled together
@@ -163,10 +165,12 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			assert(!domain.predicates[f.predicateNo].guard_for_conditional_effect);
 			f.outputNo = fn++; // assign actual index to fact
 			orderedFacts.push_back(elem);
+			sas_g_per_fact.push_back(sas_g);
 		}
 		if (sas_variables_needing_none_of_them[sas_g]){
 			fn++;
 			orderedFacts.push_back(-sas_g-1); // to get the correct fact
+			sas_g_per_fact.push_back(sas_g);
 		}
 		int to = fn-1;
 		for (int x = from; x <= to; x++)
@@ -255,7 +259,125 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	pout << std::endl;
 
+	// further known mutex groups
+	pout << ";; further Mutex Groups" << std::endl;
+	std::vector<std::unordered_set<int>> out_mutexes;
+	for (const auto & mgroup : further_mutex_groups){
+		std::unordered_set<int> mutex;
+		for (const int & elem : mgroup){
+			Fact & fact = reachableFacts[elem];
+			if (prunedFacts[elem]) continue;
+			if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
+			if (cover_pruned.count(elem))
+				for (const int & other : cover_pruned[elem])
+					mutex.insert(reachableFacts[other].outputNo);
+			else
+				mutex.insert(reachableFacts[elem].outputNo);
+		}
 
+		bool hasSTRIPS = false;
+		int sas_g_so_far = -1;
+		bool multiple_sas_g = false;
+		for (const int & elem : mutex){
+			if (elem >= sas_g_per_fact.size()){
+				hasSTRIPS = true;
+				break;
+			}
+
+			int sas_g = sas_g_per_fact[elem];
+			if (sas_g_so_far != -1 && sas_g_so_far != sas_g){
+				multiple_sas_g = true;
+				break;
+			}
+			sas_g_so_far = sas_g;
+		}
+
+		if (!hasSTRIPS && !multiple_sas_g && mutex.size() == sas_groups[sas_g_so_far].size() + sas_variables_needing_none_of_them[sas_g_so_far]) continue;
+
+		out_mutexes.push_back(mutex);
+	}
+
+	pout << out_mutexes.size() << std::endl;
+	for (const auto & mutex : out_mutexes){
+		for (const int & elem : mutex)
+			pout << elem << " ";
+		pout << -1 << std::endl;
+	}
+	pout << std::endl;
+
+
+
+
+	// further known mutex groups
+	pout << ";; known invariants" << std::endl;
+
+	std::vector<std::unordered_set<int>> out_invariants;
+	for (const auto & inv : invariants){
+		// we can't handle negation over a cover pruned fact ..
+		bool negation_over_cover_pruned = false;
+		std::unordered_set<int> out_inv;
+
+		for (const int & invElem : inv){
+			if (invElem < 0 && cover_pruned.count(-invElem-1)){
+				negation_over_cover_pruned = true;
+				break;
+			}
+
+			int elem = invElem;
+			if (invElem < 0) elem = -elem -1;
+			if (prunedFacts[elem]) continue;
+
+			if (invElem < 0)
+				out_inv.insert(-reachableFacts[elem].outputNo - 1);
+			else {
+				if (cover_pruned.count(elem))
+					for (const int & other : cover_pruned[elem])
+						out_inv.insert(reachableFacts[other].outputNo);
+				else 
+					out_inv.insert(reachableFacts[elem].outputNo);
+			}
+		}
+
+		if (negation_over_cover_pruned) continue;
+		bool isTrivial = false;
+		bool hasNegativeOrHasSTRIPS = false;
+		for (const int & elem : out_inv)
+			if (out_inv.count(-elem-1)){
+				isTrivial = true;
+				break;
+			} else if (elem < 0 || elem >= sas_g_per_fact.size())
+				hasNegativeOrHasSTRIPS = true;
+		if (isTrivial) continue; // ignore this invariant if it is trivial
+
+		if (!hasNegativeOrHasSTRIPS){
+			int sas_g_so_far = -1;
+			bool multiple_sas_g = false;
+			for (const int & elem : out_inv){
+				int sas_g = sas_g_per_fact[elem];
+				if (sas_g_so_far != -1 && sas_g_so_far != sas_g){
+					multiple_sas_g = true;
+					break;
+				}
+				sas_g_so_far = sas_g;
+			}
+
+			if (!multiple_sas_g && out_inv.size() == sas_groups[sas_g_so_far].size() + sas_variables_needing_none_of_them[sas_g_so_far]) continue;
+		}
+
+		out_invariants.push_back(out_inv);
+	}
+
+
+	pout << out_invariants.size() << std::endl;
+	for (const auto & inv : out_invariants){
+		for (const int & elem : inv)
+			pout << elem << " ";
+		pout << -1 << std::endl;
+	}
+	pout << std::endl;
+
+
+	////// OUTPUT OF ACTIONS
 	std::map<Fact,int> init_functions_map;
 	for (auto & init_function_literal : problem.init_functions){
 		init_functions_map[init_function_literal.first] = init_function_literal.second;
@@ -323,7 +445,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			if (domain.predicates[reachableFacts[add].predicateNo].guard_for_conditional_effect)
 				ce_guards.push_back(add);
 			else {	
-				if (!prunedFacts[add]){
+				if (!prunedFacts[add] && !cover_pruned.count(add)){
 					add_out.push_back(std::make_pair(_empty,reachableFacts[add].outputNo));
 				}
 			}
@@ -333,7 +455,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			add_out.push_back(std::make_pair(_empty,none_of_them_per_sas_group[sas_g])); 
 		}
 
-		for (int & del : task.groundedDelEffects) if (!prunedFacts[del]){
+		for (int & del : task.groundedDelEffects) if (!prunedFacts[del] && !cover_pruned.count(del)){
 			if (sas_mode != SAS_AS_INPUT && reachableFacts[del].outputNo < number_of_sas_covered_facts) 
 				continue; // if the user instructed us to do something else than keeping, we will do it
 			del_out.push_back(std::make_pair(_empty,reachableFacts[del].outputNo));
@@ -358,7 +480,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				isAdd = false;
 			}
 
-			if (prunedFacts[effectID]) continue; // this effect is not necessary
+			if (prunedFacts[effectID] || cover_pruned.count(effectID)) continue; // this effect is not necessary
 			if (sas_mode != SAS_AS_INPUT && reachableFacts[effectID].outputNo < number_of_sas_covered_facts)
 				continue; // see above
 
@@ -588,7 +710,10 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			int subtaskIndex = method.preconditionOrdering[outputIndex];
 			subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
 
-			pout << reachableTasks[method.groundedPreconditions[subtaskIndex]].outputNo << " ";
+			int outNo = reachableTasks[method.groundedPreconditions[subtaskIndex]].outputNo;
+			if (outNo < 0) outNo = -outNo - 2; // marker task
+
+			pout << outNo << " ";
 		}
 		pout << "-1" << std::endl;
 
