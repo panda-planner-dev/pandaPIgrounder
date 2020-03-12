@@ -281,7 +281,11 @@ std::pair<size_t, size_t> groundedTdgDfs (std::vector<bool> & prunedTasks, std::
 	{
 		if (task.taskNo != problem.initialAbstractTask)
 			continue;
-		groundedInnerTdgDfs (prunedTasks, prunedMethods, inputTasks, inputMethods, domain, visitedTasks, visitedMethods, task.groundedNo);
+		if (!prunedTasks[task.groundedNo])
+			groundedInnerTdgDfs (prunedTasks, prunedMethods, inputTasks, inputMethods, domain, visitedTasks, visitedMethods, task.groundedNo);
+		else {
+			//std::cout << 
+		}
 	}
 
 	size_t reachedPrimitiveTasksCount = 0;

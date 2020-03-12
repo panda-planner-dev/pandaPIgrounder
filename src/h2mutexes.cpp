@@ -107,7 +107,7 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 
 		// goal
 		if (goalValue != -1)
-			goals.push_back(std::make_pair(&internal_variables.back(),0));
+			goals.push_back(std::make_pair(&internal_variables.back(),goalValue));
 
 		// add variable to back translation table		
 		valPos = 0;
@@ -160,6 +160,7 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 		}
 		actionName += "]";
 
+
 		// TODO consider conditional effects, if we can parse and ground them
 	
 		// determine the prevail and changing conditions
@@ -200,12 +201,16 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 
 		op.cost = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
 		operators.push_back(op);
+		DEBUG(std::cout << "Action " << actionName << ": prevail " << op.prevail.size() << " prepost " << op.pre_post.size() << std::endl);
 	}
 
 	///////////////////////////////////////////////////////// conversion done
 
 	// compute h2 mutexes
 
+
+	if (!quietMode)
+		std::cout << "Entering H2 mutex computation with " << unprunedActions << " actions." << std::endl;
 	if (!quietMode) std::cout << "Building causal graph..." << std::endl;
 
 	// H2 inference produces output to std, so temporarily disable it if in quiet mode

@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include "sasinvariants.h"
 #include "debug.h"
+#include "output.h"
 
 
 
@@ -36,6 +37,7 @@ void add_fact_to_FAM_instance(const Domain & domain, std::vector<std::map<std::v
 			add_fact_to_FAM_instance(domain,factsPerFAMInstance,factID,g,gID,free_variable_assignment);
 		}
 		free_variable_assignment[vIDX] = -1;
+		return;
 	}
 
 	// if we got here, we have assigned all free variables.
@@ -65,6 +67,15 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 	for (size_t factID = 0; factID < reachableFacts.size(); factID++) if (!prunedFacts[factID]){
 		const Fact & f = reachableFacts[factID];
+
+		
+		//std::cout << factID << " " << domain.predicates[f.predicateNo].name << "[";
+		//for (unsigned int i = 0; i < f.arguments.size(); i++){
+		//	if (i) std::cout << ",";
+		//	std::cout << domain.constants[f.arguments[i]];
+		//}
+		//std::cout << "]" << std::endl;
+
 
 		// go through all FAM groups and look whether we can be part of them
 		for (size_t gID = 0; gID < groups.size(); gID++){
@@ -120,19 +131,28 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 			const std::vector<int> & free_variable_assignment = keyValue.first;
 			const std::unordered_set<int> & facts = keyValue.second;
 
-			DEBUG(
+			//DEBUG(
 				std::cout << "Mutex Group " << gID << " Free vars:";
 				for (size_t v = 0; v < groups[gID].free_vars.size(); v++){
-					std::cout << " var" << groups[gID].free_vars[v] << " = " <<  domain.constants[free_variable_assignment[v]];
+					std::cout << " v=" << v << " fva[v]=" << free_variable_assignment[v];
+					std::cout.flush();
+					std::cout << " var" << groups[gID].free_vars[v];
+					std::cout << " = " <<  domain.constants[free_variable_assignment[v]];
 				}
 				std::cout << " -> " << keyValue.second.size() << std::endl;
-				);
+			//	);
 
+			if (mutex_groups_set.count(facts)){
+				DEBUG(std::cout << "Duplicate FAM mutex:";
+						for (int m : facts) std::cout << " " << m;
+						std::cout << std::endl);
 
-			DEBUG(std::cout << "Insert (FAM):";
-					for (int m : facts) std::cout << " " << m;
-					std::cout << std::endl);
-			mutex_groups_set.insert(facts);
+			} else {
+				DEBUG(std::cout << "Insert (FAM):";
+						for (int m : facts) std::cout << " " << m;
+						std::cout << std::endl);
+				mutex_groups_set.insert(facts);
+			}
 		}
 	}
 
@@ -280,9 +300,11 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 				mutex_required_count[m]++;
 
 		for (const auto & entry : mutex_required_count){
-			DEBUG(std::cout << "Action " << aID << "'s preconditions refer mutex " << entry.first << " " << entry.second << " times " << std::endl);
+			//DEBUG(std::cout << "Action " << aID << "'s preconditions refer mutex " << entry.first << " " << entry.second << " times " << std::endl);
 			if (entry.second == 1) continue; // ok
-			DEBUG(std::cout << "Pruning action " << aID << " as its preconditions violate a mutex" << std::endl);
+			DEBUG(std::cout << "Pruning action " << aID << "[";
+				write_task_name(std::cout, domain, reachableTasks[aID]);
+				std::cout << "] as its preconditions violate a mutex " << entry.first << " @ " << entry.second << std::endl);
 			prunedTasks[aID] = true;
 		}
 

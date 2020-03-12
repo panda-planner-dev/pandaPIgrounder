@@ -58,7 +58,6 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
 			removeUselessPredicates, false, false, quietMode);	
 
-
 		// H2 mutexes need the maximum amount of information possible, so we have to compute SAS groups at this point
 
 		// prepare data structures that are needed for efficient access
@@ -137,7 +136,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			if (initiallyReachableTasks[i].taskNo >= domain.nPrimitiveTasks)
 				abstractTasks ++;
 			else {
-				if (domain.tasks[initiallyReachableTasks[i].taskNo].name.rfind("method_precondition_",0) == 0)
+				if (domain.tasks[initiallyReachableTasks[i].taskNo].name.rfind("__method_precondition_",0) == 0)
 					methodPreconditionPrimitiveTasks++;
 				else
 					primitiveTasks++;

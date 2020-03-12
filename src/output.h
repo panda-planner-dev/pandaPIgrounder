@@ -41,4 +41,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		int methods,
 		bool quietMode	
 		);
+
+void write_task_name(std::ostream & pout, const Domain & domain, GroundedTask & task);
+
 #endif

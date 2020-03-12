@@ -44,7 +44,7 @@ void write_task_name(std::ostream & pout, const Domain & domain, GroundedTask & 
 		if (i) pout << ",";
 		pout << domain.constants[task.arguments[i]];
 	}
-	pout << "]" << std::endl;
+	pout << "]";
 }
 
 
@@ -668,6 +668,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		for (const std::vector<int> cover_assignment : instances){
 			pout << 0 << " ";
 			write_task_name(pout,domain,task);
+			pout << std::endl;
 		}
 	}
 
@@ -680,6 +681,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 		pout << 1 << " ";
 		write_task_name(pout,domain,task);
+		pout << std::endl;
 	}
 	
 	// artificial tasks
@@ -688,6 +690,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		pout << 1 << " __sas";
 		task.outputNo = -(ac++) - 2;
 		write_task_name(pout,domain,task);
+		pout << std::endl;
 		number_of_additional_methods += task.outputNosForCover.size();
 	}
 
@@ -742,6 +745,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		for (const int & prim : task.outputNosForCover){
 			pout << "sas_method_";
 			write_task_name(pout,domain,task);
+			pout << std::endl;
 			pout << at << std::endl;
 			pout << prim << " " << -1 << std::endl;
 			pout << -1 << std::endl;
