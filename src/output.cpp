@@ -117,7 +117,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		if (other_values.size() != 1 && !compileNegativeSASVariables) continue;
 		
 		// might need a none-of-those
-		if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-1);
+		if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-og_large-1);
 		cover_pruned[other_fact] = other_values;
 		pruned_sas_groups.insert(og_small);
 
@@ -199,7 +199,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	pout << fn << std::endl;
 	for (int factID : orderedFacts){
 		// artificial member for SAS groups
-		if (factID == -1){
+		if (factID < 0){
 			pout << "none-of-them" << std::endl;
 			continue;
 		}
@@ -241,7 +241,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	
 	// these are the facts, that do not belong to a SAS+ group, we have to output them on their own.
 	for (int factID : orderedFacts){
-		if (factID == -1) continue;
+		if (factID < 0) continue;
 		Fact & fact = reachableFacts[factID];
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
@@ -269,8 +269,12 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			if (prunedFacts[elem]) continue;
 			if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 			if (cover_pruned.count(elem))
-				for (const int & other : cover_pruned[elem])
-					mutex.insert(reachableFacts[other].outputNo);
+				for (const int & other : cover_pruned[elem]){
+					if (other < 0)
+						mutex.insert(none_of_them_per_sas_group[-other-1]);
+					else
+						mutex.insert(reachableFacts[other].outputNo);
+				}
 			else
 				mutex.insert(reachableFacts[elem].outputNo);
 		}
@@ -331,8 +335,12 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				out_inv.insert(-reachableFacts[elem].outputNo - 1);
 			else {
 				if (cover_pruned.count(elem))
-					for (const int & other : cover_pruned[elem])
-						out_inv.insert(reachableFacts[other].outputNo);
+					for (const int & other : cover_pruned[elem]){
+						if (other < 0)
+							out_inv.insert(none_of_them_per_sas_group[-other-1]);
+						else
+							out_inv.insert(reachableFacts[other].outputNo);
+					}
 				else 
 					out_inv.insert(reachableFacts[elem].outputNo);
 			}
