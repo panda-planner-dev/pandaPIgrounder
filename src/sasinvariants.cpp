@@ -128,10 +128,10 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 	std::unordered_set<std::unordered_set<int>> mutex_groups_set;
 	for (size_t gID = 0; gID < factsPerFAMInstance.size(); gID++){
 		for (auto & keyValue : factsPerFAMInstance[gID]){
-			const std::vector<int> & free_variable_assignment = keyValue.first;
 			const std::unordered_set<int> & facts = keyValue.second;
 
 			DEBUG(
+				const std::vector<int> & free_variable_assignment = keyValue.first;
 				std::cout << "Mutex Group " << gID << " Free vars:";
 				for (size_t v = 0; v < groups[gID].free_vars.size(); v++){
 					std::cout << " v=" << v << " fva[v]=" << free_variable_assignment[v];
@@ -189,7 +189,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 			DEBUG(std::cout << "Insert (PRED):";
 					for (int m : mutex) std::cout << " " << m;
 					std::cout << std::endl);
-			mutex_groups_set.insert(mutex);
+			//mutex_groups_set.insert(mutex);
 		}
 	}
 
@@ -267,6 +267,7 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 		std::unordered_set<int> & initFacts,
 		std::vector<std::unordered_set<int>> & sas_mutexes,
 		std::vector<std::unordered_set<int>> & other_mutexes,
+		bool & changedPruned,
 		bool quietMode){
 	// identify those mutexes, which need the element "none-of-them"
 	std::vector<bool> mutexes_needing_none_of_them (sas_mutexes.size());
@@ -306,6 +307,7 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 				write_task_name(std::cout, domain, reachableTasks[aID]);
 				std::cout << "] as its preconditions violate a mutex " << entry.first << " @ " << entry.second << std::endl);
 			prunedTasks[aID] = true;
+			changedPruned = true;
 		}
 
 		if (prunedTasks[aID]) continue;

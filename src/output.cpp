@@ -208,6 +208,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		if (prunedFacts[fact.groundedNo]) continue;
 		if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
 
+		DEBUG(std::cout << fact.outputNo << " ");
+
 		pout << domain.predicates[fact.predicateNo].name << "[";
 		for (unsigned int i = 0; i < fact.arguments.size(); i++){
 			if (i) pout << ",";
@@ -424,6 +426,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		if (domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
 		
+		DEBUG( std::cout << "Processing task " << domain.tasks[task.taskNo].name << " for output" << std::endl);
+		
 		int costs = domain.tasks[task.taskNo].computeGroundCost(task,init_functions_map);
 		
 		std::map<int,int> cover_pruned_precs;
@@ -512,11 +516,15 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 					}
 
 			
-			if (isAdd)
+			if (isAdd){
 				add_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
-			else
+				DEBUG(std::cout << "Found conditional add effect on ce-task " << ce_task.groundedNo << " internal ID " << effectID << " output as " << reachableFacts[effectID].outputNo << std::endl);
+			} else {
 				del_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
+				DEBUG(std::cout << "Found conditional del effect on ce-task " << ce_task.groundedNo << " internal ID " << effectID << " output as " << reachableFacts[effectID].outputNo << std::endl);
+			}
 		}
+		
 		
 		if (sas_mode == SAS_ALL){
 			for (const auto & add : add_out){
@@ -555,6 +563,14 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		for (const std::vector<int> & cover_assignment : instances){
 			///////////////////////////// ACTUAL OUTPUT
 			task.outputNosForCover.push_back(ac++);
+			DEBUG(write_task_name(std::cout,domain,task); std::cout << std::endl;
+			// output raw for debugging
+			for (int p : task.groundedPreconditions) std::cout << p << " "; std::cout << std::endl;
+			for (int p : task.groundedAddEffects) std::cout << p << " "; std::cout << std::endl;
+			for (int p : task.groundedDelEffects) std::cout << p << " "; std::cout << std::endl);
+
+
+			// ACTUAL
 			pout << costs << std::endl;
 			// preconditions
 			for (const int & prec : prec_out)
@@ -572,7 +588,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 			// output add effects
 			for (const auto & add : add_out){
-				pout << add.first.size();
+				pout << add.first.size() << " ";
 				for (const int & p : add.first) 
 					if (p >= 0)
 						pout << p << " ";
@@ -583,13 +599,13 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 						else
 							pout << none_of_them_per_sas_group[-alternate-1] << " ";
 					}
-				pout << " " << add.second << "  ";
+				pout << add.second << "  ";
 			}
 			pout << -1 << std::endl;
 
 			// output del effects
 			for (const auto & del : del_out){
-				pout << del.first.size();
+				pout << del.first.size() << " " ;
 				for (const int & p : del.first)
 					if (p >= 0)
 						pout << p << " ";
@@ -600,12 +616,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 						else
 							pout << none_of_them_per_sas_group[-alternate-1] << " ";
 					}
-				pout << " " << del.second << "  ";
+				pout << del.second << "  ";
 			}
 			pout << -1 << std::endl;
 		}
 	}
-
 
 	pout << std::endl << ";; initial state" << std::endl;
 	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
@@ -722,8 +737,9 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
 
 			int outNo = reachableTasks[method.groundedPreconditions[subtaskIndex]].outputNo;
-			if (outNo < 0) outNo = -outNo - 2; // marker task
+			if (outNo < 0) outNo = -outNo - 2; // marker task, and keeps -1 invariant ...
 
+			assert(outNo >= 0);
 			pout << outNo << " ";
 		}
 		pout << "-1" << std::endl;

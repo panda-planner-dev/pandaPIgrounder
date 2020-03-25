@@ -72,7 +72,8 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 		for (int elem : sas_groups[sas_g]){
 			Fact & f = reachableFacts[elem];
 			assert(!prunedFacts[f.groundedNo]);
-			assert(!domain.predicates[f.predicateNo].guard_for_conditional_effect);
+			// for H2 mutexes it is ok that a member of the mutex group is a guard predicate
+			//assert(!domain.predicates[f.predicateNo].guard_for_conditional_effect);
 			// assemble the name of this fact
 			std::string factName = domain.predicates[f.predicateNo].name + "[";
 			for (unsigned int i = 0; i < f.arguments.size(); i++){

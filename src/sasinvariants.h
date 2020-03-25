@@ -50,6 +50,7 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 		std::unordered_set<int> & initFacts,
 		std::vector<std::unordered_set<int>> & sas_mutexes,
 		std::vector<std::unordered_set<int>> & other_mutexes,
+		bool & changedPruned,
 		bool quietMode);
 
 

@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 
 #include "util.h"
@@ -31,14 +32,38 @@ void sortSubtasksOfMethodsTopologically(const Domain & domain,
 
 void applyEffectPriority(const Domain & domain,
 		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedFacts,
 		std::vector<GroundedTask> & inputTasksGroundedPg,
 		std::vector<Fact> & inputFactsGroundedPg){
+
+	// gather conditional effect actions
+	std::map<int,GroundedTask> ce_effects;
+	for (GroundedTask & task : inputTasksGroundedPg){
+		if (!domain.tasks[task.taskNo].isCompiledConditionalEffect) continue;
+		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
+
+		int guardID = -1;
+		for (int & prec : task.groundedPreconditions)
+			if (domain.predicates[inputFactsGroundedPg[prec].predicateNo].guard_for_conditional_effect){
+				guardID = prec;
+				break;
+			}
+
+		if (ce_effects.count(guardID)){
+			std::cerr << "Multiple assigned conditional effect groundings. I thought this cannot happen ..." << std::endl;
+			exit(-1);
+		}
+
+		ce_effects[guardID] = task;
+	}
+
+
+
 
 	for (GroundedTask & task : inputTasksGroundedPg){
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
 
-		std::set<int> addSet;
-		for (int & add : task.groundedAddEffects) addSet.insert(add);
+		std::set<int> addSet; for (int & add : task.groundedAddEffects) addSet.insert(add);
 
 		// look for del effects that are also add effects
 		std::set<int> addToRemove;
@@ -69,6 +94,147 @@ void applyEffectPriority(const Domain & domain,
 			task.groundedDelEffects = newDel;
 		}
 
+		addSet.clear(); for (int & add : task.groundedAddEffects) addSet.insert(add);
+		std::set<int> delSet; for (int & del : task.groundedDelEffects) delSet.insert(del);
+
+
+		// handle conditional effects correctly
+
+		// first find all guard effects of this action
+		std::vector<int> ce_guards;
+		for (int & add : task.groundedAddEffects)
+			if (domain.predicates[inputFactsGroundedPg[add].predicateNo].guard_for_conditional_effect)
+				ce_guards.push_back(add);
+
+
+
+		std::map<int,std::pair<std::vector<int>,std::vector<int>>> ces; // per effect ID (ground number), a list of adding and a list of deleting
+
+		// compute conditional effects
+		for (int guard : ce_guards){
+			if (!ce_effects.count(guard)) continue; // CE condition might be unreachable
+			GroundedTask ce_task = ce_effects[guard];
+			
+			// these cannot have effect precedence, as they contain only a single effect, i.e. it is fine to handle them while applying add precedence
+			int effectID; bool isAdd;
+			if (ce_task.groundedAddEffects.size()){
+				assert(ce_task.groundedDelEffects.size() == 0);
+				assert(ce_task.groundedAddEffects.size() == 1);
+				effectID = ce_task.groundedAddEffects[0];
+				isAdd = true;
+			} else {
+				assert(ce_task.groundedDelEffects.size() == 1);
+				assert(ce_task.groundedAddEffects.size() == 0);
+				effectID = ce_task.groundedDelEffects[0];
+				isAdd = false;
+			}
+
+			if (prunedFacts[effectID]) continue; // this effect is not necessary
+
+			if (isAdd)
+				ces[effectID].first.push_back(ce_task.groundedNo);
+			else
+				ces[effectID].second.push_back(ce_task.groundedNo);
+		}
+		
+		DEBUG(std::cout << "Prioritizing conditional effects of: " << domain.tasks[task.taskNo].name << std::endl);
+
+		// look at all possible effects
+		for (auto [factID,adddel] : ces){
+			auto adds = adddel.first;
+			auto dels = adddel.second;
+			
+			DEBUG(std::cout << "Effect: " << factID << " " << domain.predicates[inputFactsGroundedPg[factID].predicateNo].name << std::endl);
+
+			// precedence with fixed effect
+			if (addSet.count(factID)){
+				// add effects are useless
+				for (int add : adds) prunedTasks[add] = true;
+
+				// add may precedence over del
+				
+				// for edge case, check whether this is an add effect
+				Fact & fact = inputFactsGroundedPg[factID];
+				if (domain.predicates[fact.predicateNo].name[0] != '-'){
+					for (int del : dels) prunedTasks[del] = true;
+				} else {
+					// for this, the deletes would take precedence, but I cant write this to the output
+					for (int del : dels){
+						if (prunedTasks[del]) continue;
+						std::cerr << "Unpruned conditional delete effect on fact " << factID << " with is negative, but also necessarily added." << std::endl;
+						std::cerr << "This is not supported. You need to rewrite your domain s.t. this does not occur or turn off the -k flag of the parser." << std::endl;
+						exit(-1);
+					}
+				}
+			}
+
+			// precedence with fixed effect
+			if (delSet.count(factID)){
+				// del effects are useless
+				for (int del : dels) prunedTasks[del] = true;
+
+				// for edge case, check whether this is an add effect
+				Fact & fact = inputFactsGroundedPg[factID];
+				if (domain.predicates[fact.predicateNo].name[0] != '-'){
+					// for this, the adds would take precedence, but I cant write this to the output
+					for (int add : adds){
+						if (prunedTasks[add]) continue;
+						std::cerr << "Unpruned conditional add effect on fact " << factID << " with is positive, but also necessarily deleted." << std::endl;
+						std::cerr << "This is not supported. You need to rewrite your domain s.t. this does not occur or turn off the -k flag of the parser." << std::endl;
+						exit(-1);
+					}
+				} else {
+					for (int add : adds) prunedTasks[add] = true;
+				}
+				
+			}
+
+
+			for (int add : adds) {
+				if (prunedTasks[add]) continue;
+				for (int del : dels){
+					if (prunedTasks[del]) continue;
+
+					DEBUG(std::cout << "ADD: " << add << " DEL: " << del << std::endl);
+					
+					// check whether they have the same precondition
+					// get cleared list of preconditions of the add
+					std::vector<int> addP;
+			   		for (const int & a : inputTasksGroundedPg[add].groundedPreconditions)
+						if (!domain.predicates[inputFactsGroundedPg[a].predicateNo].guard_for_conditional_effect)
+							addP.push_back(a); // don't add the guard predicate
+					sort(addP.begin(), addP.end());
+					// and the delete	
+					std::vector<int> delP;
+					for (const int & d : inputTasksGroundedPg[del].groundedPreconditions)
+						if (!domain.predicates[inputFactsGroundedPg[d].predicateNo].guard_for_conditional_effect)
+							delP.push_back(d); // don't add the guard predicate
+					sort(delP.begin(), delP.end());
+					
+					
+					DEBUG(std::cout << "ADD prec:"; for (int x : addP) std::cout << " " << x; std::cout << std::endl);
+					DEBUG(std::cout << "DEL prec:"; for (int x : delP) std::cout << " " << x; std::cout << std::endl);
+
+					if (addP.size() != delP.size()) continue;
+					bool same = true;
+					for (size_t i = 0; i < addP.size(); i++) if (addP[i] != delP[i]) {same = false; break;}
+					if (!same) continue;
+
+
+					// they are the same, so one must be removed
+		
+					// edge case, if this is a negated original predicate, then the del effect takes precedence
+					Fact & fact = inputFactsGroundedPg[factID];
+					if (domain.predicates[fact.predicateNo].name[0] != '-'){
+						prunedTasks[del] = true;
+						DEBUG(std::cout << "Pruning del action " << del << std::endl);
+					} else {
+						prunedTasks[add] = true;
+						DEBUG(std::cout << "Pruning add action " << add << std::endl);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -477,7 +643,7 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		){
 	// sort the subtasks of each method topologically s.t. 
 	sortSubtasksOfMethodsTopologically(domain, prunedTasks, prunedMethods, reachableMethods);
-	applyEffectPriority(domain, prunedTasks, reachableTasks, reachableFacts);
+	applyEffectPriority(domain, prunedTasks, prunedFacts, reachableTasks, reachableFacts);
 		
 	
 	if (!quietMode) std::cerr << "Simplifying instance." << std::endl;

@@ -85,11 +85,13 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 				quietMode);
 		
 		
+		bool changedPruned = false;
 		std::vector<bool> sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
 				initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
 				prunedTasks, prunedFacts, prunedMethods,
 				initFacts,
 				sas_groups,further_mutex_groups,
+				changedPruned,
 				quietMode);
 
 
@@ -102,7 +104,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		h2_mutexes = _h2_mutexes;
 		h2_invariants = _h2_invariants;
 
-		if (has_pruned){
+		if (has_pruned || changedPruned){
 			// if we have pruned actions, rerun the PGP and HTN stuff
 			run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 				prunedFacts, prunedTasks, prunedMethods,
@@ -181,12 +183,20 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 					outputSASVariablesOnly,
 					quietMode);
 
+			bool changedPruned = false;
 			std::vector<bool> sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
 					initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
 					prunedTasks, prunedFacts, prunedMethods,
 					initFacts,
 					sas_groups,further_mutex_groups,
+					changedPruned,
 					quietMode);
+
+			if (changedPruned){
+				run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
+					prunedFacts, prunedTasks, prunedMethods,
+					quietMode);
+			}
 			
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, 

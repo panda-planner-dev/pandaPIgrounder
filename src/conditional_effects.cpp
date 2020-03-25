@@ -1,4 +1,5 @@
 #include "conditional_effects.h"
+#include "debug.h"
 #include <iostream>
 
 PredicateWithArguments convertToNewVariables(std::map<int,int> & variablesOfMainToCE, PredicateWithArguments old){
@@ -66,8 +67,10 @@ void expand_conditional_effects_into_artificial_tasks(Domain & domain, Problem &
 			Predicate guard;
 			guard.name = ceTask.name + "_guard#";
 			guard.guard_for_conditional_effect = true;
-			for (size_t i = 0; i < ceVarsToMain.size(); i++)
+			for (size_t i = 0; i < ceVarsToMain.size(); i++){
+				DEBUG(std::cout << task.name << " " << i << " " << ceVarsToMain[i] << " " << task.variableSorts.size() << " " << std::endl);
 				guard.argumentSorts.push_back(task.variableSorts[ceVarsToMain[i]]);
+			}
 
 			// get id of the guard and add it to the predicates
 			int guard_predicate_number = domain.predicates.size();
