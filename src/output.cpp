@@ -734,6 +734,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		// output subtasks in their topological ordering
 		for (size_t outputIndex = 0; outputIndex < method.preconditionOrdering.size(); outputIndex++){
 			int subtaskIndex = method.preconditionOrdering[outputIndex];
+			assert(subtaskIndex >= 0);
+			assert(subtaskIndex < method.groundedPreconditions.size());
 			subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
 
 			int outNo = reachableTasks[method.groundedPreconditions[subtaskIndex]].outputNo;

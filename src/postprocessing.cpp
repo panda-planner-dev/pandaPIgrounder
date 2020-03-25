@@ -559,23 +559,24 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 		if (task.taskNo >= domain.nPrimitiveTasks || prunedTasks[task.groundedNo]) continue;
 		//std::cout << "Is prim " << domain.tasks[task.taskNo].name << std::endl;
 		if (domain.tasks[task.taskNo].name.rfind("__method_precondition_",0) != 0) continue;
-		bool unprunedPrecondition = false;
+		bool unprunedCondition = false;
 		//std::cout << "checking " << domain.tasks[task.taskNo].name << " ... ";
-		for (int & pre : task.groundedPreconditions)
-			if (!prunedFacts[pre]) { unprunedPrecondition = true; break; }
+		for (int & pre : task.groundedPreconditions) if (!prunedFacts[pre]) { unprunedCondition  = true; break; }
+		for (int & add : task.groundedAddEffects)    if (!prunedFacts[add]) { unprunedCondition  = true; break; }
+		for (int & del : task.groundedDelEffects)    if (!prunedFacts[del]) { unprunedCondition  = true; break; }
 		//std::cout << unprunedPrecondition << std::endl;
-		if (unprunedPrecondition) continue;
-	
+		if (unprunedCondition) continue;
+
 		// this task is now pruned
 		prunedTasks[task.groundedNo] = true;
 
 		// so remove it from all methods this task is contained in	
 		for (const int & method : taskToMethodsTheyAreContainedIn[task.groundedNo]){
 			if (prunedMethods[method]) continue;
-			DEBUG( std::cerr << "removing task " << task.groundedNo << " from method " << method << std::endl);
-			// copy the lifted method
 			GroundedMethod & groundedMethod = inputMethodsGroundedTdg[method];
+			// copy the lifted method
 			DecompositionMethod liftedMethod = domain.decompositionMethods[groundedMethod.methodNo];
+			DEBUG( std::cerr << "removing task " << task.groundedNo << " from method " << method << " " << liftedMethod.name << std::endl);
 			
 			for (size_t subTaskIdx = 0; subTaskIdx < liftedMethod.subtasks.size(); subTaskIdx++){
 				if (groundedMethod.groundedPreconditions[subTaskIdx] != task.groundedNo) continue; 
@@ -615,7 +616,7 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 				}
 				groundedMethod.preconditionOrdering = newOrder;
 
-	
+				//subTaskIdx--;
 			}
 
 			// write back the new method, i.e. add the lifted version to the domain
