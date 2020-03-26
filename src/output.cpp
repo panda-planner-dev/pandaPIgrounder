@@ -195,6 +195,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 
 
+
 	pout << ";; #state features" << std::endl;
 	pout << fn << std::endl;
 	for (int factID : orderedFacts){
@@ -310,7 +311,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		pout << -1 << std::endl;
 	}
 	pout << std::endl;
-
 
 
 
@@ -551,6 +551,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	int ac = 0;
 	int number_of_additional_abstracts = 0;
 
+	int number_of_output_primitives = 0;
+	int number_of_output_artificial_primitives = 0;
 	for (const auto & [tID, costs, prec_out, add_out, del_out, instances] : output_actions){
 		GroundedTask & task = reachableTasks[tID];
 		if (instances.size() == 1)
@@ -563,6 +565,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		for (const std::vector<int> & cover_assignment : instances){
 			///////////////////////////// ACTUAL OUTPUT
 			task.outputNosForCover.push_back(ac++);
+			if (domain.tasks[task.taskNo].name[0] == '_')
+				number_of_output_artificial_primitives++;
+			else
+				number_of_output_primitives++;
+			
 			DEBUG(write_task_name(std::cout,domain,task); std::cout << std::endl;
 			// output raw for debugging
 			for (int p : task.groundedPreconditions) std::cout << p << " "; std::cout << std::endl;
@@ -687,6 +694,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 	}
 
+
 	int initialAbstract = -1;
 	for (GroundedTask & task : reachableTasks){
 		if (prunedTasks[task.groundedNo]) continue;
@@ -698,6 +706,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		write_task_name(pout,domain,task);
 		pout << std::endl;
 	}
+	int number_of_output_abstracts = ac - number_of_output_primitives;
+
 	
 	// artificial tasks
 	int number_of_additional_methods = 0;
@@ -714,8 +724,10 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 	pout << std::endl << ";; methods" << std::endl;
 	pout << methods + number_of_additional_methods << std::endl;
+	int number_of_output_methods = 0;
 	for (auto & method : reachableMethods){
 		if (prunedMethods[method.groundedNo]) continue;
+		number_of_output_methods++;
 		// output their name
 		pout << domain.decompositionMethods[method.methodNo].name << std::endl;
 		/* method names may not contained variables for verification
@@ -761,6 +773,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		int at = -task.outputNo -2;
 	
 		for (const int & prim : task.outputNosForCover){
+			number_of_output_methods++;
 			pout << "sas_method_";
 			write_task_name(pout,domain,task);
 			pout << std::endl;
@@ -769,6 +782,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			pout << -1 << std::endl;
 		}
 	}
+	
+	if (!quietMode) std::cout << "Final Statistics: F " << fn << " S " << sas_groups.size() << " M " << out_mutexes.size() << " I " << out_invariants.size() << " P " << number_of_output_primitives << " S " << number_of_output_artificial_primitives << " A " << number_of_output_abstracts << " M " << number_of_output_methods << std::endl;
 
 	// exiting this way is faster as data structures will not be cleared ... who needs this anyway
 	if (!quietMode) std::cerr << "Exiting." << std::endl;
