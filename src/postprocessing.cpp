@@ -652,13 +652,16 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		if (!quietMode) std::cerr << "Removing useless facts/literals" << std::endl;
 		removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, reachableTasks, reachableFacts);
 	}
-	if (expandChoicelessAbstractTasks){
-		if (!quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
-		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
-	}
+
 	if (pruneEmptyMethodPreconditions){
 		if (!quietMode) std::cerr << "Removing method precondition actions whose precondition is empty" << std::endl;
 		removeEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,reachableTasks,reachableMethods);
+	}
+
+	// this MUST be the last step. Else the information stored inside the method names for reconstruction becomes invalid
+	if (expandChoicelessAbstractTasks){
+		if (!quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
+		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
 	}
 	
 }
