@@ -21,9 +21,14 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 	// [i][j] = true means that j is a subset of i
 	std::vector<std::vector<bool>> subset (domain.sorts.size());
 	
-	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++)
-		for (size_t s2 = 0; s2 < domain.sorts.size(); s2++)
-			if (s1 != s2){
+	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
+		if (!domain.sorts[s1].members.size()) {
+			for (size_t s2 = 0; s2 < domain.sorts.size(); s2++) subset[s1].push_back(false);
+			continue;
+		}
+
+		for (size_t s2 = 0; s2 < domain.sorts.size(); s2++){
+			if (s1 != s2 && domain.sorts[s2].members.size()){
 				if (std::includes(domain.sorts[s1].members.begin(), domain.sorts[s1].members.end(),
 							domain.sorts[s2].members.begin(), domain.sorts[s2].members.end())){
 					// here we know that s2 is a subset of s1
@@ -31,6 +36,8 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 				} else
 					subset[s1].push_back(false);
 			} else subset[s1].push_back(false);
+		}
+	}
 
 	// transitive reduction
 	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++)
@@ -51,6 +58,24 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 			}
 		}
 	});
+
+	// output as a DOT file
+	DEBUG(
+	 std::cout << "digraph sortgraph{" << std::endl;
+	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
+		for (size_t s2 = 0; s2 < domain.sorts.size(); s2++){
+			if (subset[s1][s2]){
+				std::cout << "\t";
+				std::cout << domain.sorts[s2].name;
+				std::cout << " -> ";
+				std::cout << domain.sorts[s1].name;
+				std::cout << std::endl;
+			
+			}
+		}
+	}
+	std::cout << "}" << std::endl;
+	);
 
 	// who is whose direct subset
 	std::vector<std::vector<int>> directsubset (domain.sorts.size());
