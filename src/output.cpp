@@ -115,11 +115,12 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		for (const int & val : sas_groups[og_large]) if (val != fact_in_large_group)
 			other_values.push_back(val);
 		
+		if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-og_large-1);
+	
 		// always use implications, where there is just one other option
 		if (other_values.size() != 1 && !compileNegativeSASVariables) continue;
 		
 		// might need a none-of-those
-		if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-og_large-1);
 		cover_pruned[other_fact] = other_values;
 		pruned_sas_groups.insert(og_small);
 
