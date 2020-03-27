@@ -286,6 +286,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				mutex.insert(reachableFacts[elem].outputNo);
 		}
 
+		if (mutex.size() < 2) continue; // mutexes with 0 or 1 element are irrelevant. They may appear due to pruning.
+
 		bool hasSTRIPS = false;
 		int sas_g_so_far = -1;
 		bool multiple_sas_g = false;
@@ -303,6 +305,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			sas_g_so_far = sas_g;
 		}
 
+		// if this is a subset of a SAS group, then just not output it. It is redundant.
 		if (!hasSTRIPS && !multiple_sas_g && mutex.size() == sas_groups[sas_g_so_far].size() + sas_variables_needing_none_of_them[sas_g_so_far]) continue;
 
 		out_mutexes.push_back(mutex);
@@ -316,6 +319,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	pout << std::endl;
 
+	exit(-1);
 
 
 	// further known mutex groups

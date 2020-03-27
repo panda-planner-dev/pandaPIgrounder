@@ -230,6 +230,8 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 	for (auto & covered_facts : mutex_groups_by_size){
 		DEBUG(std::cout << "Consider mutex group of size " << covered_facts.size());
 
+		if (covered_facts.size() < 2) continue; // not a real mutex group
+
 		// check how many of them are in the initial state
 		int number_in_init = 0;
 		for (int f : covered_facts)
