@@ -108,6 +108,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 		if (two_large) continue;
 		if (fact_in_large_group == -1) continue;
+		if (cover_pruned.count(other_fact)) continue; // if the other fact is already pruned don't
+		if (prunedFacts[other_fact]) continue;
 
 		std::vector<int> other_values;
 		for (const int & val : sas_groups[og_large]) if (val != fact_in_large_group)
@@ -161,6 +163,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		int from = fn;
 		for (int elem : sas_groups[sas_g]){
 			Fact & f = reachableFacts[elem];
+			if (prunedFacts[f.groundedNo]) std::cout << "FAIL " << f.groundedNo << std::endl;
 			assert(!prunedFacts[f.groundedNo]);
 			assert(!domain.predicates[f.predicateNo].guard_for_conditional_effect);
 			f.outputNo = fn++; // assign actual index to fact
@@ -321,6 +324,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	for (const auto & inv : invariants){
 		// we can't handle negation over a cover pruned fact ..
 		bool negation_over_cover_pruned = false;
+		bool pruned_invariant_member = false;
 		std::unordered_set<int> out_inv;
 
 		for (const int & invElem : inv){
@@ -331,24 +335,30 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 			int elem = invElem;
 			if (invElem < 0) elem = -elem -1;
-			if (prunedFacts[elem]) continue;
+			if (prunedFacts[elem]) { pruned_invariant_member = true; break; }
 
-			if (invElem < 0)
+			if (invElem < 0) {
+				assert(!prunedFacts[elem]);
 				out_inv.insert(-reachableFacts[elem].outputNo - 1);
-			else {
+			} else {
 				if (cover_pruned.count(elem))
 					for (const int & other : cover_pruned[elem]){
-						if (other < 0)
+						if (other < 0) {
 							out_inv.insert(none_of_them_per_sas_group[-other-1]);
-						else
+						} else {
+							assert(!prunedFacts[other]);
 							out_inv.insert(reachableFacts[other].outputNo);
+						}
 					}
-				else 
+				else { 
+					assert(!prunedFacts[elem]);
 					out_inv.insert(reachableFacts[elem].outputNo);
+				}
 			}
 		}
 
 		if (negation_over_cover_pruned) continue;
+		if (pruned_invariant_member) continue; // pruning a member may make a disjunctive invariant false ...
 		bool isTrivial = false;
 		bool hasNegativeOrHasSTRIPS = false;
 		for (const int & elem : out_inv)
@@ -371,6 +381,9 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				sas_g_so_far = sas_g;
 			}
 
+			assert(sas_g_so_far >= 0);
+			assert(sas_g_so_far < sas_groups.size());
+			assert(sas_g_so_far < sas_variables_needing_none_of_them.size());
 			if (!multiple_sas_g && out_inv.size() == sas_groups[sas_g_so_far].size() + sas_variables_needing_none_of_them[sas_g_so_far]) continue;
 		}
 

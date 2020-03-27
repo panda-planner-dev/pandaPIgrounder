@@ -2,6 +2,7 @@
 #include <tuple>
 #include <iostream>
 #include <unordered_set>
+#include <cassert>
 #include "sasinvariants.h"
 #include "debug.h"
 #include "output.h"
@@ -195,16 +196,22 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 	// add known mutex groups
 	for (const auto & mgroup : known_mutex_groups){
-		if (mutex_groups_set.count(mgroup)){
+		// remove pruned facts
+		std::unordered_set<int> unpruned_facts;
+		for (int f : mgroup) if (!prunedFacts[f]) unpruned_facts.insert(f);
+		
+		if (unpruned_facts.size() < 2) continue; // mutex with less than two members is useless
+
+		if (mutex_groups_set.count(unpruned_facts)){
 			DEBUG(std::cout << "Duplicate H2-mutex:";
-					for (const int &x : mgroup) std::cout << " " << x;
+					for (const int &x : unpruned_facts) std::cout << " " << x;
 					std::cout << std::endl;	
 					);
 		} else {
 			DEBUG(std::cout << "Insert (H2):";
-					for (int m : mgroup) std::cout << " " << m;
+					for (int m : unpruned_facts) std::cout << " " << m;
 					std::cout << std::endl);
-			mutex_groups_set.insert(mgroup);
+			mutex_groups_set.insert(unpruned_facts);
 		}
 	}
 
@@ -233,7 +240,14 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 		// check whether all facts are not-covered
 		bool alreadyCovered = false;
-		for (int f : covered_facts) if (factCovered[f]) { alreadyCovered = true; break; }
+		for (int f : covered_facts) {
+			assert(!prunedFacts[f]);
+			if (factCovered[f]) {
+				alreadyCovered = true;
+				break; 
+			}
+		}
+
 		if (alreadyCovered) {
 			orthogonal_mutex_groups.push_back(covered_facts);
 			continue;
@@ -243,6 +257,13 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		for (int f : covered_facts) factCovered[f] = true;
 	}
 
+	for (auto mg : ground_mutex_groups)
+		for (int f : mg){
+			if (prunedFacts[f]) std::cout << "F " << f << std::endl;
+			assert(!prunedFacts[f]);
+		}
+
+
 	// add mutex groups for all uncovered variables, if we want to output everything as SAS+
 	if (outputSASVariablesOnly){
 		for (size_t f = 0; f < reachableFacts.size(); f++) if (!prunedFacts[f] && !factCovered[f]){
@@ -251,6 +272,13 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 			ground_mutex_groups.push_back(s);
 		}
 	}
+
+
+	for (auto mg : ground_mutex_groups)
+		for (int f : mg){
+			if (prunedFacts[f]) std::cout << "F " << f << std::endl;
+			assert(!prunedFacts[f]);
+		}
 
 	return std::make_pair(ground_mutex_groups,orthogonal_mutex_groups);
 }

@@ -40,7 +40,7 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 
 	/////////////////////////// FILL THE MODEL, partially coped from FD
 	// determine the number of unpruned facts
-	int unprunedFacts = 0;
+	//int unprunedFacts = 0;
 
 
 	// contains mapping from output IDs to internal IDS
@@ -220,7 +220,7 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 
     CausalGraph causal_graph(variables, operators, axioms, goals);
     const vector<Variable *> &ordering = causal_graph.get_variable_ordering();
-    bool cg_acyclic = causal_graph.is_acyclic();
+    //bool cg_acyclic = causal_graph.is_acyclic();
 
     // Remove unnecessary effects from operators and axioms, then remove
     // operators and axioms without effects.
@@ -296,7 +296,7 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
         strip_axioms(axioms);
 
         causal_graph.update();
-        cg_acyclic = causal_graph.is_acyclic();
+        //cg_acyclic = causal_graph.is_acyclic();
         strip_mutexes(mutexes);
         strip_operators(operators);
         strip_axioms(axioms);

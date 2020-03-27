@@ -8,6 +8,7 @@
 #include "h2mutexes.h"
 #include "FAMmutexes.h"
 #include "conditional_effects.h"
+#include "duplicate.h"
 
 
 
@@ -174,29 +175,42 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 				initFacts.insert(groundNo);
 			}
 
+			std::vector<bool> sas_variables_needing_none_of_them;
+			std::vector<std::unordered_set<int>> sas_groups;
+			std::vector<std::unordered_set<int>> further_mutex_groups;
 
+			while (true){
+				auto [_sas_groups,_further_mutex_groups] = compute_sas_groups(domain, problem, 
+						famGroups, h2_mutexes,
+						initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
+						initFacts, reachableFactsSet,
+						outputSASVariablesOnly,
+						quietMode);
 
-			auto [sas_groups,further_mutex_groups] = compute_sas_groups(domain, problem, 
-					famGroups, h2_mutexes,
-					initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
-					initFacts, reachableFactsSet,
-					outputSASVariablesOnly,
-					quietMode);
+				bool changedPruned = false;
+				std::vector<bool> _sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
+						initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
+						prunedTasks, prunedFacts, prunedMethods,
+						initFacts,
+						_sas_groups,_further_mutex_groups,
+						changedPruned,
+						quietMode);
 
-			bool changedPruned = false;
-			std::vector<bool> sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
-					initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
-					prunedTasks, prunedFacts, prunedMethods,
-					initFacts,
-					sas_groups,further_mutex_groups,
-					changedPruned,
-					quietMode);
-
-			if (changedPruned){
-				run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
-					prunedFacts, prunedTasks, prunedMethods,
-					quietMode);
+				if (changedPruned){
+					run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
+						prunedFacts, prunedTasks, prunedMethods,
+						quietMode);
+				} else {
+					sas_variables_needing_none_of_them = _sas_variables_needing_none_of_them;
+					sas_groups = _sas_groups;
+					further_mutex_groups = _further_mutex_groups;
+					break;
+				}
 			}
+
+			// duplicate elemination
+			unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
+
 			
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, 
