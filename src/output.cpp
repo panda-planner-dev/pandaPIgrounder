@@ -319,8 +319,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	pout << std::endl;
 
-	exit(-1);
-
 
 	// further known mutex groups
 	pout << ";; known invariants" << std::endl;

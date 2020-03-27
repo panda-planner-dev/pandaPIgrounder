@@ -729,7 +729,7 @@ void gpgMatchPrecondition (
 {
 	
 	if (preconditionIdx == 0){
-		if (!stateMap.hasPotentiallyConsistentExtension(actionNo, -1, assignedVariables, initiallyMatchedPrecondition)){
+		if (instance.pruneWithFutureSatisfiablility[actionNo] && !stateMap.hasPotentiallyConsistentExtension(actionNo, -1, assignedVariables, initiallyMatchedPrecondition)){
 			factFutureRejects[actionNo][initiallyMatchedPrecondition][initiallyMatchedPrecondition]++;
 			futureReject[actionNo]++;
 			return;
