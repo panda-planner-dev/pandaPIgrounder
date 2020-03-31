@@ -30,6 +30,7 @@
 #include "hierarchy-typing.h"
 #include "model.h"
 #include "planning-graph.h"
+#include "rss.h"
 
 #define TDG
 #define PRINT_METHODS
@@ -245,7 +246,7 @@ struct GpgPreprocessedDomain
 template <GpgInstance InstanceType>
 struct GpgStateMap
 {
-	using VariablesToFactListMap = std::map<std::vector<int>, std::vector<typename InstanceType::StateType>>;
+	using VariablesToFactListMap = std::map<std::vector<int>, std::vector<int>>;
 
 	/**
 	 * @brief The GPG instance.
@@ -261,6 +262,11 @@ struct GpgStateMap
 	 * @brief if true, future consistency will be cached separately per initially matched precondition
 	 */
 	bool futureCachingByPrecondition;
+
+	/**
+	 * save state elements in extra list
+	 */
+	std::vector<typename InstanceType::StateType> addedStateElements;
 
 	/**
 	 * @brief A list of Facts for each task, precondition, initially matched precondition (-1 if not eligible) and set of assigned variables.
@@ -299,6 +305,9 @@ struct GpgStateMap
 	 */
 	void insertState (const typename InstanceType::StateType & stateElement)
 	{
+		int stateElementIndex = addedStateElements.size();
+		addedStateElements.push_back(stateElement);
+		
 		for (const auto & [actionIdx, preconditionIdx] : preprocessedDomain.preconditionsByPredicate[stateElement.getHeadNo ()])
 		{
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
@@ -322,7 +331,7 @@ struct GpgStateMap
 					values.push_back (stateElement.arguments[argumentIdx]);
 				}
 			}
-			factMap[actionIdx][preconditionIdx][-1][values].push_back (stateElement);
+			factMap[actionIdx][preconditionIdx][-1][values].push_back (stateElementIndex );
 
 
 			// Eligible initially matched preconditions
@@ -338,7 +347,7 @@ struct GpgStateMap
 					}
 				}
 
-				factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][values].push_back (stateElement);
+				factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][values].push_back (stateElementIndex );
 			}
 
 			if (! instance.pruneWithFutureSatisfiablility[actionIdx]) continue;
@@ -382,13 +391,39 @@ next_action:;
 		}
 	}
 
+	void dropEligibleInitialPrecondition(){
+		std::vector<std::tuple<int,int,int>> eligibleSizes;
+		for (size_t a = 0; a < factMap.size(); a++){
+			for (size_t p = 0; p < factMap[a].size(); p++){
+				for (const auto & entry : factMap[a][p]){
+					if (entry.first == -1) continue;
+					if (!preprocessedDomain.eligibleInitialPreconditionsByAction[a].count(entry.first)) continue;
+
+					eligibleSizes.push_back(std::make_tuple(entry.second.size(), a, entry.first));
+				}
+			}
+		}
+
+		std::sort(eligibleSizes.begin(), eligibleSizes.end());
+		// prune 10 largest ones
+		for (int i = 0; i < 1 && eligibleSizes.size() - i - 1 >= 0; i++){
+			int size = std::get<0>(eligibleSizes[eligibleSizes.size() - i - 1]);
+			int a = std::get<1>(eligibleSizes[eligibleSizes.size() - i - 1]);
+			int pre = std::get<2>(eligibleSizes[eligibleSizes.size() - i - 1]);
+			const_cast<GpgPreprocessedDomain<InstanceType> &>(preprocessedDomain).eligibleInitialPreconditionsByAction[a].erase(pre);
+			
+			for (size_t p = 0; p < factMap[a].size(); p++)
+				factMap[a][p][pre].clear();
+		}
+	}
+
 	/**
 	 * @brief Returns all Facts for the given precondition in the given task that are compatible with the given variable assignment.
 	 *
 	 * For performance reasons, we want to return the Fact vector by reference. This means that we may have to instantiate a new
 	 * Fact vector if there is none for the given variable assignment. As a result, this method cannot be declared to be const.
 	 */
-	std::vector<typename InstanceType::StateType> & getFacts (size_t actionIdx, size_t preconditionIdx, const VariableAssignment & assignedVariables, int initiallyMatchedPreconditionIdx)
+	std::vector<typename InstanceType::StateType> getFacts (size_t actionIdx, size_t preconditionIdx, const VariableAssignment & assignedVariables, int initiallyMatchedPreconditionIdx)
 	{
 		const typename InstanceType::PreconditionType & precondition = instance.getAllActions ()[actionIdx].getAntecedents ()[preconditionIdx];
 
@@ -408,7 +443,14 @@ next_action:;
 			assignedVariableValues.push_back (assignedVariables[var]);
 		}
 
-		return factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][assignedVariableValues];
+		
+		// generate return set
+		std::vector<typename InstanceType::StateType> ret;
+		for (int & x : factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][assignedVariableValues])
+			ret.push_back(addedStateElements[x]);
+
+
+		return ret;
 	}
 
 	// precondition index may be -1 indicating that no precondition has been set yet, except for the initially matched one	
@@ -457,6 +499,11 @@ next_action:;
 
 		return true;
 	}
+
+
+	void dropConsistencyTable(){
+		consistency.clear();
+	}
 };
 
 /**
@@ -473,6 +520,7 @@ struct GpgPlanningGraph
 
 	const Problem & problem;
 	
+	bool allFutureSatisfiabilityDisabled = false;
 	std::vector<bool> pruneWithHierarchyTyping;
 	std::vector<bool> pruneWithFutureSatisfiablility;
 
@@ -511,6 +559,12 @@ struct GpgPlanningGraph
 	bool doesStateFulfillPrecondition (const ActionType & task, VariableAssignment * assignedVariables, const StateType & fact, size_t preconditionIdx) const
 	{
 		return task.doesFactFulfilPrecondition (assignedVariables, domain, fact, preconditionIdx);
+	}
+
+	void disableAllFutureSatisfiability(){
+		allFutureSatisfiabilityDisabled = true;
+		for (int a = 0; a < getNumberOfActions(); a++)
+			disablePruneWithFutureSatisfiablility(a);
 	}
 	
 	void disablePruneWithFutureSatisfiablility(size_t actionIdx){
@@ -876,13 +930,38 @@ void gpgMatchPrecondition (
 				   htReject[x] << " / " << htTests[x] << std::endl;
 */
 
-		if (htTests[actionNo] % 100 == 0 && htTests[actionNo]){
+		if (!instance.allFutureSatisfiabilityDisabled && totalFactTests % 1000*1000 == 0 && totalFactTests){
+			//std::cout << getPeakRSS() << " " << getCurrentRSS() << std::endl;
+			size_t currentRSS = getCurrentRSS();
+			if (currentRSS >= 3LL * 1024LL * 1024LL * 1024LL){
+				if (!quietMode) std::cout << "Memory usage exceeds 3 GiB, dropping prediction data structures." << std::endl;
+				if (!quietMode) std::cout << getPeakRSS() << " " << getCurrentRSS() << std::endl;
+			
+				// diable future precondition checking for all actions
+				const_cast<InstanceType &>(instance).disableAllFutureSatisfiability();
+				
+				// clear the data structure
+				stateMap.dropConsistencyTable();
+				//stateMap.dropEligibleInitialPrecondition();
+
+				if (!quietMode) std::cout << getPeakRSS() << " " << getCurrentRSS() << std::endl;
+				//exit(-1);
+			}
+		}
+		
+		if (futureTests[actionNo] % 100 == 0 && futureTests[actionNo]){
 			const auto & action = instance.getAllActions()[actionNo];
 			if (instance.pruneWithFutureSatisfiablility[actionNo] && futureReject[actionNo] < futureTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithFutureSatisfiablility(actionNo);
 				if (!quietMode)
 				   	std::cerr << " ---> Disabling potentially consistent extension checking for action:           " << actionNo << " (" << action.name << ")" << std::endl;
 			}
+		}
+
+
+
+		if (htTests[actionNo] % 100 == 0 && htTests[actionNo]){
+			const auto & action = instance.getAllActions()[actionNo];
 			if (instance.pruneWithHierarchyTyping[actionNo] && htReject[actionNo] < htTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithHierarchyTyping(actionNo);
 				if (!quietMode)
@@ -924,6 +1003,7 @@ struct GpgTdg
 
 	const std::vector<GroundedTask> & tasks;
 
+	bool allFutureSatisfiabilityDisabled = false;
 	std::vector<bool> pruneWithHierarchyTyping;
 	std::vector<bool> pruneWithFutureSatisfiablility;
 
@@ -989,6 +1069,12 @@ struct GpgTdg
 			*outputVariableAssignment = assignedVariables;
 
 		return true;
+	}
+
+	void disableAllFutureSatisfiability(){
+		allFutureSatisfiabilityDisabled = true;
+		for (int a = 0; a < getNumberOfActions(); a++)
+			disablePruneWithFutureSatisfiablility(a);
 	}
 	
 	void disablePruneWithFutureSatisfiablility(size_t actionIdx){
