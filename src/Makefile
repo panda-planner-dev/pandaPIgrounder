@@ -4,6 +4,7 @@
 # ==================================================
 # Tools
 CXX=g++
+CC=gcc
 LD=$(CXX)
 
 # Command-line defines
@@ -19,10 +20,14 @@ CXXFLAGS_LIBS=
 
 # CFlags for production and for debugging
 CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++17 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) -fconcepts -I../cpddl/ -I../cpddl/third-party/boruvka/
+CCFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) 
 OPTIMIZER_PROD=-O3
 OPTIMIZER_DEBUG=-Og
 CXXFLAGS_PROD=$(OPTIMIZER_PROD) -g -DNDEBUG -flto
 CXXFLAGS_DEBUG=$(OPTIMIZER_DEBUG) -ggdb3 -DDEBUG_MODE
+CCFLAGS=$(CCFLAGS_GENERAL) $(CXXFLAGS_PROD)
+
+
 CXXFLAGS=$(CXXFLAGS_GENERAL) $(CXXFLAGS_PROD)
 
 # LDFlags
@@ -37,7 +42,9 @@ LIBS=
 # Files
 HFILES=$(wildcard *.h)
 SRCFILES=$(wildcard *.cpp)
+CSRCFILES=$(wildcard *.c)
 OBJFILES=$(patsubst %.cpp,%.o,$(SRCFILES))
+COBJFILES=$(patsubst %.c,%.o,$(CSRCFILES))
 DEPENDENCIES=
 DEPENDENCIES_LD=
 PROGNAME=pandaPIgrounder
@@ -51,8 +58,8 @@ H2OBJFILES=../h2-fd-preprocessor/src/axiom.cc.o ../h2-fd-preprocessor/src/causal
 
 all: $(PROGNAME)
 
-$(PROGNAME): $(OBJFILES) $(H2OBJFILES) $(DEPENDENCIES_LD)
-	$(LD) $(LDFLAGS) -o $(PROGNAME) $(OBJFILES) $(H2OBJFILES) $(LIBS)
+$(PROGNAME): $(OBJFILES) $(COBJFILES) $(H2OBJFILES) $(DEPENDENCIES_LD)
+	$(LD) $(LDFLAGS) -o $(PROGNAME) $(OBJFILES) $(COBJFILES) $(H2OBJFILES) $(LIBS)
 
 # All object files depend on the source file and all header files
 ../h2-fd-preprocessor/src/%.cc.o: ../h2-fd-preprocessor/src/%.cc
@@ -62,12 +69,17 @@ $(PROGNAME): $(OBJFILES) $(H2OBJFILES) $(DEPENDENCIES_LD)
 %.o: %.cpp $(DEPENDENCIES) $(HFILES)
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
+# All object files depend on the source file and all header files
+%.o: %.c 
+	$(CC) -c $(CCFLAGS) -o $@ $<
+
 clean:
-	rm -f $(PROGNAME) $(OBJFILES)
+	rm -f $(PROGNAME) $(OBJFILES) $(COBJFILES)
 
 # Disable built-in rules; otherwise "make debug" will do weird things since debug.o may exist
 .SUFFIXES:
 
 debug: CXXFLAGS = $(CXXFLAGS_GENERAL) $(CXXFLAGS_DEBUG)
+debug: CCFLAGS = $(CCFLAGS_GENERAL) $(CXXFLAGS_DEBUG)
 debug: LDFLAGS = $(LDFLAGS_GENERAL) $(LDFLAGS_DEBUG)
 debug: all
