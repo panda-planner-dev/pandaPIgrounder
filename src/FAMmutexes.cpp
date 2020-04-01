@@ -306,6 +306,7 @@ std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mut
 			_cpddl_object.name = "_cpddl_object";
 			for (size_t i = 0; i < domain.constants.size(); i++) _cpddl_object.members.insert(i);
 			const_cast<Domain &>(domain).sorts.push_back(_cpddl_object);
+			break;
 		} else if (domain.sorts[s].members.size() == domain.constants.size()) break; // domain has object type;
 	}
 
