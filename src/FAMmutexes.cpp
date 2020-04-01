@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 
 #include "debug.h"
 #include "FAMmutexes.h"
@@ -15,7 +16,39 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const Domain & domain, const Problem & problem){
+
+bool replacement_type_dfs(int cur, int end, std::set<int> & visited, std::vector<std::set<int>> & parents, const Domain & domain){
+	if (cur == end) return true;
+	if (!parents[cur].size()) return false;
+	
+	if (visited.count(cur)) return true;
+	visited.insert(cur);
+
+	for (int p : parents[cur])
+		if (!replacement_type_dfs(p,end,visited,parents,domain)) return false;
+
+	return true;
+}
+
+
+std::pair<int,std::set<int>> get_replacement_type(int type_to_replace, std::vector<std::set<int>> & parents, const Domain & domain){
+	// try all possible replacement sorts
+	std::set<int> best_visited;
+	int best_replacement = -1;
+	for (size_t s = 0; s < domain.sorts.size(); s++) if (s != type_to_replace){
+		std::set<int> visited;
+		if (replacement_type_dfs(type_to_replace, s, visited, parents, domain))
+			if (best_replacement == -1 || best_visited.size() > visited.size()){
+				best_replacement = s;
+				best_visited = visited;
+			}
+	}
+
+	return std::make_pair(best_replacement, best_visited);
+}
+
+
+std::tuple<std::vector<int>,std::vector<int>,std::map<int,int>> compute_local_type_hierarchy(const Domain & domain, const Problem & problem, bool quietMode){
 	// find subset relations between sorts
 	
 	// [i][j] = true means that j is a subset of i
@@ -77,14 +110,9 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 	std::cout << "}" << std::endl;
 	);
 
-	// who is whose direct subset
-	std::vector<std::vector<int>> directsubset (domain.sorts.size());
-	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++)
-		for (size_t s2 = 0; s2 < domain.sorts.size(); s2++)
-			if (subset[s1][s2])
-				directsubset[s1].push_back(s2);
-	
+
 	// determine parents
+	std::vector<std::set<int>> parents (domain.sorts.size());
 	std::vector<int> parent (domain.sorts.size());
 	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++)
 		parent[s1] = -1;
@@ -92,25 +120,75 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++)
 		for (size_t s2 = 0; s2 < domain.sorts.size(); s2++)
 			if (subset[s1][s2]){
+				parents[s2].insert(s1);
 				if (parent[s2] != -1){
-					std::cerr << "Type hierarchy is not a tree ... cpddl can't handle this. Exiting." << std::endl;
-					exit(-1);
+					if (parent[s2] >= 0 && !quietMode) 
+						std::cout << "Type hierarchy is not a tree ... cpddl can't handle this. I have to compile ..." << std::endl;
+					parent[s2] = -2;
+				} else {
+					parent[s2] = s1;
 				}
-
-				parent[s2] = s1;
 			}
 
 
 	DEBUG(for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
 		std::cout << domain.sorts[s1].name;
-   		if (parent[s1] != -1) std::cout << " - " << domain.sorts[parent[s1]].name;
+   		if (parent[s1] == -2) {	
+			std::cout << " - {";
+			for (int s : parents[s1])
+				std::cout << domain.sorts[s].name << " ";
+			std::cout << "}";
+
+		} else if (parent[s1] != -1)
+			std::cout << " - " << domain.sorts[parent[s1]].name;
 		std::cout << std::endl; 
 	});
+
+	// sorts with multiple parents need to be replaced by parent sorts ...
+	std::map<int,int> replacedSorts;
+	
+	for (size_t s = 0; s < domain.sorts.size(); s++) if (parent[s] == -2){
+		DEBUG(std::cout << "Sort " << domain.sorts[s].name << " has multiple parents and must be replaced." << std::endl);
+		auto [replacement, all_covered] = get_replacement_type(s,parents,domain);
+		assert(replacement != -1); // there is always the object type
+		DEBUG(std::cout << "Replacement sort is " << domain.sorts[replacement].name << std::endl);
+		DEBUG(std::cout << "All to be replaced:"; for (int ss : all_covered) std::cout << " " << domain.sorts[ss].name; std::cout << std::endl);
+
+		for (int covered : all_covered){
+			replacedSorts[covered] = replacement;
+			parent[covered] = -2;
+		}
+	}
+
+	// update parent relation
+	for (size_t s = 0; s < domain.sorts.size(); s++) if (parent[s] >= 0){
+		if (replacedSorts.count(parent[s]))
+			parent[s] = replacedSorts[parent[s]];
+	}
+
+	// who is whose direct subset, with handling the replaced sorts
+	std::vector<std::unordered_set<int>> directsubset (domain.sorts.size());
+	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++)
+		for (size_t s2 = 0; s2 < domain.sorts.size(); s2++) if (parent[s2] >= 0)
+			if (subset[s1][s2]){
+				if (replacedSorts.count(s1))
+					directsubset[replacedSorts[s1]].insert(s2);
+				else
+					directsubset[s1].insert(s2);
+			}
+
+	DEBUG(
+		for (size_t s1 = 0; s1 < domain.sorts.size(); s1++) if (parent[s1] != -2){
+			std::cout << "Direct subsorts of " << domain.sorts[s1].name << ":";
+			for (int s : directsubset[s1]) std::cout << " " << domain.sorts[s].name;
+			std::cout << std::endl;
+		}
+		);
 
 	// assign elements to sorts
 	std::vector<std::set<int>> directElements (domain.sorts.size());
 	
-	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
+	for (size_t s1 = 0; s1 < domain.sorts.size(); s1++) if (parent[s1] != -2){
 		for (int elem : domain.sorts[s1].members){
 			bool in_sub_sort = false;
 			for (int s2 : directsubset[s1]){
@@ -124,12 +202,11 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 		}
 	}
 	
-	
-	/*for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
-		std::cout << domain.sorts[s1].name << ":";
+	DEBUG(for (size_t s1 = 0; s1 < domain.sorts.size(); s1++){
+		std::cout << "Sort Elements: " << domain.sorts[s1].name << ":";
 		for (int e : directElements[s1]) std::cout << " " << domain.constants[e];
 		std::cout << std::endl;
-	}*/
+	});
 
 	std::vector<int> sortOfElement (domain.constants.size());
 	for (size_t c = 0; c < domain.constants.size(); c++)
@@ -144,12 +221,13 @@ std::pair<std::vector<int>,std::vector<int>> compute_local_type_hierarchy(const 
 			sortOfElement[elem] = s1;
 		}
 
-	return std::make_pair(parent,sortOfElement);	
+	return std::make_tuple(parent,sortOfElement, replacedSorts);
 } 
 
 
 void topsortTypesCPDDL_dfs(int cur, std::vector<int> & parent,
 						   std::vector<bool> & done, std::vector<int> & result){
+	assert(cur != -2); // replaced sort
 	if (cur == -1) return;
 	if (done[cur]) return;
 	done[cur] = true;
@@ -164,7 +242,7 @@ std::vector<int> topsortTypesCPDDL(std::vector<int> & parent){
 
 	std::vector<int> result;
 	for (size_t i = 0; i < done.size(); i++)
-		if (!done[i])
+		if (!done[i] && parent[i] != -2)
 			topsortTypesCPDDL_dfs(i,parent,done,result);
 
 	return result;
@@ -220,8 +298,20 @@ std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mut
 	pddl->problem_name = const_cast<char*>(name2.c_str());
 	pddl->require = PDDL_REQUIRE_TYPING + PDDL_REQUIRE_CONDITIONAL_EFF;
 	
+	// check if a super type already exists
+	for (size_t s = 0; s <= domain.sorts.size(); s++){
+		if (s == domain.sorts.size()){
+			// add a super type _cpddl_object, which contains all constants
+			Sort _cpddl_object;
+			_cpddl_object.name = "_cpddl_object";
+			for (size_t i = 0; i < domain.constants.size(); i++) _cpddl_object.members.insert(i);
+			const_cast<Domain &>(domain).sorts.push_back(_cpddl_object);
+		} else if (domain.sorts[s].members.size() == domain.constants.size()) break; // domain has object type;
+	}
+
+
 	// compute a local type hierarchy
-	auto [typeParents,objectType] = compute_local_type_hierarchy(domain,problem);
+	auto [typeParents,objectType,replacedTypes] = compute_local_type_hierarchy(domain,problem,quietMode);
 	
 	// cpddl needs a root type named object
 	pddlTypesAdd(&pddl->type,root_type_cppdl,-1);
@@ -237,9 +327,14 @@ std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mut
 		DEBUG(std::cout << "Adding sort " << sort << " (\"" << domain.sorts[sort].name << "\")" << std::endl);
 		DEBUG(std::cout << "\tParent is " << typeParents[sort] << std::endl);
 			// +1 is for the artificial root sort
+		assert(typeParents[sort] != -2); // removed sorts
 		pddlTypesAdd(&pddl->type,domain.sorts[sort].name.c_str(),ourTypeIDToCPDDL[typeParents[sort]]);
 	}
-	
+
+	// add ids for replaced sorts
+	for (auto [sort,replacement] : replacedTypes)
+		ourTypeIDToCPDDL[sort] = ourTypeIDToCPDDL[replacement];
+
 	
 	bzero(&pddl->obj, sizeof(pddl->obj));
 	pddl->obj.htable = borHTableNew(objHash, objEq, NULL);
@@ -253,7 +348,7 @@ std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mut
         pddlTypesAddObj(&pddl->type, i, pddl->obj.obj[i].type);
 	}
 /////////////////////////////////// COPIED FROM CPDDL/src/obj.c
-
+	
 	// add equals predicate
 /////////////////////////////////// COPIED FROM CPDDL/src/pred.c
     pddl->pred.eq_pred = -1;
