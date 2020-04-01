@@ -16,6 +16,8 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool outputSASVariablesOnly,
 		sas_delete_output_mode sas_mode,
 		bool compileNegativeSASVariables,
+		bool removeDuplicateActions,
+		bool noopForEmptyMethods,
 		bool outputForPlanner, 
 		bool outputHDDL, 
 		bool outputSASPlus, 

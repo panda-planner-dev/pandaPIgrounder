@@ -69,9 +69,22 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::vector<bool> & sas_variables_needing_none_of_them,
 		bool compileNegativeSASVariables,
 		sas_delete_output_mode sas_mode,
+		bool noopForEmptyMethods, 
 		bool quietMode	
 		){
 	if (!quietMode) std::cerr << "Writing instance to output." << std::endl;
+
+	// determine whether we need an additional noop for empty methods
+	bool contains_empty_method = false;
+	if (noopForEmptyMethods) for (auto & method : reachableMethods){
+		if (prunedMethods[method.groundedNo]) continue;
+		if (method.preconditionOrdering.size() == 0){
+			contains_empty_method = true;
+			DEBUG(std::cout << "Instance contains empty method. Adding noop." << std::endl);
+			break;
+		}
+	}
+
 
 	// find candidates for fact elimination by duplication
 	std::map<int,std::vector<int>> cover_pruned;
@@ -563,12 +576,23 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	// actual output of actions
 
 	pout << ";; Actions" << std::endl;
-	pout << number_of_actions_in_output << std::endl; 
+	pout << number_of_actions_in_output + (contains_empty_method ? 1 : 0) << std::endl; 
 	int ac = 0;
 	int number_of_additional_abstracts = 0;
-
 	int number_of_output_primitives = 0;
 	int number_of_output_artificial_primitives = 0;
+
+	// if necessary, we add a no-op, s.t. methods are non-empty. This task will always have cost 0
+	if (contains_empty_method){
+		pout << 0 << std::endl;
+		pout << -1 << std::endl;
+		pout << -1 << std::endl;
+		pout << -1 << std::endl;
+
+		ac++;
+		number_of_output_artificial_primitives++;
+	}
+
 	for (const auto & [tID, costs, prec_out, add_out, del_out, instances] : output_actions){
 		GroundedTask & task = reachableTasks[tID];
 		if (instances.size() == 1)
@@ -697,9 +721,14 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 	
 	pout << std::endl << ";; tasks (primitive and abstract)" << std::endl;
-	pout << number_of_actions_in_output +  absTask + number_of_additional_abstracts << std::endl;
-	// output names of primitives
+	pout << number_of_actions_in_output +  absTask + number_of_additional_abstracts + (contains_empty_method ? 1 : 0) << std::endl;
 	
+	// if necessary additional noop
+	if (contains_empty_method){
+		pout << 0 << " noop" << std::endl;
+	}
+	
+	// output names of primitives
 	for (const auto & [tID, costs, prec_out, add_out, del_out, instances] : output_actions){
 		GroundedTask & task = reachableTasks[tID];
 
@@ -772,6 +801,10 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			assert(outNo >= 0);
 			pout << outNo << " ";
 		}
+		// no empty methods if desired. If this method would be empty, add a no-op.
+		if (contains_empty_method && method.preconditionOrdering.size() == 0)
+			pout << "0 " << std::endl;
+
 		pout << "-1" << std::endl;
 
 		auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;

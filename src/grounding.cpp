@@ -11,7 +11,6 @@
 #include "duplicate.h"
 
 
-
 void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, 
 		bool enableHierarchyTyping, 
 		bool removeUselessPredicates,
@@ -23,6 +22,8 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool outputSASVariablesOnly,
 		sas_delete_output_mode sas_mode,
 		bool compileNegativeSASVariables,
+		bool removeDuplicateActions,
+		bool noopForEmptyMethods,
 		bool outputForPlanner, 
 		bool outputHDDL, 
 		bool outputSASPlus, 
@@ -209,7 +210,8 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			}
 
 			// duplicate elemination
-			unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
+			if (removeDuplicateActions)
+				unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
 
 			
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
@@ -217,7 +219,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 				initFacts, initFactsPruned, reachableFactsSet,
 				sas_groups, further_mutex_groups, h2_invariants,
 				sas_variables_needing_none_of_them,
-				compileNegativeSASVariables, sas_mode,
+				compileNegativeSASVariables, sas_mode, noopForEmptyMethods,
 				quietMode);
 		}
 	

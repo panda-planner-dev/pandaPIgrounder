@@ -26,6 +26,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::vector<bool> & sas_variables_needing_none_of_them,
 		bool compileNegativeSASVariables,
 		sas_delete_output_mode sas_mode,
+		bool noopForEmptyMethods, 
 		bool quietMode);
 
 void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const Domain & domain, const Problem & problem,

@@ -36,6 +36,8 @@ int main (int argc, char * argv[])
 		{"output-hddl",         	                        no_argument,    NULL,   'H'},
 		{"h2", 			        	                        no_argument,    NULL,   '2'},
 		{"sasplus", 	        	                        no_argument,    NULL,   's'},
+		{"remove-duplicates",      	                        no_argument,    NULL,   'D'},
+		{"noop-for-empty-methods",                          no_argument,    NULL,   'E'},
 		
 		{"no-hierarchy-typing",	                            no_argument,    NULL,   'h'},
 		{"no-literal-pruning", 	                            no_argument,    NULL,   'l'},
@@ -53,6 +55,8 @@ int main (int argc, char * argv[])
 	bool computeInvariants = false;
 	bool outputSASVariablesOnly = false;
 	bool compileNegativeSASVariables = false;
+	bool removeDuplicateTasks = false;
+	bool noopForEmptyMethods = false;
 	bool outputForPlanner = true; // don't output in 
 	bool outputHDDL = false;
 	bool outputSASPlus = false; 
@@ -69,7 +73,7 @@ int main (int argc, char * argv[])
 	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNna", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNnaDE", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -97,6 +101,10 @@ int main (int argc, char * argv[])
 			sas_mode = SAS_ALL;
 		else if (c == 'N')
 			compileNegativeSASVariables = true;
+		else if (c == 'D')
+			removeDuplicateTasks = true;
+		else if (c == 'E')
+			noopForEmptyMethods = true;
 		else if (c == 'O')
 			outputDomain = true;
 		
@@ -266,7 +274,7 @@ int main (int argc, char * argv[])
 				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
 				futureCachingByPrecondition, 
 				h2mutexes,
-				computeInvariants, outputSASVariablesOnly, sas_mode, compileNegativeSASVariables,
+				computeInvariants, outputSASVariablesOnly, sas_mode, compileNegativeSASVariables, removeDuplicateTasks, noopForEmptyMethods,
 				outputForPlanner, outputHDDL, outputSASPlus, 
 				printTimings, quietMode);
 	}
