@@ -132,11 +132,17 @@ struct GpgLiteralSet
 	}
 
 	/// Returns a std::set containing all facts in this GpgLiteralSet.
-	operator std::set<T> (void) const
+	operator std::set<T> (void) 
 	{
 		std::set<T> result;
-		for (auto predicateFacts : factsByPredicate)
-			result.insert (predicateFacts.begin (), predicateFacts.end ());
+		for (size_t i = 0; i < factsByPredicate.size(); i++){
+			// remove elements from factsByPredicate while iterating ... this is more memory efficient
+			auto it = factsByPredicate[i].begin();
+			while (it != factsByPredicate[i].end()){
+				result.insert(*it);
+				it = factsByPredicate[i].erase(it);
+			}
+		}
 		return result;
 	}
 };
@@ -531,9 +537,24 @@ struct GpgPlanningGraph
 		}
 	}
 
-	const std::vector<StateType> & getInitialState (void) const
+	std::vector<StateType>::iterator getInitialStateStart (void) 
 	{
-		return problem.init;
+		return const_cast<Problem &>(problem).init.begin();
+	}
+
+	void getInitialStateNext (std::vector<StateType>::iterator & it) 
+	{
+		it++;
+	}
+
+	const StateType & getInitialStateElement (std::vector<StateType>::iterator & it) 
+	{
+		return *it;
+	}
+
+	bool isInitialStateEnd (std::vector<StateType>::iterator it) const
+	{
+		return it == problem.init.end();
 	}
 
 	size_t getNumberOfActions (void) const
@@ -585,7 +606,7 @@ template <GpgInstance InstanceType>
 static void gpgAssignVariables (
 	const InstanceType & instance,
 	const HierarchyTyping * hierarchyTyping,
-	std::vector<typename InstanceType::ResultType> & output,
+	std::vector<typename InstanceType::ResultType *> & output,
 	std::queue<typename InstanceType::StateType> & toBeProcessedQueue,
 	std::set<typename InstanceType::StateType> & toBeProcessedSet,
 	const GpgLiteralSet<typename InstanceType::StateType> & processedStates,
@@ -633,14 +654,14 @@ static void gpgAssignVariables (
 		liftedGroundingCount[actionNo]++;
 
 		// Create and return grounded action
-		typename InstanceType::ResultType result;
-		result.groundedNo = output.size ();
-		result.setHeadNo (actionNo);
-		result.arguments = assignedVariables;
+		typename InstanceType::ResultType * result = new typename InstanceType::ResultType();
+		result->groundedNo = output.size ();
+		result->setHeadNo (actionNo);
+		result->arguments = assignedVariables;
 
 		// XXX TODO: insert vector as subtasks of result
 		// XXX TODO: insert ground preconditions and add effects
-		result.groundedPreconditions = matchedPreconditions;
+		result->groundedPreconditions = matchedPreconditions;
 		// Still anything TODO?
 		
 		// Add "add" effects from this action to our known facts
@@ -684,7 +705,7 @@ static void gpgAssignVariables (
 			}
 
 			// Add this add effect to the list of add effects of the result we created
-			result.groundedAddEffects.push_back (addState.groundedNo);
+			result->groundedAddEffects.push_back (addState.groundedNo);
 		}
 
 		output.push_back (result);
@@ -767,7 +788,7 @@ template<GpgInstance InstanceType>
 void gpgMatchPrecondition (
 	const InstanceType & instance,
 	const HierarchyTyping * hierarchyTyping,
-	std::vector<typename InstanceType::ResultType> & output,
+	std::vector<typename InstanceType::ResultType *> & output,
 	std::queue<typename InstanceType::StateType> & toBeProcessedQueue,
 	std::set<typename InstanceType::StateType> & toBeProcessedSet,
 	const GpgLiteralSet<typename InstanceType::StateType> & processedStates,
@@ -1001,22 +1022,37 @@ struct GpgTdg
 
 	const Problem & problem;
 
-	const std::vector<GroundedTask> & tasks;
+	const std::vector<GroundedTask *> & tasks;
 
 	bool allFutureSatisfiabilityDisabled = false;
 	std::vector<bool> pruneWithHierarchyTyping;
 	std::vector<bool> pruneWithFutureSatisfiablility;
 
-	GpgTdg (const Domain & domain, const Problem & problem, const std::vector<GroundedTask> & tasks) : domain (domain), problem (problem), tasks (tasks) {
+	GpgTdg (const Domain & domain, const Problem & problem, const std::vector<GroundedTask *> & tasks) : domain (domain), problem (problem), tasks (tasks) {
 		for (size_t i = 0; i < domain.decompositionMethods.size(); i++){
 			pruneWithFutureSatisfiablility.push_back(true);
 			pruneWithHierarchyTyping.push_back(true);
 		}
 	}
-
-	const std::vector<StateType> & getInitialState (void) const
+	int getInitialStateStart (void) 
 	{
-		return tasks;
+		return 0;
+	}
+
+	void getInitialStateNext (int & it) 
+	{
+		delete tasks[it];
+		it++;
+	}
+
+	const StateType & getInitialStateElement (int & it) 
+	{
+		return *tasks[it];
+	}
+
+	bool isInitialStateEnd (int it) const
+	{
+		return it == tasks.size();
 	}
 
 	size_t getNumberOfActions (void) const
@@ -1090,7 +1126,7 @@ struct GpgTdg
  * TODO
  */
 template<GpgInstance InstanceType>
-void runGpg (const InstanceType & instance, std::vector<typename InstanceType::ResultType> & output, std::set<typename InstanceType::StateType> & outputStateElements,
+void runGpg (const InstanceType & instance, std::vector<typename InstanceType::ResultType *> & output, std::set<typename InstanceType::StateType> & outputStateElements,
 		const HierarchyTyping * hierarchyTyping, 
 		bool futureCachingByPrecondition,
 		bool printTimings,
@@ -1109,8 +1145,11 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 	std::set<typename InstanceType::StateType> toBeProcessedSet;
 
 	// Consider all facts from the initial state as not processed yet
-	for (typename InstanceType::StateType initStateElement : instance.getInitialState ())
+	auto it = const_cast<InstanceType &>(instance).getInitialStateStart();
+	while (!instance.isInitialStateEnd(it))
+	//for (typename InstanceType::StateType initStateElement : instance.getInitialState ())
 	{
+		auto initStateElement = const_cast<InstanceType &>(instance).getInitialStateElement(it);
 		// Number initial state elements
 		initStateElement.groundedNo = toBeProcessedQueue.size ();
 
@@ -1120,6 +1159,9 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 			toBeProcessedQueue.push (initStateElement);
 			toBeProcessedSet.insert (initStateElement);
 		}
+
+		// move to next
+		const_cast<InstanceType &>(instance).getInitialStateNext(it);
 
 		assert (toBeProcessedQueue.size () == toBeProcessedSet.size ());
 	}
@@ -1244,7 +1286,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 }
 
 
-void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, const std::vector<GroundedMethod> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem);
+void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, std::vector<GroundedMethod*> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem);
 
 
 
@@ -1256,6 +1298,20 @@ void validateGroundedList (const std::vector<T> & input)
 		if (input[i].groundedNo != i)
 		{
 			std::cout << "Grounded object list is inconsistent: entry " << i << " has grounded number " << input[i].groundedNo << std::endl;
+			abort ();
+		}
+	}
+}
+
+
+template <typename T>
+void validateGroundedListP (const std::vector<T*> & input)
+{
+	for (size_t i = 0; i < input.size (); ++i)
+	{
+		if (input[i]->groundedNo != i)
+		{
+			std::cout << "Grounded object list is inconsistent: entry " << i << " has grounded number " << input[i]->groundedNo << std::endl;
 			abort ();
 		}
 	}

@@ -2,15 +2,15 @@
 
 #include "gpg.h"
 
-void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanningGraph::ResultType> & groundedTasksPg,std::set<GpgPlanningGraph::StateType> & reachableFacts){
-	for (GpgPlanningGraph::ResultType & groundedTask : groundedTasksPg){
+void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanningGraph::ResultType *> & groundedTasksPg,std::set<GpgPlanningGraph::StateType> & reachableFacts){
+	for (GpgPlanningGraph::ResultType * groundedTask : groundedTasksPg){
 		// assign fact NOs to delete effects
-		for (const PredicateWithArguments & delEffect : domain.tasks[groundedTask.taskNo].effectsDel){
+		for (const PredicateWithArguments & delEffect : domain.tasks[groundedTask->taskNo].effectsDel){
 			GpgPlanningGraph::StateType delState;
 			delState.setHeadNo (delEffect.getHeadNo ());
 			for (int varIdx : delEffect.arguments)
 			{
-				delState.arguments.push_back (groundedTask.arguments[varIdx]);
+				delState.arguments.push_back (groundedTask->arguments[varIdx]);
 			}
 
 			// Check if we already know this fact
@@ -18,7 +18,7 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 			if ((factIt = reachableFacts.find (delState)) != reachableFacts.end())
 			{
 				// If this delete effect occurs in the list of reachable facts, then add it to the effect list. If not, it can never be true 
-				groundedTask.groundedDelEffects.push_back(factIt->groundedNo);
+				groundedTask->groundedDelEffects.push_back(factIt->groundedNo);
 			}
 		
 		}
@@ -38,13 +38,13 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 
 	if (!quietMode) std::cerr << "Running PG." << std::endl;
 	GpgPlanningGraph pg (domain, problem);
-	std::vector<GpgPlanningGraph::ResultType> groundedTasksPg;
+	std::vector<GpgPlanningGraph::ResultType *> groundedTasksPg;
 	std::set<Fact> reachableFacts;
 	runGpg (pg, groundedTasksPg, reachableFacts, hierarchyTyping.get (), futureCachingByPrecondition, printTimings, quietMode);
 	
 	if (!quietMode) std::cerr << "PG done. Postprocessing" << std::endl;
 	assignGroundNosToDeleteEffects(domain, groundedTasksPg, reachableFacts);
-	validateGroundedList (groundedTasksPg);
+	validateGroundedListP (groundedTasksPg);
 
 	if (!quietMode) std::cerr << "PG postprocessing done." << std::endl;
 	if (!quietMode) std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
@@ -57,19 +57,25 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 			reachableFactsList[fact.groundedNo] = fact;
 	
 		std::vector<GroundedMethod> no_methods;
+		
+		std::vector<GpgPlanningGraph::ResultType> returnTasks;
+		for (size_t i = 0; i < groundedTasksPg.size(); i++){
+			returnTasks.push_back(*groundedTasksPg[i]);
+			delete groundedTasksPg[i];
+		}
 
-		return std::make_tuple(reachableFactsList, groundedTasksPg, no_methods);
+		return std::make_tuple(reachableFactsList, returnTasks, no_methods);
 	}
 
 	DEBUG(std::cerr << "After lifted PG:" << std::endl;
 	for (size_t taskIdx = 0; taskIdx < groundedTasksPg.size (); ++taskIdx)
 	{
-		const GroundedTask & task = groundedTasksPg[taskIdx];
-		assert (task.taskNo < domain.nPrimitiveTasks);
-		assert (task.groundedPreconditions.size () == domain.tasks[task.taskNo].preconditions.size ());
-		assert (task.groundedDecompositionMethods.size () == 0);
-		std::cerr << "    Task " << taskIdx << " (" << task.groundedNo << ", " << ((task.taskNo < domain.nPrimitiveTasks) ? "primitive" : " abstract") << "): " << task.groundedPreconditions.size () << " grounded preconditions (vs " << domain.tasks[task.taskNo].preconditions.size () << "), "
-			<< task.groundedDecompositionMethods.size () << " grounded decomposition methods (vs " << domain.tasks[task.taskNo].decompositionMethods.size () << ")." << std::endl;
+		const GroundedTask * task = groundedTasksPg[taskIdx];
+		assert (task->taskNo < domain.nPrimitiveTasks);
+		assert (task->groundedPreconditions.size () == domain.tasks[task->taskNo].preconditions.size ());
+		assert (task->groundedDecompositionMethods.size () == 0);
+		std::cerr << "    Task " << taskIdx << " (" << task->groundedNo << ", " << ((task->taskNo < domain.nPrimitiveTasks) ? "primitive" : " abstract") << "): " << task->groundedPreconditions.size () << " grounded preconditions (vs " << domain.tasks[task->taskNo].preconditions.size () << "), "
+			<< task->groundedDecompositionMethods.size () << " grounded decomposition methods (vs " << domain.tasks[task->taskNo].decompositionMethods.size () << ")." << std::endl;
 	});
 
 
@@ -82,8 +88,8 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	);
 
 	std::vector<int> groundedTasksByTask (domain.nTotalTasks);
-	for (const GroundedTask & task : groundedTasksPg)
-		++groundedTasksByTask[task.taskNo];
+	for (const GroundedTask * task : groundedTasksPg)
+		++groundedTasksByTask[task->taskNo];
 
 	for (const auto & _method : domain.decompositionMethods)
 	{
@@ -114,13 +120,13 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 
 	if (!quietMode) std::cerr << "Running TDG." << std::endl;
 	GpgTdg tdg (domain, problem, groundedTasksPg);
-	std::vector<GpgTdg::ResultType> groundedMethods;
+	std::vector<GpgTdg::ResultType *> groundedMethods;
 	std::set<GpgTdg::StateType> groundedTaskSetTdg;
 	runGpg (tdg, groundedMethods, groundedTaskSetTdg, hierarchyTyping.get (), futureCachingByPrecondition, printTimings, quietMode);
 	if (!quietMode) std::cerr << "TDG done." << std::endl;
 	if (!quietMode) std::cerr << "Calculated [" << groundedTaskSetTdg.size () << "] grounded tasks and [" << groundedMethods.size () << "] grounded decomposition methods." << std::endl;
 
-	validateGroundedList (groundedMethods);
+	validateGroundedListP (groundedMethods);
 
 	// Order grounded tasks correctly
 	std::vector<GroundedTask> groundedTasksTdg (groundedTaskSetTdg.size ());
@@ -128,9 +134,9 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 		groundedTasksTdg[task.groundedNo] = task;
 
 	// Add grounded decomposition methods to the abstract tasks
-	for (const GroundedMethod & method : groundedMethods)
-		for (auto abstractGroundedTaskNo : method.groundedAddEffects)
-			groundedTasksTdg[abstractGroundedTaskNo].groundedDecompositionMethods.push_back (method.groundedNo);
+	for (const GroundedMethod * method : groundedMethods)
+		for (auto abstractGroundedTaskNo : method->groundedAddEffects)
+			groundedTasksTdg[abstractGroundedTaskNo].groundedDecompositionMethods.push_back (method->groundedNo);
 
 	validateGroundedList (groundedTasksTdg);
 
@@ -153,15 +159,15 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 		std::cerr << std::endl;
 	}
 
-	for (const auto & method : groundedMethods)
+	for (const auto * method : groundedMethods)
 	{
-		std::cerr << "Grounded method #" << method.groundedNo << " (" << domain.decompositionMethods[method.methodNo].name << ")" << std::endl;
+		std::cerr << "Grounded method #" << method->groundedNo << " (" << domain.decompositionMethods[method->methodNo].name << ")" << std::endl;
 		std::cerr << "Grounded preconditions:";
-		for (const auto & prec : method.groundedPreconditions)
+		for (const auto & prec : method->groundedPreconditions)
 			std::cerr << " " << prec << " (" << domain.tasks[groundedTasksTdg[prec].taskNo].name << ")";
 		std::cerr << std::endl;
 		std::cerr << "Grounded add effects:";
-		for (const auto & prec : method.groundedAddEffects)
+		for (const auto & prec : method->groundedAddEffects)
 			std::cerr << " " << prec << " (" << domain.tasks[groundedTasksTdg[prec].taskNo].name << ")";
 		std::cerr << std::endl;
 		std::cerr << std::endl;
@@ -181,7 +187,7 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	tdgDfs (reachableTasksDfs, reachableMethodsDfs, groundedTasksTdg, groundedMethods, reachableFactsList, reachableCEGuards, domain, problem);
 
 	// add primitive tasks from conditional effects as reachable
-	for (GroundedTask gt : groundedTasksTdg){
+	for (GroundedTask & gt : groundedTasksTdg){
 		if (!domain.tasks[gt.taskNo].isCompiledConditionalEffect) continue;
 		
 		for (int & pre : gt.groundedPreconditions)
