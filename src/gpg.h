@@ -94,11 +94,11 @@ struct GpgLiteralSet
 	 *
 	 * It is an error to call this function with a fact where Fact.predicateNo is greater than or equal to nPredicates as passed to the constructor of this GpgLiteralSet.
 	 */
-	void insert (const T & fact)
+	const T* insert (const T & fact)
 	{
 		assert (fact.getHeadNo () < factsByPredicate.size ());
 
-		factsByPredicate[fact.getHeadNo ()].insert (fact);
+		return &(*(factsByPredicate[fact.getHeadNo ()].insert (fact).first));
 	}
 
 	/**
@@ -272,7 +272,7 @@ struct GpgStateMap
 	/**
 	 * save state elements in extra list
 	 */
-	std::vector<typename InstanceType::StateType> addedStateElements;
+	std::vector<const typename InstanceType::StateType*> addedStateElements;
 
 	/**
 	 * @brief A list of Facts for each task, precondition, initially matched precondition (-1 if not eligible) and set of assigned variables.
@@ -309,17 +309,17 @@ struct GpgStateMap
 	/**
 	 * @brief Inserts a Fact into the maps of all preconditions with the same predicate as the Fact.
 	 */
-	void insertState (const typename InstanceType::StateType & stateElement)
+	void insertState (const typename InstanceType::StateType * stateElement)
 	{
 		int stateElementIndex = addedStateElements.size();
 		addedStateElements.push_back(stateElement);
 		
-		for (const auto & [actionIdx, preconditionIdx] : preprocessedDomain.preconditionsByPredicate[stateElement.getHeadNo ()])
+		for (const auto & [actionIdx, preconditionIdx] : preprocessedDomain.preconditionsByPredicate[stateElement->getHeadNo ()])
 		{
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 			const typename InstanceType::PreconditionType & precondition = action.getAntecedents ()[preconditionIdx];
 
-			assert (precondition.arguments.size () == stateElement.arguments.size ());
+			assert (precondition.arguments.size () == stateElement->arguments.size ());
 
 			// Ineligible initially matched precondition
 			std::vector<int> values;
@@ -328,13 +328,13 @@ struct GpgStateMap
 				int var = precondition.arguments[argumentIdx];
 
 				// Skip this fact if its variables are incompatible with the sorts defined by the action
-				int value = stateElement.arguments[argumentIdx];
+				int value = stateElement->arguments[argumentIdx];
 				if (preprocessedDomain.domain.sorts[action.variableSorts[var]].members.count (value) == 0)
 					goto next_action;
 
 				if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at (-1).count (var) > 0)
 				{
-					values.push_back (stateElement.arguments[argumentIdx]);
+					values.push_back (stateElement->arguments[argumentIdx]);
 				}
 			}
 			factMap[actionIdx][preconditionIdx][-1][values].push_back (stateElementIndex );
@@ -349,7 +349,7 @@ struct GpgStateMap
 					int var = precondition.arguments[argumentIdx];
 					if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at (initiallyMatchedPreconditionIdx).count (var) > 0)
 					{
-						values.push_back (stateElement.arguments[argumentIdx]);
+						values.push_back (stateElement->arguments[argumentIdx]);
 					}
 				}
 
@@ -370,7 +370,7 @@ struct GpgStateMap
 					// check whether this variable will already have been set by the past precondition
 					if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][pastPreconditionIdx+1].at (-1).count (var) > 0)
 					{
-						values.push_back (stateElement.arguments[argumentIdx]);
+						values.push_back (stateElement->arguments[argumentIdx]);
 					}
 				}
 				consistency[actionIdx][pastPreconditionIdx+1][preconditionIdx][-1].insert(values);
@@ -385,7 +385,7 @@ struct GpgStateMap
 						int var = precondition.arguments[argumentIdx];
 						if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][pastPreconditionIdx+1].at (initiallyMatchedPreconditionIdx).count (var) > 0)
 						{
-							values.push_back (stateElement.arguments[argumentIdx]);
+							values.push_back (stateElement->arguments[argumentIdx]);
 						}
 					}
 	
@@ -453,7 +453,7 @@ next_action:;
 		// generate return set
 		std::vector<typename InstanceType::StateType> ret;
 		for (int & x : factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][assignedVariableValues])
-			ret.push_back(addedStateElements[x]);
+			ret.push_back(*addedStateElements[x]);
 
 
 		return ret;
@@ -1233,8 +1233,8 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 			c_start = std::clock();
 		}
 
-		stateMap.insertState (stateElement);
-		processedStateElements.insert (stateElement);
+		const typename InstanceType::StateType * elementPointer = processedStateElements.insert (stateElement);
+		stateMap.insertState (elementPointer);
 
 		// Find tasks with this predicate as precondition
 		for (const auto & [actionIdx, preconditionIdx] : preprocessed.preconditionsByPredicate[stateElement.getHeadNo ()])
@@ -1286,7 +1286,7 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 }
 
 
-void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, std::vector<GroundedMethod*> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem);
+void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask*> & inputTasks, std::vector<GroundedMethod*> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem);
 
 
 

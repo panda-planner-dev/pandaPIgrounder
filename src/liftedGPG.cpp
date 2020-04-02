@@ -129,31 +129,36 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	validateGroundedListP (groundedMethods);
 
 	// Order grounded tasks correctly
-	std::vector<GroundedTask> groundedTasksTdg (groundedTaskSetTdg.size ());
-	for (const auto & task : groundedTaskSetTdg)
-		groundedTasksTdg[task.groundedNo] = task;
+	std::vector<GroundedTask *> groundedTasksTdg (groundedTaskSetTdg.size ());
+	auto it = groundedTaskSetTdg.begin();
+	while (it != groundedTaskSetTdg.end()){
+		GroundedTask * t = new GroundedTask();
+		*t = *it;
+		groundedTasksTdg[it->groundedNo] = t;
+		it = groundedTaskSetTdg.erase(it);
+	}
 
 	// Add grounded decomposition methods to the abstract tasks
 	for (const GroundedMethod * method : groundedMethods)
 		for (auto abstractGroundedTaskNo : method->groundedAddEffects)
-			groundedTasksTdg[abstractGroundedTaskNo].groundedDecompositionMethods.push_back (method->groundedNo);
+			groundedTasksTdg[abstractGroundedTaskNo]->groundedDecompositionMethods.push_back (method->groundedNo);
 
-	validateGroundedList (groundedTasksTdg);
+	validateGroundedListP (groundedTasksTdg);
 
 	DEBUG (
-	for (const auto & task : groundedTasksTdg)
+	for (const auto * task : groundedTasksTdg)
 	{
-		std::cerr << "Grounded task #" << task.groundedNo << " (" << domain.tasks[task.taskNo].name << ")" << std::endl;
+		std::cerr << "Grounded task #" << task->groundedNo << " (" << domain.tasks[task->taskNo].name << ")" << std::endl;
 		std::cerr << "Grounded decomposition methods:";
-		for (const auto & prec : task.groundedDecompositionMethods)
+		for (const auto & prec : task->groundedDecompositionMethods)
 			std::cerr << " " << prec;
 		std::cerr << std::endl;
 		std::cerr << "Grounded preconditions:";
-		for (const auto & prec : task.groundedPreconditions)
+		for (const auto & prec : task->groundedPreconditions)
 			std::cerr << " " << prec;
 		std::cerr << std::endl;
 		std::cerr << "Grounded add effects:";
-		for (const auto & prec : task.groundedAddEffects)
+		for (const auto & prec : task->groundedAddEffects)
 			std::cerr << " " << prec;
 		std::cerr << std::endl;
 		std::cerr << std::endl;
@@ -164,11 +169,11 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 		std::cerr << "Grounded method #" << method->groundedNo << " (" << domain.decompositionMethods[method->methodNo].name << ")" << std::endl;
 		std::cerr << "Grounded preconditions:";
 		for (const auto & prec : method->groundedPreconditions)
-			std::cerr << " " << prec << " (" << domain.tasks[groundedTasksTdg[prec].taskNo].name << ")";
+			std::cerr << " " << prec << " (" << domain.tasks[groundedTasksTdg[prec]->taskNo].name << ")";
 		std::cerr << std::endl;
 		std::cerr << "Grounded add effects:";
 		for (const auto & prec : method->groundedAddEffects)
-			std::cerr << " " << prec << " (" << domain.tasks[groundedTasksTdg[prec].taskNo].name << ")";
+			std::cerr << " " << prec << " (" << domain.tasks[groundedTasksTdg[prec]->taskNo].name << ")";
 		std::cerr << std::endl;
 		std::cerr << std::endl;
 	}
@@ -181,19 +186,21 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 
 	// Perform DFS
 	if (!quietMode) std::cerr << "Performing DFS." << std::endl;
+	// we first have to translate the tasks into pointers to save memory ...
 	std::vector<GroundedTask> reachableTasksDfs;
 	std::vector<GroundedMethod> reachableMethodsDfs;
 	std::unordered_set<int> reachableCEGuards;
 	tdgDfs (reachableTasksDfs, reachableMethodsDfs, groundedTasksTdg, groundedMethods, reachableFactsList, reachableCEGuards, domain, problem);
 
 	// add primitive tasks from conditional effects as reachable
-	for (GroundedTask & gt : groundedTasksTdg){
-		if (!domain.tasks[gt.taskNo].isCompiledConditionalEffect) continue;
+	for (GroundedTask * gt : groundedTasksTdg){
+		if (!gt) continue;
+		if (!domain.tasks[gt->taskNo].isCompiledConditionalEffect) continue;
 		
-		for (int & pre : gt.groundedPreconditions)
+		for (int & pre : gt->groundedPreconditions)
 			if (reachableCEGuards.count(pre)){
-				gt.groundedNo = reachableTasksDfs.size();
-				reachableTasksDfs.push_back(gt);
+				gt->groundedNo = reachableTasksDfs.size();
+				reachableTasksDfs.push_back(*gt);
 			}
 	}
 

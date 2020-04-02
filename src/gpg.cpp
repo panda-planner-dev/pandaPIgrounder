@@ -22,16 +22,16 @@ std::vector<size_t> htTests;
 
 
 // Returns the new number of the visited grounded task
-int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, std::vector<GroundedMethod *> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, std::vector<int> & visitedTasks, size_t groundedTaskIdx)
+int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask*> & inputTasks, std::vector<GroundedMethod *> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, std::vector<int> & visitedTasks, size_t groundedTaskIdx)
 {
 	if (visitedTasks[groundedTaskIdx] != -1)
 		return visitedTasks[groundedTaskIdx];
 
-	GroundedTask & groundedTask = inputTasks[groundedTaskIdx];
+	GroundedTask * groundedTask = inputTasks[groundedTaskIdx];
 
 	// Copy and renumber the grounded task
 	int newTaskNo = outputTasks.size ();
-	GroundedTask taskCopy = groundedTask;
+	GroundedTask taskCopy = *groundedTask;
 	taskCopy.groundedNo = newTaskNo;
 	outputTasks.push_back (taskCopy);
 
@@ -46,9 +46,9 @@ int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMe
 	visitedTasks[groundedTaskIdx] = newTaskNo;
 
 	//for (auto groundedMethodIdx : groundedTask.groundedDecompositionMethods)
-	for (size_t groundedMethodIdx = 0; groundedMethodIdx < groundedTask.groundedDecompositionMethods.size (); ++groundedMethodIdx)
+	for (size_t groundedMethodIdx = 0; groundedMethodIdx < groundedTask->groundedDecompositionMethods.size (); ++groundedMethodIdx)
 	{
-		int groundedMethodNo = groundedTask.groundedDecompositionMethods[groundedMethodIdx];
+		int groundedMethodNo = groundedTask->groundedDecompositionMethods[groundedMethodIdx];
 		GroundedMethod * groundedMethod = inputMethods[groundedMethodNo];
 
 		// Copy and renumber the grounded method
@@ -75,23 +75,20 @@ int innerTdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMe
 	}
 
 	// release memory of this task
-	groundedTask.arguments.clear();
-	groundedTask.groundedDecompositionMethods.clear();
-	groundedTask.groundedPreconditions.clear();
-	groundedTask.groundedAddEffects.clear();
-	groundedTask.groundedDelEffects.clear();
+	delete groundedTask;
+	inputTasks[groundedTaskIdx] = 0;
 
 	return newTaskNo;
 }
 
-void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask> & inputTasks, std::vector<GroundedMethod *> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem)
+void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod> & outputMethods, std::vector<GroundedTask*> & inputTasks, std::vector<GroundedMethod *> & inputMethods, std::vector<Fact> & reachableFactsList, std::unordered_set<int> & reachableCEGuards, const Domain & domain, const Problem & problem)
 {
 	std::vector<int> visitedTasks (inputTasks.size (), -1);
 
-	for (const GroundedTask & task : inputTasks)
+	for (const GroundedTask * task : inputTasks)
 	{
-		if (task.taskNo != problem.initialAbstractTask)
+		if (task->taskNo != problem.initialAbstractTask)
 			continue;
-		innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, reachableFactsList, reachableCEGuards, domain, visitedTasks, task.groundedNo);
+		innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, reachableFactsList, reachableCEGuards, domain, visitedTasks, task->groundedNo);
 	}
 }
