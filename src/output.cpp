@@ -751,7 +751,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		write_task_name(pout,domain,task);
 		pout << std::endl;
 	}
-	int number_of_output_abstracts = ac - number_of_output_primitives;
+	int number_of_output_abstracts = ac - number_of_output_primitives - number_of_output_artificial_primitives;
 
 	
 	// artificial tasks
