@@ -124,7 +124,7 @@ int main (int argc, char * argv[])
 		else if (c == 'f')
 			futureCachingByPrecondition = true;
 		else if (c == 't')
-			printTimings = false;
+			printTimings = true;
 		else if (c == '2')
 			h2mutexes = true;
 		else if (c == 's')
