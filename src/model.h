@@ -458,6 +458,20 @@ struct GroundedTask
 	bool operator == (const GroundedTask & other) const;
 };
 
+/// hash function s.t. grounded tasks can be put into unordered sets
+namespace std {
+    template<> struct hash<GroundedTask>
+    {
+        std::size_t operator()(const GroundedTask& t) const noexcept
+        {
+			std::size_t h = t.taskNo;
+			for (const int & a : t.arguments) h = h*601 + a;
+
+			return h;
+        }
+    };
+}
+
 
 /**
  * @brief A grounded decomposition method.

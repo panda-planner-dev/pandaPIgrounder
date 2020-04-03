@@ -58,7 +58,7 @@ template <Literal T>
 struct GpgLiteralSet
 {
 	/// Contains a std::set<T> for each predicate.
-	std::vector<std::set<T>> factsByPredicate;
+	std::vector<std::unordered_set<T>> factsByPredicate;
 
 	/**
 	 * @brief Initializes the GpgLiteralSet.
@@ -106,7 +106,7 @@ struct GpgLiteralSet
 	 *
 	 * It is an error to call this function with a predicateNo which is greater than or equal to nPredicates as passed to the constructor of this GpgLiteralSet.
 	 */
-	const std::set<T> & getFactsForPredicate (int headNo) const
+	const std::unordered_set<T> & getFactsForPredicate (int headNo) const
 	{
 		assert (headNo < factsByPredicate.size ());
 
@@ -118,7 +118,7 @@ struct GpgLiteralSet
 	 *
 	 * If the given fact is not in the set, the returned iterator is equal to end(fact.getHeadNo()).
 	 */
-	typename std::set<T>::iterator find (const T & fact) const
+	typename std::unordered_set<T>::const_iterator find (const T & fact) const
 	{
 		return factsByPredicate[fact.getHeadNo ()].find (fact);
 	}
@@ -126,7 +126,7 @@ struct GpgLiteralSet
 	/**
 	 * @brief Returns the end iterator for the fact set for the given predicate.
 	 */
-	typename std::set<T>::iterator end (int headNo) const
+	typename std::unordered_set<T>::const_iterator end (int headNo) const
 	{
 		return factsByPredicate[headNo].end ();
 	}
@@ -246,6 +246,21 @@ struct GpgPreprocessedDomain
 	}
 };
 
+
+namespace std {
+    template<> struct hash<std::vector<int>>
+    {
+        std::size_t operator()(const std::vector<int>& v) const noexcept
+        {
+			std::size_t h = 0;
+			for (const int & a : v) h = h*601 + a;
+
+			return h;
+        }
+    };
+}
+
+
 /**
  * @brief Allows efficient access to Facts that could potentially satisfy a precondition.
  */
@@ -275,15 +290,18 @@ struct GpgStateMap
 	std::vector<const typename InstanceType::StateType*> addedStateElements;
 
 	/**
-	 * @brief A list of Facts for each task, precondition, initially matched precondition (-1 if not eligible) and set of assigned variables.
+	 * @brief A list of Facts for each task, precondition, 1+initially matched precondition (1+-1=0 if not eligible) and set of assigned variables.
 	 */
-	std::vector<std::vector<std::map<int, VariablesToFactListMap>>> factMap;
+	std::vector<std::vector<std::vector<VariablesToFactListMap>>> factMap;
+
+
+	std::vector<int> numberOfAntecedantsWithoutFact;
 
 	/**
 	 * @brief Whether a fact exists for each task, precondition, future precondition and initially matched precondition (-1 if not eligible) and set of assigned variables.
 	 * note that the index of the precondition is moved by one, i.e. 0 represents precondition -1 (i.e. none matched so far) and size-1 is actually size-2 as it is not necessary to check for the last precondition at all
 	 */
-	std::vector<std::vector<std::vector<std::map<int, std::set<std::vector<int>>>>>> consistency;
+	std::vector<std::vector<std::vector<std::map<int, std::unordered_set<std::vector<int>>>>>> consistency;
 	
 	/**
 	 * @brief Initializes the factMap.
@@ -291,6 +309,7 @@ struct GpgStateMap
 	GpgStateMap (const InstanceType & instance, const GpgPreprocessedDomain<InstanceType> & preprocessedDomain, bool _futureCachingByPrecondition) : 
 		instance (instance), preprocessedDomain (preprocessedDomain), futureCachingByPrecondition(_futureCachingByPrecondition)
 	{
+		numberOfAntecedantsWithoutFact.resize(instance.getNumberOfActions());
 		factMap.resize (instance.getNumberOfActions ());
 		consistency.resize (instance.getNumberOfActions ());
 
@@ -299,10 +318,13 @@ struct GpgStateMap
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 			factMap[actionIdx].resize (action.getAntecedents ().size ());
 			consistency[actionIdx].resize (action.getAntecedents().size () + 1);
+			numberOfAntecedantsWithoutFact[actionIdx] = action.getAntecedents().size();
 			
-			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents().size()+1; preconditionIdx++){
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents().size()+1; preconditionIdx++)
 				consistency[actionIdx][preconditionIdx].resize (action.getAntecedents ().size ());
-			}
+			
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents().size(); preconditionIdx++)
+				factMap[actionIdx][preconditionIdx].resize(action.getAntecedents().size()+1);
 		}
 	}
 
@@ -333,11 +355,11 @@ struct GpgStateMap
 					goto next_action;
 
 				if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at (-1).count (var) > 0)
-				{
-					values.push_back (stateElement->arguments[argumentIdx]);
-				}
+					values.push_back (value);
 			}
-			factMap[actionIdx][preconditionIdx][-1][values].push_back (stateElementIndex );
+			if (factMap[actionIdx][preconditionIdx][0].size() == 0)
+				numberOfAntecedantsWithoutFact[actionIdx]--;
+			factMap[actionIdx][preconditionIdx][0][values].push_back (stateElementIndex );
 
 
 			// Eligible initially matched preconditions
@@ -347,13 +369,14 @@ struct GpgStateMap
 				for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
 				{
 					int var = precondition.arguments[argumentIdx];
-					if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at (initiallyMatchedPreconditionIdx).count (var) > 0)
-					{
-						values.push_back (stateElement->arguments[argumentIdx]);
-					}
+					int value = stateElement->arguments[argumentIdx];
+					// we have already checked this value in the previous loop	
+
+					if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at(initiallyMatchedPreconditionIdx).count(var) > 0)
+						values.push_back(value);
 				}
 
-				factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][values].push_back (stateElementIndex );
+				factMap[actionIdx][preconditionIdx][1+initiallyMatchedPreconditionIdx][values].push_back (stateElementIndex );
 			}
 
 			if (! instance.pruneWithFutureSatisfiablility[actionIdx]) continue;
@@ -401,11 +424,10 @@ next_action:;
 		std::vector<std::tuple<int,int,int>> eligibleSizes;
 		for (size_t a = 0; a < factMap.size(); a++){
 			for (size_t p = 0; p < factMap[a].size(); p++){
-				for (const auto & entry : factMap[a][p]){
-					if (entry.first == -1) continue;
-					if (!preprocessedDomain.eligibleInitialPreconditionsByAction[a].count(entry.first)) continue;
+				for (size_t pp = 1; pp < factMap[a][p].size(); pp++){
+					if (!preprocessedDomain.eligibleInitialPreconditionsByAction[a].count(pp-1)) continue;
 
-					eligibleSizes.push_back(std::make_tuple(entry.second.size(), a, entry.first));
+					eligibleSizes.push_back(std::make_tuple(factMap[a][p][pp].size(), a, pp-1));
 				}
 			}
 		}
@@ -419,7 +441,7 @@ next_action:;
 			const_cast<GpgPreprocessedDomain<InstanceType> &>(preprocessedDomain).eligibleInitialPreconditionsByAction[a].erase(pre);
 			
 			for (size_t p = 0; p < factMap[a].size(); p++)
-				factMap[a][p][pre].clear();
+				factMap[a][p][1+pre].clear();
 		}
 	}
 
@@ -452,21 +474,24 @@ next_action:;
 		
 		// generate return set
 		std::vector<typename InstanceType::StateType> ret;
-		for (int & x : factMap[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx][assignedVariableValues])
+		for (int & x : factMap[actionIdx][preconditionIdx][1+initiallyMatchedPreconditionIdx][assignedVariableValues])
 			ret.push_back(*addedStateElements[x]);
 
 
 		return ret;
 	}
 
+	bool hasInstanceForAllAntecedants(size_t actionIdx, int initiallyMatchedPreconditionIdx){
+		if (numberOfAntecedantsWithoutFact[actionIdx] == 0) return true;
+		if (numberOfAntecedantsWithoutFact[actionIdx] >= 2) return false;
+
+		return factMap[actionIdx][initiallyMatchedPreconditionIdx][0].size() == 0;
+	}
+
+
+
 	// precondition index may be -1 indicating that no precondition has been set yet, except for the initially matched one	
 	bool hasPotentiallyConsistentExtension (size_t actionIdx, size_t preconditionIdx, const VariableAssignment & assignedVariables, int initiallyMatchedPreconditionIdx){
-		//std::cout << "Call " << actionIdx << " " << preconditionIdx << " " << initiallyMatchedPreconditionIdx << std::endl;
-		//for (auto & v : preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx+1].at (initiallyMatchedPreconditionIdx))
-		//	std::cout << v << " ";
-		//std::cout << std::endl;
-
-
 		// for testing: always disregard the initially matched Precondition
 
 		bool initiallyMatchedPreconditionIsEligible = preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx].count (initiallyMatchedPreconditionIdx) > 0;
@@ -598,6 +623,9 @@ struct GpgPlanningGraph
 };
 
 extern std::map<int,int> liftedGroundingCount;
+extern std::map<int,double> stateElementGroundingTime;
+extern std::map<int,double> stateElementMPTime;
+extern std::map<int,double> stateElementInsertTime;
 extern std::map<int,double> liftedGroundingTime;
 extern std::map<int,double> instantiationtime;
 extern std::map<int,double> instantiationtime2;
@@ -607,8 +635,8 @@ static void gpgAssignVariables (
 	const InstanceType & instance,
 	const HierarchyTyping * hierarchyTyping,
 	std::vector<typename InstanceType::ResultType *> & output,
-	std::queue<typename InstanceType::StateType> & toBeProcessedQueue,
-	std::set<typename InstanceType::StateType> & toBeProcessedSet,
+	std::queue<typename std::unordered_set<typename InstanceType::StateType>::const_iterator> & toBeProcessedQueue,
+	std::unordered_set<typename InstanceType::StateType> & toBeProcessedSet,
 	const GpgLiteralSet<typename InstanceType::StateType> & processedStates,
 	int actionNo,
 	VariableAssignment & assignedVariables,
@@ -679,7 +707,7 @@ static void gpgAssignVariables (
 			//std::clock_t cc_begin = std::clock();
 			// Check if we already know this fact
 			bool found = false;
-			typename std::set<typename InstanceType::StateType>::iterator factIt;
+			typename std::unordered_set<typename InstanceType::StateType>::const_iterator factIt;
 			if ((factIt = processedStates.find (addState)) != processedStates.end (addEffect.getHeadNo ()))
 			{
 				addState = *factIt;
@@ -700,8 +728,8 @@ static void gpgAssignVariables (
 				// New state element; give it a number
 				addState.groundedNo = processedStates.size () + toBeProcessedSet.size ();
 
-				toBeProcessedQueue.push (addState);
-				toBeProcessedSet.insert (addState);
+				auto [it,_] = toBeProcessedSet.insert (addState);
+				toBeProcessedQueue.push (it);
 			}
 
 			// Add this add effect to the list of add effects of the result we created
@@ -746,36 +774,66 @@ void printStatistics(const InstanceType & instance){
 	bool outputPerPrec = true;
 	std::cerr << "========================================" << std::endl;
 	std::cerr << "Total fact misses: " << (totalFactTests - totalFactHits) << " / " << totalFactTests << " = " << std::fixed << std::setprecision (3) << 100.0 * (totalFactTests - totalFactHits) / totalFactTests << " % (" << totalFactHits << " hits)" << std::endl;
-	for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
-	{
-		//if (i != 2) continue;
-		const auto & action = instance.getAllActions ()[i];
-		std::cerr << "Fact misses for action " << i << " (" << action.name << "):" << std::endl;
-		std::cerr << "Rejects Future: " << futureReject[i] << " HT: " << htReject[i] << std::endl;
-		int actionTotal = 0;
-		for (size_t k = 0; k < action.getAntecedents ().size (); ++k)
-		{
-			if (outputPerPrec) std::cerr << "  Initially matched: " << k+1 << std::endl;
-			for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
-			{
-				actionTotal += factTests[i][j][k];
-				if (outputPerPrec) {
-					std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo());
-					for (int arg : action.getAntecedents()[j].arguments)
-							std::cerr << " " << arg;
-					std::cerr << "): ";
-				}
-				if (outputPerPrec) std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << " no extensions " << noextensionFound[i][j][k] << std::endl;
-			}
-		}
-		std::cerr << "total: " << actionTotal << std::endl;
-	}
+	//for (size_t i = 0; i < instance.getNumberOfActions (); ++i)
+	//{
+	//	//if (i != 2) continue;
+	//	const auto & action = instance.getAllActions ()[i];
+	//	std::cerr << "Fact misses for action " << i << " (" << action.name << "):" << std::endl;
+	//	std::cerr << "Rejects Future: " << futureReject[i] << " HT: " << htReject[i] << std::endl;
+	//	int actionTotal = 0;
+	//	for (size_t k = 0; k < action.getAntecedents ().size (); ++k)
+	//	{
+	//		if (outputPerPrec) std::cerr << "  Initially matched: " << k+1 << std::endl;
+	//		for (size_t j = 0; j < action.getAntecedents ().size (); ++j)
+	//		{
+	//			actionTotal += factTests[i][j][k];
+	//			if (outputPerPrec) {
+	//				std::cerr << "    Precondition " << (j + 1) << " (" << instance.getAntecedantName(action.getAntecedents()[j].getHeadNo());
+	//				for (int arg : action.getAntecedents()[j].arguments)
+	//						std::cerr << " " << arg;
+	//				std::cerr << "): ";
+	//			}
+	//			if (outputPerPrec) std::cerr << (factTests[i][j][k] - factHits[i][j][k]) << " / " << factTests[i][j][k] << " = " << std::fixed << std::setprecision (3) << 100.0 * (factTests[i][j][k] - factHits[i][j][k]) / factTests[i][j][k] << " % (" << factHits[i][j][k] << " hits)" << " future rejects " << factFutureRejects[i][j][k] << " no extensions " << noextensionFound[i][j][k] << std::endl;
+	//		}
+	//	}
+	//	std::cerr << "total: " << actionTotal << std::endl;
+	//}
 	std::cerr << "Current Groundings: " << std::endl;
 	for (auto g : liftedGroundingCount)
 		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
+
+	double total = 0;
 	std::cerr << "Grounding Time: " << std::endl;
-	for (auto g : liftedGroundingTime)
+	for (auto g : liftedGroundingTime){
 		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
+		total += g.second;
+	}
+	std::cerr << "  total: " << total << std::endl;
+
+	total = 0;
+	std::cerr << "Grounding Time: " << std::endl;
+	for (auto g : stateElementGroundingTime) {
+		std::cerr << "  " << instance.getAntecedantName(g.first) << " " << g.second << std::endl;
+		total += g.second;
+	}
+	std::cerr << "  total: " << total << std::endl;
+
+	total = 0;
+	std::cerr << "Match Precondition Time: " << std::endl;
+	for (auto g : stateElementMPTime) {
+		std::cerr << "  " << instance.getAntecedantName(g.first) << " " << g.second << std::endl;
+		total += g.second;
+	}
+	std::cerr << "  total: " << total << std::endl;
+
+	total = 0;
+	std::cerr << "Insert Time: " << std::endl;
+	for (auto g : stateElementInsertTime) {
+		std::cerr << "  " << instance.getAntecedantName(g.first) << " " << g.second << std::endl;
+		total += g.second;
+	}
+	std::cerr << "  total: " << total << std::endl;
+
 	std::cerr << "Instantiaton Time: " << std::endl;
 	for (auto g : instantiationtime)
 		std::cerr << "  " << instance.getAllActions()[g.first].name << " " << g.second << std::endl;
@@ -789,8 +847,8 @@ void gpgMatchPrecondition (
 	const InstanceType & instance,
 	const HierarchyTyping * hierarchyTyping,
 	std::vector<typename InstanceType::ResultType *> & output,
-	std::queue<typename InstanceType::StateType> & toBeProcessedQueue,
-	std::set<typename InstanceType::StateType> & toBeProcessedSet,
+	std::queue<typename std::unordered_set<typename InstanceType::StateType>::const_iterator> & toBeProcessedQueue,
+	std::unordered_set<typename InstanceType::StateType> & toBeProcessedSet,
 	const GpgLiteralSet<typename InstanceType::StateType> & processedStates,
 	GpgStateMap<InstanceType> & stateMap,
 	size_t actionNo,
@@ -799,6 +857,7 @@ void gpgMatchPrecondition (
 	const typename InstanceType::StateType & initiallyMatchedState,
 	std::vector<int> & matchedPreconditions,
 	size_t preconditionIdx,
+	bool printTimings,
 	bool quietMode
 )
 {
@@ -837,7 +896,7 @@ void gpgMatchPrecondition (
 		//	return
 		
 		
-		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1, quietMode);
+		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1, printTimings, quietMode);
 		return;
 	}
 
@@ -990,16 +1049,16 @@ void gpgMatchPrecondition (
 			}
 		}
 
-		//if (false && totalFactTests % 100000 == 0)
-		//{
-		//	printStatistics(instance);
-		//}
+		if (printTimings && totalFactTests % 100000 == 0)
+		{
+			// printStatistics(instance);
+		}
 
 		if (factMatches)
 		{
 			foundExtension = true;
 			matchedPreconditions[preconditionIdx] = stateElement.groundedNo;
-			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1, quietMode);
+			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStates, stateMap, actionNo, assignedVariables, initiallyMatchedPrecondition, initiallyMatchedState, matchedPreconditions, preconditionIdx + 1, printTimings, quietMode);
 		}
 
 		for (int newlyAssignedVar : newlyAssigned)
@@ -1022,13 +1081,13 @@ struct GpgTdg
 
 	const Problem & problem;
 
-	const std::vector<GroundedTask *> & tasks;
+	std::vector<GroundedTask *> & tasks;
 
 	bool allFutureSatisfiabilityDisabled = false;
 	std::vector<bool> pruneWithHierarchyTyping;
 	std::vector<bool> pruneWithFutureSatisfiablility;
 
-	GpgTdg (const Domain & domain, const Problem & problem, const std::vector<GroundedTask *> & tasks) : domain (domain), problem (problem), tasks (tasks) {
+	GpgTdg (const Domain & domain, const Problem & problem, std::vector<GroundedTask *> & tasks) : domain (domain), problem (problem), tasks (tasks) {
 		for (size_t i = 0; i < domain.decompositionMethods.size(); i++){
 			pruneWithFutureSatisfiablility.push_back(true);
 			pruneWithHierarchyTyping.push_back(true);
@@ -1036,6 +1095,9 @@ struct GpgTdg
 	}
 	int getInitialStateStart (void) 
 	{
+		// sort by task number
+		std::sort(tasks.begin(), tasks.end(), [ ](const auto& lhs, const auto& rhs){ return lhs->taskNo < rhs->taskNo; });
+
 		return 0;
 	}
 
@@ -1141,8 +1203,8 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 
 	// We need a queue to process new state elements in the correct order (which makes things faster),
 	// and a set to prevent duplicate additions to the queue.
-	std::queue<typename InstanceType::StateType> toBeProcessedQueue;
-	std::set<typename InstanceType::StateType> toBeProcessedSet;
+	std::queue<typename std::unordered_set<typename InstanceType::StateType>::const_iterator> toBeProcessedQueue;
+	std::unordered_set<typename InstanceType::StateType> toBeProcessedSet;
 
 	// Consider all facts from the initial state as not processed yet
 	auto it = const_cast<InstanceType &>(instance).getInitialStateStart();
@@ -1156,8 +1218,8 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		// Filter duplicate init state elements (seems to happen in some test cases?)
 		if (toBeProcessedSet.count (initStateElement) == 0)
 		{
-			toBeProcessedQueue.push (initStateElement);
-			toBeProcessedSet.insert (initStateElement);
+			auto [it,_] = toBeProcessedSet.insert (initStateElement);
+			toBeProcessedQueue.push (it);
 		}
 
 		// move to next
@@ -1176,6 +1238,12 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 	futureReject.clear(); futureReject.resize(instance.getNumberOfActions());
 	futureTests.clear(); futureTests.resize(instance.getNumberOfActions());
 	
+	stateElementGroundingTime.clear();
+	stateElementMPTime.clear();
+	stateElementInsertTime.clear();
+	liftedGroundingTime.clear();
+	instantiationtime.clear();
+	instantiationtime2.clear();
 	
 	liftedGroundingCount.clear();
 	factTests.clear ();
@@ -1212,33 +1280,47 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		VariableAssignment assignedVariables (action.variableSorts.size ());
 		typename InstanceType::StateType f;
 		std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
-		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions, 0, quietMode);
+		gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, 0, f, matchedPreconditions, 0, printTimings, quietMode);
 	}
 	
 	if (!quietMode) std::cerr << "Done." << std::endl;
 
 	while (!toBeProcessedQueue.empty ())
 	{
+		std::clock_t se_begin;
+		if (!quietMode && printTimings) se_begin = std::clock();
+		
 		assert (toBeProcessedQueue.size () == toBeProcessedSet.size ());
 
 		// Take any not-yet-processed state element
-		const typename InstanceType::StateType stateElement = toBeProcessedQueue.front ();
-		toBeProcessedQueue.pop ();
-		toBeProcessedSet.erase (stateElement);
-
-		std::clock_t c_start;
-		if (!quietMode && printTimings) {
-			std::cout << stateElement.getHeadNo() << " ";	
-			std::cout << instance.getAntecedantName(stateElement.getHeadNo()) << std::endl;	
-			c_start = std::clock();
-		}
+		const typename std::unordered_set<typename InstanceType::StateType>::const_iterator stateElementIterator = toBeProcessedQueue.front ();
+		const typename InstanceType::StateType stateElement = *stateElementIterator;
+		toBeProcessedQueue.pop();
+		toBeProcessedSet.erase(stateElementIterator);
 
 		const typename InstanceType::StateType * elementPointer = processedStateElements.insert (stateElement);
+		std::clock_t c_start;
+		if (!quietMode && printTimings) {
+			//std::cout << stateElement.getHeadNo() << " ";	
+			//std::cout << instance.getAntecedantName(stateElement.getHeadNo()) << std::endl;	
+			c_start = std::clock();
+		}
+		
 		stateMap.insertState (elementPointer);
+		
+
+		if (!quietMode && printTimings) {
+			std::clock_t i_end = std::clock();
+			double time_elapsed_ms = 1000.0 * (i_end-c_start) / CLOCKS_PER_SEC;
+			stateElementInsertTime[stateElement.getHeadNo()] += time_elapsed_ms;
+		}
 
 		// Find tasks with this predicate as precondition
 		for (const auto & [actionIdx, preconditionIdx] : preprocessed.preconditionsByPredicate[stateElement.getHeadNo ()])
 		{
+			if (!stateMap.hasInstanceForAllAntecedants(actionIdx,preconditionIdx))
+				continue;
+
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 
 			assert (action.getAntecedents ()[preconditionIdx].getHeadNo () == stateElement.getHeadNo ());
@@ -1254,27 +1336,34 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 			if (instance.pruneWithHierarchyTyping[actionIdx] && hierarchyTyping != nullptr &&
 					!hierarchyTyping->isAssignmentCompatible<typename InstanceType::ActionType> (actionIdx, assignedVariables))
 				continue;
-		
+			
 			std::clock_t cc_begin;
 		   	if (!quietMode && printTimings) cc_begin = std::clock();
 
 			std::vector<int> matchedPreconditions (action.getAntecedents ().size (), -1);
 			matchedPreconditions[preconditionIdx] = stateElement.groundedNo;
-			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, preconditionIdx, stateElement, matchedPreconditions, 0, quietMode);
+			gpgMatchPrecondition (instance, hierarchyTyping, output, toBeProcessedQueue, toBeProcessedSet, processedStateElements, stateMap, actionIdx, assignedVariables, preconditionIdx, stateElement, matchedPreconditions, 0, printTimings, quietMode);
 			
 			if (!quietMode && printTimings){
 				std::clock_t cc_end = std::clock();
 				double time_elapsed_ms = 1000.0 * (cc_end-cc_begin) / CLOCKS_PER_SEC;
 				liftedGroundingTime[actionIdx] += time_elapsed_ms;
+				stateElementMPTime[stateElement.getHeadNo()] += time_elapsed_ms;
 			}
 		}
 
 		if (!quietMode && printTimings){
-			std::clock_t c_end = std::clock();
-			std::cout << toBeProcessedQueue.size() << " " << output.size() << std::endl;
+			//std::clock_t c_end = std::clock();
+			//std::cout << toBeProcessedQueue.size() << " " << output.size() << std::endl;
 
-			double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
-			std::cout << "CPU time used: " << time_elapsed_ms << " ms\n";
+			//double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+			//std::cout << "CPU time used: " << time_elapsed_ms << " ms\n";
+		}
+		
+		if (!quietMode && printTimings){
+			std::clock_t se_end = std::clock();
+			double time_elapsed_ms = 1000.0 * (se_end-se_begin) / CLOCKS_PER_SEC;
+			stateElementGroundingTime[stateElement.getHeadNo()] += time_elapsed_ms;
 		}
 
 	}

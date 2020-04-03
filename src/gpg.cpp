@@ -4,6 +4,9 @@
 #include "groundedGPG.h"
 
 std::map<int,int> liftedGroundingCount;
+std::map<int,double> stateElementGroundingTime;
+std::map<int,double> stateElementMPTime;
+std::map<int,double> stateElementInsertTime;
 std::map<int,double> liftedGroundingTime;
 std::map<int,double> instantiationtime;
 std::map<int,double> instantiationtime2;
