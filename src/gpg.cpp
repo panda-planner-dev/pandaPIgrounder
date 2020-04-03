@@ -93,5 +93,6 @@ void tdgDfs (std::vector<GroundedTask> & outputTasks, std::vector<GroundedMethod
 		if (task->taskNo != problem.initialAbstractTask)
 			continue;
 		innerTdgDfs (outputTasks, outputMethods, inputTasks, inputMethods, reachableFactsList, reachableCEGuards, domain, visitedTasks, task->groundedNo);
+		return;
 	}
 }
