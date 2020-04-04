@@ -35,5 +35,9 @@ You may want to add one of the following command line options
  - -l: No literal pruning, do not remove irrelevant facts
  - -e: No abstract expansion, do not expand abstract tasks with only one applicable method
  - -m: No method precondition pruning, do not remove method precondition actions, that carry neither preconditions nor effects (due to literal pruning)
+ - -h: Disable hiearchy typing. This will not change the grounding, but will only make the grounding slower on some domains (especially Minecraft)
+ - -f: Enable future precondition caching. This will not change the grounding, but is a technique to try to make the GPG faster
+ - -D: Remove duplicat actions. This does only apply to artificial primitive tasks (the ones inserted for method preconditions or other compilations) currently
+ - -E: No empty methods. Adds a zero-cost no-op to empty methods. The pandaPIengine's progression planner needs this property
 
-Done use the command line option ``-in``, as gengetopt will missinterpret it.
+Don't use the command line option ``-in``, as gengetopt will missinterpret it.
