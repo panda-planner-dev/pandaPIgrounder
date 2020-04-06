@@ -13,10 +13,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
-		int facts,
-		int absTask,
-		int primTask,
-		int methods,
 		std::unordered_set<int> initFacts,
 		std::unordered_set<int> initFactsPruned,
 		std::unordered_set<Fact> reachableFactsSet,
@@ -36,10 +32,6 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
-		int facts,
-		int absTask,
-		int primTask,
-		int methods,
 		bool quietMode	
 		);
 

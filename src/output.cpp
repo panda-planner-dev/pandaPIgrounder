@@ -56,10 +56,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
-		int facts,
-		int absTask,
-		int primTask,
-		int methods,
 		std::unordered_set<int> initFacts,
 		std::unordered_set<int> initFactsPruned,
 		std::unordered_set<Fact> reachableFactsSet,
@@ -204,8 +200,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			per_sas_fact_from_to.push_back(std::make_pair(from,to));
 	}
 
-
-	DEBUG(std::cout << fn << " of " << facts << " facts covered by SAS+ groups" << std::endl);
+	
+	DEBUG(
+			int facts = 0; for (bool b : prunedFacts) if (!b) facts++;
+			std::cout << fn << " of " << facts << " facts covered by SAS+ groups" << std::endl
+			);
 
 	// to distinguish between SAS+ and STRIPS facts later on
 	const int number_of_sas_covered_facts = fn;
@@ -739,9 +738,15 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	pout << -1 << std::endl;
 
+	int abstractTasks = 0;
+	for (GroundedTask & task : reachableTasks){
+		if (prunedTasks[task.groundedNo]) continue;
+		if (task.taskNo < domain.nPrimitiveTasks) continue;
+		abstractTasks++;
+	}
 	
 	pout << std::endl << ";; tasks (primitive and abstract)" << std::endl;
-	pout << number_of_actions_in_output +  absTask + number_of_additional_abstracts + (contains_empty_method ? 1 : 0) << std::endl;
+	pout << number_of_actions_in_output + abstractTasks + number_of_additional_abstracts + (contains_empty_method ? 1 : 0) << std::endl;
 	
 	// if necessary additional noop
 	if (contains_empty_method){
@@ -787,8 +792,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	pout << std::endl << ";; initial abstract task" << std::endl;
 	pout << initialAbstract << std::endl;
 
+	int number_of_actual_methods = 0;
+	for (bool b : prunedMethods) if (!b) number_of_actual_methods++;
+	
 	pout << std::endl << ";; methods" << std::endl;
-	pout << methods + number_of_additional_methods << std::endl;
+	pout << number_of_actual_methods + number_of_additional_methods << std::endl;
 	int number_of_output_methods = 0;
 	for (auto & method : reachableMethods){
 		if (prunedMethods[method.groundedNo]) continue;
@@ -852,7 +860,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 	}
 	
-	if (!quietMode) std::cout << "Final Statistics: F " << fn << " S " << sas_groups.size() << " M " << out_mutexes.size() << " I " << out_invariants.size() << " P " << number_of_output_primitives << " S " << number_of_output_artificial_primitives << " A " << number_of_output_abstracts << " M " << number_of_output_methods << std::endl;
+	if (!quietMode) std::cout << "Final Statistics: F " << fn << " S " << sas_groups.size() << " SC " << number_of_sas_covered_facts << " M " << out_mutexes.size() << " I " << out_invariants.size() << " P " << number_of_output_primitives << " S " << number_of_output_artificial_primitives << " A " << number_of_output_abstracts << " M " << number_of_output_methods << std::endl;
 
 	// exiting this way is faster as data structures will not be cleared ... who needs this anyway
 	if (!quietMode) std::cerr << "Exiting." << std::endl;
@@ -890,10 +898,6 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
-		int facts,
-		int absTask,
-		int primTask,
-		int methods,
 		bool quietMode	
 		){
 

@@ -124,42 +124,9 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		return;
 	}
 
-	// get statistics
-	int facts = 0;
-	int abstractTasks = 0;
-	int primitiveTasks = 0;
-	int methodPreconditionPrimitiveTasks = 0;
-	int methods = 0;
-	for (Fact & fact : initiallyReachableFacts){
-		if (prunedFacts[fact.groundedNo]) continue;
-		facts++;
-	}
-	
-	for(int i = 0; i < initiallyReachableTasks.size(); i++)
-		if (! prunedTasks[i]){
-			if (initiallyReachableTasks[i].taskNo >= domain.nPrimitiveTasks)
-				abstractTasks ++;
-			else {
-				if (domain.tasks[initiallyReachableTasks[i].taskNo].name.rfind("__method_precondition_",0) == 0)
-					methodPreconditionPrimitiveTasks++;
-				else
-					primitiveTasks++;
-			}
-		}
-
-	for (auto & method : initiallyReachableMethods){
-		if (prunedMethods[method.groundedNo]) continue;
-		methods++;
-	}
-	
-
-	// output statistics	
-	if (!quietMode) std::cerr << "Statistics: " << facts << " " << primitiveTasks << " " << methodPreconditionPrimitiveTasks << " " << abstractTasks << " " << methods << std::endl;
-
 	if (outputForPlanner){
 		if (outputHDDL)
-			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
-				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, quietMode);
+			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
 		else {
 			// prepare data structures that are needed for efficient access
 			std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
@@ -215,7 +182,6 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 
 			
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
-				facts, abstractTasks, primitiveTasks + methodPreconditionPrimitiveTasks, methods, 
 				initFacts, initFactsPruned, reachableFactsSet,
 				sas_groups, further_mutex_groups, h2_invariants,
 				sas_variables_needing_none_of_them,
