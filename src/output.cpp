@@ -85,12 +85,22 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 	}
 
+	std::unordered_set<int> goal_facts;
+	for (const Fact & f : problem.goal){
+		auto it = reachableFactsSet.find(f);
+		if (it != reachableFactsSet.end())
+			goal_facts.insert(it->groundedNo);
+	}
 
 	// find candidates for fact elimination by duplication
 	std::map<int,std::vector<int>> cover_pruned;
 	std::unordered_set<int> pruned_sas_groups;
 	for (const std::unordered_set<int> & m_g : further_mutex_groups){
 		if (m_g.size() != 2) continue; // only pairs of facts are eligible
+		bool is_in_goal = false;
+		for (int x : m_g) is_in_goal |= goal_facts.count(x);
+		if (is_in_goal) continue; // do not prune facts that occur in the goal
+
 		int fact_in_large_group = -1;
 		int og_large = -1;
 		int other_fact = -1;
@@ -326,8 +336,10 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 	pout << out_mutexes.size() << std::endl;
 	for (const auto & mutex : out_mutexes){
-		for (const int & elem : mutex)
+		for (const int & elem : mutex){
+			assert(elem >= 0);
 			pout << elem << " ";
+		}
 		pout << -1 << std::endl;
 	}
 	pout << std::endl;
@@ -671,8 +683,13 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 	pout << std::endl << ";; initial state" << std::endl;
 	for (size_t sas_g = 0; sas_g < sas_groups.size(); sas_g++){
+		if (pruned_sas_groups.count(sas_g)) continue; // has been cover pruned
+		
 		bool didOutput = false;
 		for (const int & f : sas_groups[sas_g]) if (initFacts.count(f)){
+			assert(!prunedFacts[f]);
+			assert(!cover_pruned.count(f));
+			assert(reachableFacts[f].outputNo >= 0);
 			pout << reachableFacts[f].outputNo << " ";
 			didOutput = true;
 		}
@@ -684,6 +701,9 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	
 
 	for (int fID : initFacts){
+		if (prunedFacts[fID]) continue;
+		if (cover_pruned.count(fID)) continue;
+		
 		int outputNo = reachableFacts[fID].outputNo;
 		if (outputNo < number_of_sas_covered_facts) continue; // is a sas+ fact
 		pout << outputNo << " ";
