@@ -137,6 +137,11 @@ int main (int argc, char * argv[])
 		return 1;
 	}
 
+	if (!removeUselessPredicates && h2mutexes){
+		std::cout << "To use H2-mutexes, useless predicates must be removed, else the H2 preprocessor may crash ..." << std::endl;
+		return 1;
+	}
+
 	if (debugMode)
 		setDebugMode (debugMode);
 
