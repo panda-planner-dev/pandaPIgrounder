@@ -10,6 +10,25 @@
 #include "debug.h"
 
 
+
+/// hash function s.t. conditional effects can be checked for duplicates
+namespace std {
+    template<> struct hash<std::pair<std::unordered_set<int>,int>>
+    {
+        std::size_t operator()(const std::pair<std::unordered_set<int>,int> & m) const noexcept
+        {
+			std::vector<int> v;
+			for (const int & a : m.first) v.push_back(a);
+			std::sort(v.begin(),v.end());
+			std::size_t h = 0;
+			for (const int & a : v) h = h*601 + a;
+			h = h*601 + m.second;
+			return h;
+        }
+    };
+}
+
+
 void instantiate_cover_pruned_dfs(std::map<int,int> & cover_pruned_precs, std::map<int,std::vector<int>> & cover_pruned, std::vector<int> & cover_pruned_facts, int curpos, std::vector<int> & current_assignment, std::vector<std::vector<int>> & all_assignments){
 	if (curpos == cover_pruned_facts.size()){
 		all_assignments.push_back(current_assignment);
@@ -631,49 +650,72 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			// ACTUAL
 			pout << costs << std::endl;
 			// preconditions
+			std::unordered_set<int> p_out;
 			for (const int & prec : prec_out)
 				if (prec >= 0)
-					pout << prec << " ";
+					p_out.insert(prec);
 				else {
 					int alternate = cover_assignment[-prec-1];
 					if (alternate >= 0)
-						pout << reachableFacts[alternate].outputNo << " ";
+						p_out.insert(reachableFacts[alternate].outputNo);
 					else
-						pout << none_of_them_per_sas_group[-alternate-1] << " ";
+						p_out.insert(none_of_them_per_sas_group[-alternate-1]);
 				}
 
+			for (const int & x : p_out)
+				pout << x << " ";
 			pout << -1 << std::endl;
 
+
+			std::unordered_set<std::pair<std::unordered_set<int>,int>> a_out;
 			// output add effects
 			for (const auto & add : add_out){
-				pout << add.first.size() << " ";
+				std::pair<std::unordered_set<int>,int> op;
 				for (const int & p : add.first) 
 					if (p >= 0)
-						pout << p << " ";
+						op.first.insert(p);
 					else {
 						int alternate = cover_assignment[-p-1];
 						if (alternate >= 0)
-							pout << reachableFacts[alternate].outputNo << " ";
+							op.first.insert(reachableFacts[alternate].outputNo);
 						else
-							pout << none_of_them_per_sas_group[-alternate-1] << " ";
+							op.first.insert(none_of_them_per_sas_group[-alternate-1]);
 					}
+				op.second = add.second;
+				a_out.insert(op);
+			}
+
+			// output add effects
+			for (const auto & add : a_out){
+				pout << add.first.size() << " ";
+				for (const int & p : add.first) 
+					pout << p << " ";
 				pout << add.second << "  ";
 			}
 			pout << -1 << std::endl;
 
 			// output del effects
+			std::unordered_set<std::pair<std::unordered_set<int>,int>> d_out;
 			for (const auto & del : del_out){
-				pout << del.first.size() << " " ;
+				std::pair<std::unordered_set<int>,int> op;
 				for (const int & p : del.first)
 					if (p >= 0)
-						pout << p << " ";
+						op.first.insert(p);
 					else {
 						int alternate = cover_assignment[-p-1];
 						if (alternate >= 0)
-							pout << reachableFacts[alternate].outputNo << " ";
+							op.first.insert(reachableFacts[alternate].outputNo);
 						else
-							pout << none_of_them_per_sas_group[-alternate-1] << " ";
+							op.first.insert(none_of_them_per_sas_group[-alternate-1]);
 					}
+				op.second = del.second;
+				d_out.insert(op);
+			}
+
+			for (const auto & del : d_out){
+				pout << del.first.size() << " " ;
+				for (const int & p : del.first)
+					pout << p << " ";
 				pout << del.second << "  ";
 			}
 			pout << -1 << std::endl;
@@ -754,7 +796,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	
 	// output names of primitives
-	for (const auto & [tID, costs, prec_out, add_out, del_out, instances] : output_actions){
+	for (const auto & [tID, _1, _2, _3, _4, instances] : output_actions){
 		GroundedTask & task = reachableTasks[tID];
 
 		for (const std::vector<int> cover_assignment : instances){
