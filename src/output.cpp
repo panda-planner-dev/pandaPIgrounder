@@ -831,7 +831,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 		// no empty methods if desired. If this method would be empty, add a no-op.
 		if (contains_empty_method && method.preconditionOrdering.size() == 0)
-			pout << "0 " << std::endl;
+			pout << "0 ";
 
 		pout << "-1" << std::endl;
 
