@@ -79,7 +79,12 @@ bool Task::doesFactFulfilPrecondition (VariableAssignment * outputVariableAssign
 		if (domain.sorts[argumentSort].members.count (fact.arguments[argIdx]) == 0)
 			return false;
 
-		assignedVariables[taskVarIdx] = fact.arguments[argIdx];
+		// if the variable has already been assigned, the values must be consistent
+		if (assignedVariables.isAssigned(taskVarIdx)){
+			if (assignedVariables[taskVarIdx] != fact.arguments[argIdx])
+				return false;
+		} else	
+			assignedVariables[taskVarIdx] = fact.arguments[argIdx];
 	}
 
 	if (outputVariableAssignment != NULL)
