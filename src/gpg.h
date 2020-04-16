@@ -1203,6 +1203,13 @@ struct GpgTdg
 			// "+at ?var1 ?var2" as a precondition, where ?var1 must be a package (and not a truck).
 			if (domain.sorts[argumentSort].members.count (groundedTask.arguments[argIdx]) == 0)
 				return false;
+	
+			// if the variable has already been assigned, the values must be consistent
+			if (assignedVariables.isAssigned(taskVarIdx)){
+				if (assignedVariables[taskVarIdx] != groundedTask.arguments[argIdx])
+					return false;
+			} else	
+				assignedVariables[taskVarIdx] = groundedTask.arguments[argIdx];
 
 			assignedVariables[taskVarIdx] = groundedTask.arguments[argIdx];
 		}
