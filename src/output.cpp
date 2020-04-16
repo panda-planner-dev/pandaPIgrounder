@@ -497,10 +497,17 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				cover_pruned_precs[prec] = pos;
 			}
 		}
-		
+	
+		DEBUG(std::cout << "Number of cover pruned preconditions: " << cover_pruned_precs.size() << std::endl);
+
 		// analyse precondition
 		std::vector<int> prec_out;
 		for (int & prec : task.groundedPreconditions) if (!prunedFacts[prec]){
+			DEBUG(std::cout << "  PREC(" << prec  << "):" << reachableFacts[prec].predicateNo;
+					for (int arg : reachableFacts[prec].arguments) std::cout << " " << arg;
+					std::cout << std::endl;
+					);
+
 			if (! cover_pruned_precs.count(prec))
 				prec_out.push_back(reachableFacts[prec].outputNo);
 			else

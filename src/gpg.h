@@ -171,6 +171,11 @@ struct GpgPreprocessedDomain
 	std::vector<std::vector<std::map<int, std::set<int>>>> assignedVariablesByTaskAndPrecondition;
 
 	/**
+	 * @brief For every task and precondition, a list of sets (saved as vector) argument numbers that must be identical (due to the fact that they are instantiated with the same variable)
+	 */
+	std::vector<std::vector<std::vector<std::vector<int>>>> identicalArgumentsByTaskAndPrecondition;
+
+	/**
 	 * @brief A list of tasks and preconditions for each predicate.
 	 *
 	 * For each predicate, we have a list of pairs. In the pair, the first member is the number of the task,
@@ -200,6 +205,7 @@ struct GpgPreprocessedDomain
 	GpgPreprocessedDomain (const InstanceType & instance, const Domain & domain, const Problem & problem) : domain (domain)
 	{
 		assignedVariablesByTaskAndPrecondition.resize (instance.getNumberOfActions ());
+		identicalArgumentsByTaskAndPrecondition.resize (instance.getNumberOfActions ());
 		preconditionsByPredicate.resize (instance.getNumberOfPredicates ());
 		eligibleInitialPreconditionsByAction.resize (instance.getNumberOfActions ());
 
@@ -208,6 +214,21 @@ struct GpgPreprocessedDomain
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 
 			assignedVariablesByTaskAndPrecondition[actionIdx].resize (action.getAntecedents ().size ());
+			identicalArgumentsByTaskAndPrecondition[actionIdx].resize (action.getAntecedents ().size ());
+			
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx){
+				const typename InstanceType::PreconditionType & precondition = action.getAntecedents ()[preconditionIdx];
+				std::map<int,std::vector<int>> variablesAt;
+				for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
+				{
+					int variable = precondition.arguments[argumentIdx];
+					variablesAt[variable].push_back(argumentIdx);
+				}
+
+				for (auto & entry : variablesAt) if (entry.second.size() > 1){
+					identicalArgumentsByTaskAndPrecondition[actionIdx][preconditionIdx].push_back(entry.second);
+				}
+			}
 
 			// Determine which preconditions are eligible for optimization
 			// FIXME
@@ -343,8 +364,16 @@ struct GpgStateMap
 
 			assert (precondition.arguments.size () == stateElement->arguments.size ());
 
-			// Ineligible initially matched precondition
 			std::vector<int> values;
+
+			for (const std::vector<int> & identical_group : preprocessedDomain.identicalArgumentsByTaskAndPrecondition[actionIdx][preconditionIdx]){
+				int val = stateElement->arguments[identical_group[0]];
+				for (size_t i = 1; i < identical_group.size(); i++)
+					if (stateElement->arguments[identical_group[i]] != val)
+						goto next_action;
+			}
+
+			// Ineligible initially matched precondition
 			for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
 			{
 				int var = precondition.arguments[argumentIdx];
@@ -692,6 +721,15 @@ static void gpgAssignVariables (
 		result->groundedPreconditions = matchedPreconditions;
 		// Still anything TODO?
 		
+		DEBUG(
+			std::cout << "  Arguments:";
+			for (int a : result->arguments) std::cout << " " << a;
+			std::cout << std::endl;
+			std::cout << "  Preconditions:";
+			for (int p : result->groundedPreconditions) std::cout << " " << p;
+			std::cout << std::endl;
+							);
+		
 		// Add "add" effects from this action to our known facts
 		for (const typename InstanceType::PreconditionType addEffect : action.getConsequences ())
 		{
@@ -727,6 +765,12 @@ static void gpgAssignVariables (
 			{
 				// New state element; give it a number
 				addState.groundedNo = processedStates.size () + toBeProcessedSet.size ();
+
+				DEBUG(std::cout << "New Fact " << addState.groundedNo << ": " << addEffect.getHeadNo();
+				for (int varIdx : addEffect.arguments) std::cout << " " << assignedVariables[varIdx];
+				std::cout << std::endl;
+				);
+
 
 				auto [it,_] = toBeProcessedSet.insert (addState);
 				toBeProcessedQueue.push (it);
@@ -1214,6 +1258,12 @@ void runGpg (const InstanceType & instance, std::vector<typename InstanceType::R
 		auto initStateElement = const_cast<InstanceType &>(instance).getInitialStateElement(it);
 		// Number initial state elements
 		initStateElement.groundedNo = toBeProcessedQueue.size ();
+
+		DEBUG(std::cout << "New Fact " << initStateElement.groundedNo << ": " << initStateElement.getHeadNo();
+		for (int arg : initStateElement.arguments) std::cout << " " << arg;
+		std::cout << std::endl;
+		);
+
 
 		// Filter duplicate init state elements (seems to happen in some test cases?)
 		if (toBeProcessedSet.count (initStateElement) == 0)
