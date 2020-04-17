@@ -1210,8 +1210,6 @@ struct GpgTdg
 					return false;
 			} else	
 				assignedVariables[taskVarIdx] = groundedTask.arguments[argIdx];
-
-			assignedVariables[taskVarIdx] = groundedTask.arguments[argIdx];
 		}
 
 		if (outputVariableAssignment != NULL)
