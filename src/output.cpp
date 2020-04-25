@@ -342,10 +342,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	pout << std::endl;
 
 	// further known mutex groups
-	pout << ";; further Mutex Groups" << std::endl;
-	std::vector<std::unordered_set<int>> out_mutexes;
+	std::vector<std::unordered_set<int>> out_strict_mutexes;
+	std::vector<std::unordered_set<int>> out_non_strict_mutexes;
 	for (int mutexType = 0; mutexType < 2; mutexType++){
 		std::vector<std::unordered_set<int>> & mutex_groups = (mutexType == 0) ? further_strict_mutex_groups : further_mutex_groups;
+		std::vector<std::unordered_set<int>> & out_mutexes = (mutexType == 0) ? out_strict_mutexes : out_non_strict_mutexes;
 		for (const auto & mgroup : mutex_groups){
 			std::unordered_set<int> mutex;
 			for (const int & elem : mgroup){
@@ -388,16 +389,26 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			out_mutexes.push_back(mutex);
 		}
 	}
+	
+	
+	for (int mutexType = 0; mutexType < 2; mutexType++){
+		if (mutexType == 0)
+			pout << ";; further strict Mutex Groups" << std::endl;
+		else
+			pout << ";; further non strict Mutex Groups" << std::endl;
+		
+		std::vector<std::unordered_set<int>> & out_mutexes = (mutexType == 0) ? out_strict_mutexes : out_non_strict_mutexes;
 
-	pout << out_mutexes.size() << std::endl;
-	for (const auto & mutex : out_mutexes){
-		for (const int & elem : mutex){
-			assert(elem >= 0);
-			pout << elem << " ";
+		pout << out_mutexes.size() << std::endl;
+		for (const auto & mutex : out_mutexes){
+			for (const int & elem : mutex){
+				assert(elem >= 0);
+				pout << elem << " ";
+			}
+			pout << -1 << std::endl;
 		}
-		pout << -1 << std::endl;
+		pout << std::endl;
 	}
-	pout << std::endl;
 
 
 	// further known mutex groups
@@ -561,7 +572,15 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				ce_guards.push_back(add);
 			else {	
 				if (!prunedFacts[add] && !cover_pruned.count(add)){
-					add_out.push_back(std::make_pair(_empty,reachableFacts[add].outputNo));
+					int addOut = reachableFacts[add].outputNo;
+					add_out.push_back(std::make_pair(_empty,addOut));
+
+					// if this is a member of a SAS group that needs a none-of-those, delete it
+					if (addOut < sas_g_per_fact.size()){
+						int sas_g = sas_g_per_fact[addOut];
+						if (sas_variables_needing_none_of_them[sas_g])
+							del_out.push_back(std::make_pair(_empty,none_of_them_per_sas_group[sas_g]));
+					}
 				}
 			}
 
@@ -620,8 +639,17 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 			
 			if (isAdd){
-				add_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
+				int addOut = reachableFacts[effectID].outputNo;
+				
+				add_out.push_back(std::make_pair(nonPrunedPrecs, addOut));
 				DEBUG(std::cout << "Found conditional add effect on ce-task " << ce_task.groundedNo << " internal ID " << effectID << " output as " << reachableFacts[effectID].outputNo << std::endl);
+			
+				// if this is a member of a SAS group that needs a none-of-those, delete it
+				if (addOut < sas_g_per_fact.size()){
+					int sas_g = sas_g_per_fact[addOut];
+					if (sas_variables_needing_none_of_them[sas_g])
+						del_out.push_back(std::make_pair(nonPrunedPrecs,none_of_them_per_sas_group[sas_g]));
+				}
 			} else {
 				del_out.push_back(std::make_pair(nonPrunedPrecs, reachableFacts[effectID].outputNo));
 				DEBUG(std::cout << "Found conditional del effect on ce-task " << ce_task.groundedNo << " internal ID " << effectID << " output as " << reachableFacts[effectID].outputNo << std::endl);
@@ -946,7 +974,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 	}
 	
-	if (!quietMode) std::cout << "Final Statistics: F " << fn << " S " << sas_groups.size() << " SC " << number_of_sas_covered_facts << " M " << out_mutexes.size() << " I " << out_invariants.size() << " P " << number_of_output_primitives << " S " << number_of_output_artificial_primitives << " A " << number_of_output_abstracts << " M " << number_of_output_methods << std::endl;
+	if (!quietMode) std::cout << "Final Statistics: F " << fn << " S " << sas_groups.size() << 
+		" SC " << number_of_sas_covered_facts << 
+		" SM " << out_strict_mutexes.size() << " NSM " << out_non_strict_mutexes.size() << " I " << out_invariants.size() <<
+		" P " << number_of_output_primitives << " S " << number_of_output_artificial_primitives <<
+		" A " << number_of_output_abstracts << " M " << number_of_output_methods << std::endl;
 
 	// exiting this way is faster as data structures will not be cleared ... who needs this anyway
 	if (!quietMode) std::cerr << "Exiting." << std::endl;
