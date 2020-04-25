@@ -79,6 +79,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::unordered_set<int> initFactsPruned,
 		std::unordered_set<Fact> reachableFactsSet,
 		std::vector<std::unordered_set<int>> sas_groups,
+		std::vector<std::unordered_set<int>> further_strict_mutex_groups,
 		std::vector<std::unordered_set<int>> further_mutex_groups,
 		std::vector<std::unordered_set<int>> invariants,
 		std::vector<bool> & sas_variables_needing_none_of_them,
@@ -110,15 +111,15 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	// find candidates for fact elimination by duplication
 	std::map<int,std::vector<int>> cover_pruned;
 	std::unordered_set<int> pruned_sas_groups;
-	for (const std::unordered_set<int> & m_g : further_mutex_groups){
+	for (const std::unordered_set<int> & m_g : further_strict_mutex_groups){
 		if (m_g.size() != 2) continue; // only pairs of facts are eligible
 		bool is_in_goal = false;
 		for (int x : m_g) is_in_goal |= goal_facts.count(x);
 		if (is_in_goal) continue; // do not prune facts that occur in the goal
-
 		int fact_in_large_group = -1;
 		int og_large = -1;
 		int other_fact = -1;
+		int second_fact_in_small_group = -1;
 		int og_small = -1;
 		bool two_large = false;
 		for (const int & elem : m_g){
@@ -127,9 +128,14 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				const std::unordered_set<int> & og = sas_groups[ogID];
 				if (!og.count(elem)) continue;
 				found = true;
-				if (og.size() == 1) {
+				if (og.size() + sas_variables_needing_none_of_them[ogID] <= 2) {   // this element if part of the mutex is member of a size <= 2 SAS+ group
+					// we can thus remove this element with the other values from the large group
+					// and if there is a second value in this sas group, we can replace it with the other element of this mutex (i.e. fact_in_large_group)
 					other_fact = elem;
 					og_small = ogID;
+					if (og.size() == 2)
+						for (const int & ogElem : og) if (ogElem != elem) second_fact_in_small_group = ogElem;
+
 					continue; // contains only this fact, i.e. is artificial
 				}
 
@@ -160,7 +166,14 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		
 		// might need a none-of-those
 		cover_pruned[other_fact] = other_values;
-		pruned_sas_groups.insert(og_small);
+		if (og_small != -1) {
+			pruned_sas_groups.insert(og_small);
+			if (second_fact_in_small_group != -1){
+				std::vector<int> mainValue;
+				mainValue.push_back(fact_in_large_group);
+				cover_pruned[second_fact_in_small_group] = mainValue;
+			}
+		}
 
 		DEBUG(std::cout << "Fact " << other_fact << " is eligible for pruning as opposite of " << fact_in_large_group << std::endl;
 			Fact & f1 = reachableFacts[other_fact];
@@ -177,10 +190,31 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				std::cout << domain.constants[f2.arguments[i]];
 			}
 			std::cout << "]" << std::endl;
+			
+			if (og_small != -1)	{
+				std::cout << "Removing SAS+ group: " << og_small << std::endl;
+				if (second_fact_in_small_group){
+					std::cout << "SAS+ group has a second element (" << second_fact_in_small_group << ") which will be identical to " << fact_in_large_group << std::endl;
+					Fact & f3 = reachableFacts[second_fact_in_small_group];
+					std::cout << "Pruning: " << domain.predicates[f3.predicateNo].name << "[";
+					for (unsigned int i = 0; i < f3.arguments.size(); i++){
+						if (i) std::cout << ",";
+						std::cout << domain.constants[f3.arguments[i]];
+					}
+				} 
+			}
 
-			std::cout << "Possible facts are:";
-			for (int x : other_values) std::cout << " " << x;
-			std::cout << std::endl;
+            std::cout << "Possible facts are:";
+            for (int x : other_values) {
+                    Fact & of = reachableFacts[x];
+                    std::cout << " " << domain.predicates[of.predicateNo].name << "[";
+                    for (unsigned int i = 0; i < of.arguments.size(); i++){
+                            if (i) std::cout << ",";
+                            std::cout << domain.constants[of.arguments[i]];
+                    }
+                    std::cout << "]";
+            }
+            std::cout << std::endl;
 				);
 	}
 	DEBUG(std::cout << "Cover Pruned size = " << cover_pruned.size() << std::endl);
@@ -310,46 +344,49 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	// further known mutex groups
 	pout << ";; further Mutex Groups" << std::endl;
 	std::vector<std::unordered_set<int>> out_mutexes;
-	for (const auto & mgroup : further_mutex_groups){
-		std::unordered_set<int> mutex;
-		for (const int & elem : mgroup){
-			Fact & fact = reachableFacts[elem];
-			if (prunedFacts[elem]) continue;
-			if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
-			if (cover_pruned.count(elem))
-				for (const int & other : cover_pruned[elem]){
-					if (other < 0)
-						mutex.insert(none_of_them_per_sas_group[-other-1]);
-					else
-						mutex.insert(reachableFacts[other].outputNo);
+	for (int mutexType = 0; mutexType < 2; mutexType++){
+		std::vector<std::unordered_set<int>> & mutex_groups = (mutexType == 0) ? further_strict_mutex_groups : further_mutex_groups;
+		for (const auto & mgroup : mutex_groups){
+			std::unordered_set<int> mutex;
+			for (const int & elem : mgroup){
+				Fact & fact = reachableFacts[elem];
+				if (prunedFacts[elem]) continue;
+				if (domain.predicates[fact.predicateNo].guard_for_conditional_effect) continue;
+				if (cover_pruned.count(elem))
+					for (const int & other : cover_pruned[elem]){
+						if (other < 0)
+							mutex.insert(none_of_them_per_sas_group[-other-1]);
+						else
+							mutex.insert(reachableFacts[other].outputNo);
+					}
+				else
+					mutex.insert(reachableFacts[elem].outputNo);
+			}
+
+			if (mutex.size() < 2) continue; // mutexes with 0 or 1 element are irrelevant. They may appear due to pruning.
+
+			bool hasSTRIPS = false;
+			int sas_g_so_far = -1;
+			bool multiple_sas_g = false;
+			for (const int & elem : mutex){
+				if (elem >= sas_g_per_fact.size()){
+					hasSTRIPS = true;
+					break;
 				}
-			else
-				mutex.insert(reachableFacts[elem].outputNo);
-		}
 
-		if (mutex.size() < 2) continue; // mutexes with 0 or 1 element are irrelevant. They may appear due to pruning.
-
-		bool hasSTRIPS = false;
-		int sas_g_so_far = -1;
-		bool multiple_sas_g = false;
-		for (const int & elem : mutex){
-			if (elem >= sas_g_per_fact.size()){
-				hasSTRIPS = true;
-				break;
+				int sas_g = sas_g_per_fact[elem];
+				if (sas_g_so_far != -1 && sas_g_so_far != sas_g){
+					multiple_sas_g = true;
+					break;
+				}
+				sas_g_so_far = sas_g;
 			}
 
-			int sas_g = sas_g_per_fact[elem];
-			if (sas_g_so_far != -1 && sas_g_so_far != sas_g){
-				multiple_sas_g = true;
-				break;
-			}
-			sas_g_so_far = sas_g;
+			// if this is a subset of a SAS group, then just not output it. It is redundant.
+			if (!hasSTRIPS && !multiple_sas_g && mutex.size() == sas_groups[sas_g_so_far].size() + sas_variables_needing_none_of_them[sas_g_so_far]) continue;
+
+			out_mutexes.push_back(mutex);
 		}
-
-		// if this is a subset of a SAS group, then just not output it. It is redundant.
-		if (!hasSTRIPS && !multiple_sas_g && mutex.size() == sas_groups[sas_g_so_far].size() + sas_variables_needing_none_of_them[sas_g_so_far]) continue;
-
-		out_mutexes.push_back(mutex);
 	}
 
 	pout << out_mutexes.size() << std::endl;

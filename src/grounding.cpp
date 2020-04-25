@@ -88,7 +88,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		
 		
 		bool changedPruned = false;
-		std::vector<bool> sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
+		auto [sas_variables_needing_none_of_them,_] = ground_invariant_analysis(domain, problem, 
 				initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
 				prunedTasks, prunedFacts, prunedMethods,
 				initFacts,
@@ -101,7 +101,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		auto [has_pruned, _h2_mutexes, _h2_invariants] = 
 			compute_h2_mutexes(domain,problem,initiallyReachableFacts,initiallyReachableTasks,
 					prunedFacts, prunedTasks, 
-					sas_groups, further_mutex_groups,sas_variables_needing_none_of_them,
+					sas_groups, sas_variables_needing_none_of_them,
 					quietMode);
 		h2_mutexes = _h2_mutexes;
 		h2_invariants = _h2_invariants;
@@ -144,6 +144,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			}
 
 			std::vector<bool> sas_variables_needing_none_of_them;
+			std::vector<bool> mutex_groups_needing_none_of_them;
 			std::vector<std::unordered_set<int>> sas_groups;
 			std::vector<std::unordered_set<int>> further_mutex_groups;
 
@@ -156,7 +157,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 						quietMode);
 
 				bool changedPruned = false;
-				std::vector<bool> _sas_variables_needing_none_of_them = ground_invariant_analysis(domain, problem, 
+				auto [_sas_variables_needing_none_of_them,_mutex_groups_needing_none_of_them] = ground_invariant_analysis(domain, problem, 
 						initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
 						prunedTasks, prunedFacts, prunedMethods,
 						initFacts,
@@ -170,6 +171,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 						quietMode);
 				} else {
 					sas_variables_needing_none_of_them = _sas_variables_needing_none_of_them;
+					mutex_groups_needing_none_of_them = _mutex_groups_needing_none_of_them;
 					sas_groups = _sas_groups;
 					further_mutex_groups = _further_mutex_groups;
 					break;
@@ -180,10 +182,21 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			if (removeDuplicateActions)
 				unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
 
+			std::vector<std::unordered_set<int>> strict_mutexes;
+			std::vector<std::unordered_set<int>> non_strict_mutexes;
+			for (size_t m = 0; m < further_mutex_groups.size(); m++){
+				if (mutex_groups_needing_none_of_them[m])
+					non_strict_mutexes.push_back(further_mutex_groups[m]);
+				else
+					strict_mutexes.push_back(further_mutex_groups[m]);
+			}
 			
+			if (!quietMode)
+				std::cout << "Further Mutex Groups: " << strict_mutexes.size() <<  " strict " << non_strict_mutexes.size() << " non strict" << std::endl;
+
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				initFacts, initFactsPruned, reachableFactsSet,
-				sas_groups, further_mutex_groups, h2_invariants,
+				sas_groups, strict_mutexes, non_strict_mutexes, h2_invariants,
 				sas_variables_needing_none_of_them,
 				compileNegativeSASVariables, sas_mode, noopForEmptyMethods,
 				quietMode);

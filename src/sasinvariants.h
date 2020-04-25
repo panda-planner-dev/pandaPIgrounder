@@ -40,7 +40,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		bool outputSASVariablesOnly,
 		bool quietMode);
 
-std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem & problem,
+std::pair<std::vector<bool>,std::vector<bool>> ground_invariant_analysis(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<GroundedMethod> & reachableMethods,

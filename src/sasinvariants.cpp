@@ -257,6 +257,8 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 		ground_mutex_groups.push_back(covered_facts);
 		for (int f : covered_facts) factCovered[f] = true;
+
+		DEBUG(std::cout << "Generating SAS group containing:"; for (int f : covered_facts) std::cout << " " << f; std::cout << std::endl;);
 	}
 
 	for (auto mg : ground_mutex_groups)
@@ -287,7 +289,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 
 
-std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem & problem,
+std::pair<std::vector<bool>,std::vector<bool>> ground_invariant_analysis(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<GroundedMethod> & reachableMethods,
@@ -299,10 +301,14 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 		std::vector<std::unordered_set<int>> & other_mutexes,
 		bool & changedPruned,
 		bool quietMode){
-	// identify those mutexes, which need the element "none-of-them"
-	std::vector<bool> mutexes_needing_none_of_them (sas_mutexes.size());
-	for (size_t i = 0; i < mutexes_needing_none_of_them.size(); i++)
-		mutexes_needing_none_of_them[i] = false;
+	// identify those SAS+ groups, which need the element "none-of-them"
+	std::vector<bool> sas_groups_needing_none_of_them (sas_mutexes.size());
+	for (size_t i = 0; i < sas_groups_needing_none_of_them.size(); i++)
+		sas_groups_needing_none_of_them[i] = false;
+	// do the same for the other mutexes
+	std::vector<bool> mutex_groups_needing_none_of_them (other_mutexes.size());
+	for (size_t i = 0; i < mutex_groups_needing_none_of_them.size(); i++)
+		mutex_groups_needing_none_of_them[i] = false;
 	
 	std::vector<std::vector<int>> mutex_groups_per_fact (reachableFacts.size());
 	for (size_t m = 0; m < sas_mutexes.size(); m++){
@@ -312,12 +318,18 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 			initContainsOne |= initFacts.count(f);
 		}
 		// if it is not set in init, we definitely one
-		if (!initContainsOne) mutexes_needing_none_of_them[m] = true;
+		if (!initContainsOne) sas_groups_needing_none_of_them[m] = true;
 	}
-	
-	for (size_t m = 0; m < other_mutexes.size(); m++)
-		for (const int & f : other_mutexes[m])
+
+	for (size_t m = 0; m < other_mutexes.size(); m++){
+		bool initContainsOne = false;
+		for (const int & f : other_mutexes[m]){
 			mutex_groups_per_fact[f].push_back(-m-1); // negative numbers are other mutexes
+		 	initContainsOne |= initFacts.count(f);
+		}
+		// if it is not set in init, we definitely one
+		if (!initContainsOne) mutex_groups_needing_none_of_them[m] = true;
+	}
 
 	for (size_t aID = 0; aID < reachableTasks.size(); aID++) {
 		if (prunedTasks[aID]) continue;
@@ -351,18 +363,22 @@ std::vector<bool> ground_invariant_analysis(const Domain & domain, const Problem
 		std::unordered_set<int> add,del;
 		for (const int & a : reachableTasks[aID].groundedAddEffects)
 			for (const int & m : mutex_groups_per_fact[a])
-				if (m >= 0) add.insert(m);
+				add.insert(m);
 		for (const int & d : reachableTasks[aID].groundedDelEffects)
 			for (const int & m : mutex_groups_per_fact[d])
-				if (m >= 0) del.insert(m);
+				del.insert(m);
 		
 		for (const int & d : del) if (!add.count(d)){
-			mutexes_needing_none_of_them[d]	= true;
-			reachableTasks[aID].noneOfThoseEffect.push_back(d);
+			if (d >= 0){
+				sas_groups_needing_none_of_them[d] = true;
+				reachableTasks[aID].noneOfThoseEffect.push_back(d);
+			} else {
+				mutex_groups_needing_none_of_them[-d-1] = true;
+			}
 		}
 	}
 
-	return mutexes_needing_none_of_them;
+	return std::make_pair(sas_groups_needing_none_of_them,mutex_groups_needing_none_of_them);
 }
 
 
