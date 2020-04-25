@@ -10,7 +10,6 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<std::unordered_set<int>> sas_groups,
-		std::vector<std::unordered_set<int>> further_mutex_groups,
 		std::vector<bool> & sas_variables_needing_none_of_them,
 		bool quietMode);
 
