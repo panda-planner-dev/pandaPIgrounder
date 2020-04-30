@@ -118,12 +118,13 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 	taskDfs (domain, problem, withStaticPreconditionChecking, staticPredicates, factsPerPredicate, problem.initialAbstractTask, topTaskPossibleConstants);
 	if (!quietMode) std::cout << "Finished Hierarchy Typing" << std::endl;
 
+	DEBUG(
 	for (size_t taskID = 0; taskID < domain.nPrimitiveTasks; taskID++)
 		std::cout << "Task " << taskID << " " << domain.tasks[taskID].name << " " << possibleConstantsPerTask[taskID].size() << std::endl;
 	
 	for (size_t methodID = 0; methodID < domain.decompositionMethods.size(); methodID++)
 		std::cout << "Method " << methodID << " " << domain.decompositionMethods[methodID].name << " " << possibleConstantsPerMethod[methodID].size() << std::endl;
-
+	);
 
 	// splitting
 	possibleConstantsSplitted.resize(domain.nPrimitiveTasks);
