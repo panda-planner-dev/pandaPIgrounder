@@ -15,7 +15,6 @@
 #include "hierarchy-typing.h"
 #include "model.h"
 #include "parser.h"
-#include "planning-graph.h"
 
 int main (int argc, char * argv[])
 {
@@ -44,6 +43,7 @@ int main (int argc, char * argv[])
 		{"no-abstract-expansion",                           no_argument,    NULL,   'e'},
 		{"no-method-precondition-pruning",                  no_argument,    NULL,   'm'},
 		{"future-caching-by-initially-matched-precondition",no_argument,    NULL,   'f'},
+		{"static-preconditions-in-hierarchy-typing"		   ,no_argument,    NULL,   'c'},
 
 		
 		{NULL,                            0,              NULL,   0},
@@ -69,11 +69,12 @@ int main (int argc, char * argv[])
 	bool expandChoicelessAbstractTasks = true;
 	bool pruneEmptyMethodPreconditions = true;
 	bool futureCachingByPrecondition = false;
+	bool withStaticPreconditionChecking = false;
 	bool h2mutexes = false;
 	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNnaDE", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNnaDEc", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -123,6 +124,8 @@ int main (int argc, char * argv[])
 			outputForPlanner = false;
 		else if (c == 'f')
 			futureCachingByPrecondition = true;
+		else if (c == 'c')
+			withStaticPreconditionChecking = true;
 		else if (c == 't')
 			printTimings = true;
 		else if (c == '2')
@@ -266,7 +269,7 @@ int main (int argc, char * argv[])
 		// Just run the PG - this is for speed testing
 		std::unique_ptr<HierarchyTyping> hierarchyTyping;
 		if (enableHierarchyTyping)
-			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
+			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, quietMode);
 
 		/*GpgPlanningGraph pg (domain, problem);
 		std::vector<GroundedTask> groundedTasks;
@@ -277,7 +280,7 @@ int main (int argc, char * argv[])
 	{
 		run_grounding (domain, problem, *outputStream, *outputStream2,  
 				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
-				futureCachingByPrecondition, 
+				futureCachingByPrecondition, withStaticPreconditionChecking,
 				h2mutexes,
 				computeInvariants, outputSASVariablesOnly, sas_mode, compileNegativeSASVariables, removeDuplicateTasks, noopForEmptyMethods,
 				outputForPlanner, outputHDDL, outputSASPlus, 

@@ -48,12 +48,12 @@ struct HierarchyTyping
 	/**
 	 * @brief Calculates the hierarchy typing.
 	 */
-	HierarchyTyping (const Domain & domain, const Problem & Problem);
+	HierarchyTyping (const Domain & domain, const Problem & Problem, bool withStaticPreconditionChecking, bool quietMode);
 
 	/**
 	 * @brief Perform the depth-first search.
 	 */
-	void taskDfs (const Domain & domain, size_t taskNo, PossibleConstants possibleConstants);
+	void taskDfs (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, const std::vector<bool> & staticPredicates, std::vector<std::vector<std::map<int,std::vector<int>>>> & factsPerPredicate, size_t taskNo, PossibleConstants possibleConstants);
 
 	/**
 	 * @brief Returns true if the given VariableAssignment is compatible with the Hierarchy Typing information.

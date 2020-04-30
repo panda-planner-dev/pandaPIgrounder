@@ -29,12 +29,13 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMethod>> run_lifted_HTN_GPG(const Domain & domain, const Problem & problem, 
 		bool enableHierarchyTyping, 
 		bool futureCachingByPrecondition,
+		bool withStaticPreconditionChecking,
 		bool printTimings,
 		bool quietMode){
 	std::unique_ptr<HierarchyTyping> hierarchyTyping;
 	// don't do hierarchy typing for classical instances
 	if (problem.initialAbstractTask != -1 && enableHierarchyTyping)
-		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem);
+		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, quietMode);
 
 	if (!quietMode) std::cerr << "Running PG." << std::endl;
 	GpgPlanningGraph pg (domain, problem);
@@ -49,6 +50,20 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	if (!quietMode) std::cerr << "PG postprocessing done." << std::endl;
 	if (!quietMode) std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
 	
+
+	/*for (GroundedTask* out : groundedTasksPg){
+		std::cout << domain.tasks[out->taskNo].name;
+		std::cout << "[";
+		bool first = true;
+		for (int a : out->arguments){
+			if (!first) std::cout << ",";
+			std::cout << domain.constants[a];
+			first = false;
+		}
+		std::cout << "]";
+		std::cout << std::endl;
+	}*/
+
 
 	if (problem.initialAbstractTask == -1){
 		// create facts in the correct order

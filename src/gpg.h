@@ -29,7 +29,6 @@
 #include "debug.h"
 #include "hierarchy-typing.h"
 #include "model.h"
-#include "planning-graph.h"
 #include "rss.h"
 
 #define TDG
@@ -1084,7 +1083,7 @@ void gpgMatchPrecondition (
 
 
 
-		if (htTests[actionNo] % 100 == 0 && htTests[actionNo]){
+		if (false && htTests[actionNo] % 100 == 0 && htTests[actionNo]){
 			const auto & action = instance.getAllActions()[actionNo];
 			if (instance.pruneWithHierarchyTyping[actionNo] && htReject[actionNo] < htTests[actionNo] / 10){
 				const_cast<InstanceType &>(instance).disablePruneWithHierarchyTyping(actionNo);

@@ -11,6 +11,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		bool expandChoicelessAbstractTasks,
 		bool pruneEmptyMethodPreconditions,
 		bool futureCachingByPrecondition,
+		bool withStaticPreconditionChecking,
 		bool h2Mutextes,
 		bool computeInvariants,
 		bool outputSASVariablesOnly,
