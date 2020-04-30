@@ -40,10 +40,15 @@ struct HierarchyTyping
 	 */
 	std::vector<std::vector<PossibleConstants>> possibleConstantsPerTask;
 
+
+	std::vector<std::vector<std::map<int,std::vector<int>>>> possibleConstantsSplitted;
+
 	/**
 	 * @brief Contains a list of PossibleConstants instances for each decomposition method in the domain.
 	 */
 	std::vector<std::vector<PossibleConstants>> possibleConstantsPerMethod;
+	
+	std::vector<std::vector<std::map<int,std::vector<int>>>> possibleConstantsPerMethodSplitted;
 
 	/**
 	 * @brief Calculates the hierarchy typing.

@@ -167,7 +167,8 @@ struct GpgPreprocessedDomain
 	 *
 	 * Indexing: action index -> precondition index -> initially matched precondition index (-1 if not eligible)
 	 */
-	std::vector<std::vector<std::map<int, std::set<int>>>> assignedVariablesByTaskAndPrecondition;
+	std::vector<std::vector<std::map<int, int>>> assignedVariablesByTaskAndPrecondition;
+	std::vector<std::vector<std::vector<std::set<int>>>> assignedVariablesSet;
 
 	/**
 	 * @brief For every task and precondition, a list of sets (saved as vector) argument numbers that must be identical (due to the fact that they are instantiated with the same variable)
@@ -193,7 +194,14 @@ struct GpgPreprocessedDomain
 	 * that were matched so far).
 	 */
 	std::vector<std::set<int>> eligibleInitialPreconditionsByAction;
-	
+
+
+	bool hasVariable(int actionIdx, int preconditionIdx, int initiallyMatchedPrecondition, int var)	const {
+		auto it = assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].find(initiallyMatchedPrecondition);
+		if (it == assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].end()) return false;
+
+		return assignedVariablesSet[actionIdx][preconditionIdx][it->second].count(var) > 0;
+	}
 
 	/**
 	 * @brief Preprocesses the given Domain.
@@ -204,6 +212,7 @@ struct GpgPreprocessedDomain
 	GpgPreprocessedDomain (const InstanceType & instance, const Domain & domain, const Problem & problem) : domain (domain)
 	{
 		assignedVariablesByTaskAndPrecondition.resize (instance.getNumberOfActions ());
+		assignedVariablesSet.resize (instance.getNumberOfActions ());
 		identicalArgumentsByTaskAndPrecondition.resize (instance.getNumberOfActions ());
 		preconditionsByPredicate.resize (instance.getNumberOfPredicates ());
 		eligibleInitialPreconditionsByAction.resize (instance.getNumberOfActions ());
@@ -213,8 +222,9 @@ struct GpgPreprocessedDomain
 			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
 
 			assignedVariablesByTaskAndPrecondition[actionIdx].resize (action.getAntecedents ().size ());
+			assignedVariablesSet[actionIdx].resize (action.getAntecedents ().size ());
 			identicalArgumentsByTaskAndPrecondition[actionIdx].resize (action.getAntecedents ().size ());
-			
+
 			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx){
 				const typename InstanceType::PreconditionType & precondition = action.getAntecedents ()[preconditionIdx];
 				std::map<int,std::vector<int>> variablesAt;
@@ -238,18 +248,44 @@ struct GpgPreprocessedDomain
 			std::set<int> alreadyAssignedVariables;
 			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx)
 			{
+				std::map<std::set<int>,int> assignedVariablesToID;
 				// Calculate which variables are assigned when a precondition is matched
-				assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx][-1].insert (alreadyAssignedVariables.begin (), alreadyAssignedVariables.end ());
+				
+				auto variableAssignmentIterator = assignedVariablesToID.find(alreadyAssignedVariables);
+				int assignmentID = -1;
+				if (variableAssignmentIterator == assignedVariablesToID.end()){
+					assignmentID = assignedVariablesToID.size();
+					assignedVariablesToID[alreadyAssignedVariables] = assignmentID;
+					assignedVariablesSet[actionIdx][preconditionIdx].push_back(alreadyAssignedVariables);
+				} else {
+					assignmentID = variableAssignmentIterator->second;
+				}
+
+				assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx][-1] = assignmentID;
+				
+				
 				for (size_t initiallyMatchedPreconditionIdx : eligibleInitialPreconditionsByAction[actionIdx])
 				{
-					assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx].insert (alreadyAssignedVariables.begin (), alreadyAssignedVariables.end ());
+					std::set<int> innerAssignedVariables = alreadyAssignedVariables;
 
 					const typename InstanceType::PreconditionType & initiallyMatchedPrecondition = action.getAntecedents ()[initiallyMatchedPreconditionIdx];
 					for (size_t argumentIdx = 0; argumentIdx < initiallyMatchedPrecondition.arguments.size (); ++argumentIdx)
 					{
 						int variable = initiallyMatchedPrecondition.arguments[argumentIdx];
-						assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx].insert (variable);
+						innerAssignedVariables.insert (variable);
 					}
+
+					variableAssignmentIterator = assignedVariablesToID.find(innerAssignedVariables);
+					assignmentID = -1;
+					if (variableAssignmentIterator == assignedVariablesToID.end()){
+						assignmentID = assignedVariablesToID.size();
+						assignedVariablesToID[innerAssignedVariables] = assignmentID;
+						assignedVariablesSet[actionIdx][preconditionIdx].push_back(innerAssignedVariables);
+					} else {
+						assignmentID = variableAssignmentIterator->second;
+					}
+
+					assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx][initiallyMatchedPreconditionIdx] = assignmentID;
 				}
 
 				const typename InstanceType::PreconditionType & precondition = action.getAntecedents ()[preconditionIdx];
@@ -262,7 +298,36 @@ struct GpgPreprocessedDomain
 				// Group antecedents by predicate
 				preconditionsByPredicate[precondition.getHeadNo ()].push_back (std::make_pair (actionIdx, preconditionIdx));
 			}
+
 		}
+
+
+	// temp
+	DEBUG(
+		for (size_t actionIdx = 0; actionIdx < instance.getNumberOfActions (); ++actionIdx){
+			const typename InstanceType::ActionType & action = instance.getAllActions ()[actionIdx];
+			int ante = action.getAntecedents ().size();	
+			std::cout << "Action " << actionIdx << " " << instance.getAllActions()[actionIdx].name << std::endl;
+			if (action.getAntecedents().size() > 20) continue;
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx){
+				std::cout << "  Prec " << preconditionIdx << " " << assignedVariablesSet[actionIdx][preconditionIdx].size() << " of " << (ante+1) << std::endl;	
+				for (auto s : assignedVariablesSet[actionIdx][preconditionIdx]){
+					std::cout << "    ";
+					bool first = true;
+					for (int x : s){
+						if (!first) std::cout << " ";
+						std::cout << x;
+						first = false;
+					}
+					std::cout << std::endl;	
+				}
+			
+			}
+		}
+	);
+
+
+
 	}
 };
 
@@ -310,7 +375,7 @@ struct GpgStateMap
 	std::vector<const typename InstanceType::StateType*> addedStateElements;
 
 	/**
-	 * @brief A list of Facts for each task, precondition, 1+initially matched precondition (1+-1=0 if not eligible) and set of assigned variables.
+	 * @brief A list of Facts for each task, precondition, and ID of assigned variables and actually assigned constants.
 	 */
 	std::vector<std::vector<std::vector<VariablesToFactListMap>>> factMap;
 
@@ -344,7 +409,7 @@ struct GpgStateMap
 				consistency[actionIdx][preconditionIdx].resize (action.getAntecedents ().size ());
 			
 			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents().size(); preconditionIdx++)
-				factMap[actionIdx][preconditionIdx].resize(action.getAntecedents().size()+1);
+				factMap[actionIdx][preconditionIdx].resize(preprocessedDomain.assignedVariablesSet[actionIdx][preconditionIdx].size());
 		}
 	}
 
@@ -382,17 +447,15 @@ struct GpgStateMap
 				if (preprocessedDomain.domain.sorts[action.variableSorts[var]].members.count (value) == 0)
 					goto next_action;
 
-				if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at (-1).count (var) > 0)
+				if (preprocessedDomain.hasVariable(actionIdx,preconditionIdx,-1,var))
 					values.push_back (value);
 			}
-			if (factMap[actionIdx][preconditionIdx][0].size() == 0)
+			if (factMap[actionIdx][preconditionIdx][0].size() == 0) // works as the assignment without a matched precondition is always the first
 				numberOfAntecedantsWithoutFact[actionIdx]--;
-			factMap[actionIdx][preconditionIdx][0][values].push_back (stateElementIndex );
 
 
-			// Eligible initially matched preconditions
-			for (int initiallyMatchedPreconditionIdx : preprocessedDomain.eligibleInitialPreconditionsByAction[actionIdx])
-			{
+			for (size_t variablesNumber = 0; variablesNumber < preprocessedDomain.assignedVariablesSet[actionIdx][preconditionIdx].size(); variablesNumber++){
+				const std::set<int> & assignedVariables = preprocessedDomain.assignedVariablesSet[actionIdx][preconditionIdx][variablesNumber];
 				std::vector<int> values;
 				for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
 				{
@@ -400,11 +463,10 @@ struct GpgStateMap
 					int value = stateElement->arguments[argumentIdx];
 					// we have already checked this value in the previous loop	
 
-					if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at(initiallyMatchedPreconditionIdx).count(var) > 0)
-						values.push_back(value);
+					if (assignedVariables.count(var)) values.push_back(value);
 				}
-
-				factMap[actionIdx][preconditionIdx][1+initiallyMatchedPreconditionIdx][values].push_back (stateElementIndex );
+				
+				factMap[actionIdx][preconditionIdx][variablesNumber][values].push_back(stateElementIndex);
 			}
 
 			if (! instance.pruneWithFutureSatisfiablility[actionIdx]) continue;
@@ -419,7 +481,7 @@ struct GpgStateMap
 					int var = precondition.arguments[argumentIdx];
 	
 					// check whether this variable will already have been set by the past precondition
-					if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][pastPreconditionIdx+1].at (-1).count (var) > 0)
+					if (preprocessedDomain.hasVariable(actionIdx,pastPreconditionIdx+1,-1,var))
 					{
 						values.push_back (stateElement->arguments[argumentIdx]);
 					}
@@ -434,7 +496,7 @@ struct GpgStateMap
 					for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
 					{
 						int var = precondition.arguments[argumentIdx];
-						if (preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][pastPreconditionIdx+1].at (initiallyMatchedPreconditionIdx).count (var) > 0)
+						if (preprocessedDomain.hasVariable(actionIdx,pastPreconditionIdx+1,initiallyMatchedPreconditionIdx,var))
 						{
 							values.push_back (stateElement->arguments[argumentIdx]);
 						}
@@ -449,6 +511,8 @@ next_action:;
 	}
 
 	void dropEligibleInitialPrecondition(){
+		return;
+
 		std::vector<std::tuple<int,int,int>> eligibleSizes;
 		for (size_t a = 0; a < factMap.size(); a++){
 			for (size_t p = 0; p < factMap[a].size(); p++){
@@ -492,7 +556,7 @@ next_action:;
 		for (size_t argIdx = 0; argIdx < precondition.arguments.size (); ++argIdx)
 		{
 			int var = precondition.arguments[argIdx];
-			if (!(preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at (initiallyMatchedPreconditionIdx).count (var) > 0))
+			if (!(preprocessedDomain.hasVariable(actionIdx,preconditionIdx,initiallyMatchedPreconditionIdx,var)))
 				continue;
 
 			assert (assignedVariables.isAssigned (var));
@@ -502,7 +566,9 @@ next_action:;
 		
 		// generate return set
 		std::vector<typename InstanceType::StateType> ret;
-		for (int & x : factMap[actionIdx][preconditionIdx][1+initiallyMatchedPreconditionIdx][assignedVariableValues])
+		int variableID = preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx].at(initiallyMatchedPreconditionIdx);
+		
+		for (int & x : factMap[actionIdx][preconditionIdx][variableID][assignedVariableValues])
 			ret.push_back(*addedStateElements[x]);
 
 
@@ -541,7 +607,7 @@ next_action:;
 			{
 				int var = futurePrecondition.arguments[argIdx];
 				// check whether the future precondition will have already been assigned
-				if (!(preprocessedDomain.assignedVariablesByTaskAndPrecondition[actionIdx][preconditionIdx+1].at (initiallyMatchedPreconditionIdx).count (var) > 0))
+				if (!(preprocessedDomain.hasVariable(actionIdx,preconditionIdx+1,initiallyMatchedPreconditionIdx,var)))
 					continue;
 	
 				assert (assignedVariables.isAssigned (var));

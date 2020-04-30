@@ -101,7 +101,6 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 			}
 		}
 	}
-		
 
 
 	const Task & topTask = domain.tasks[problem.initialAbstractTask];
@@ -118,6 +117,38 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 	// Start the DFS at the top task
 	taskDfs (domain, problem, withStaticPreconditionChecking, staticPredicates, factsPerPredicate, problem.initialAbstractTask, topTaskPossibleConstants);
 	if (!quietMode) std::cout << "Finished Hierarchy Typing" << std::endl;
+
+	for (size_t taskID = 0; taskID < domain.nPrimitiveTasks; taskID++)
+		std::cout << "Task " << taskID << " " << domain.tasks[taskID].name << " " << possibleConstantsPerTask[taskID].size() << std::endl;
+	
+	for (size_t methodID = 0; methodID < domain.decompositionMethods.size(); methodID++)
+		std::cout << "Method " << methodID << " " << domain.decompositionMethods[methodID].name << " " << possibleConstantsPerMethod[methodID].size() << std::endl;
+
+
+	// splitting
+	possibleConstantsSplitted.resize(domain.nPrimitiveTasks);
+	for (size_t taskID = 0; taskID < domain.nPrimitiveTasks; taskID++){
+		possibleConstantsSplitted[taskID].resize(domain.tasks[taskID].variableSorts.size());
+		for (size_t pc = 0; pc < possibleConstantsPerTask[taskID].size(); pc++){
+			for (size_t varIDX = 0; varIDX < domain.tasks[taskID].variableSorts.size(); varIDX++){
+				for (int e : possibleConstantsPerTask[taskID][pc][varIDX])
+					possibleConstantsSplitted[taskID][varIDX][e].push_back(pc);
+			}
+		}
+	}
+
+	
+	possibleConstantsPerMethodSplitted.resize(domain.decompositionMethods.size());
+	for (size_t methodID = 0; methodID < domain.decompositionMethods.size(); methodID++){
+		possibleConstantsPerMethodSplitted[methodID].resize(domain.decompositionMethods[methodID].variableSorts.size());
+		
+		for (size_t pc = 0; pc < possibleConstantsPerMethod[methodID].size(); pc++){
+			for (size_t varIDX = 0; varIDX < domain.decompositionMethods[methodID].variableSorts.size(); varIDX++){
+				for (int e : possibleConstantsPerMethod[methodID][pc][varIDX])
+					possibleConstantsPerMethodSplitted[methodID][varIDX][e].push_back(pc);
+			}
+		}
+	}
 }
 
 void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, const std::vector<bool> & staticPredicates, std::vector<std::vector<std::map<int,std::vector<int>>>> & factsPerPredicate, size_t taskNo, PossibleConstants possibleConstants)
@@ -351,6 +382,29 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 	}
 }
 
+static bool isAssignmentCompatibleSplitted (const std::vector<PossibleConstants> & allConstants, const std::vector<int> & actuallyPossibleConstants, const VariableAssignment & assignedVariables)
+{
+	for (const int & possibleID : actuallyPossibleConstants)
+	{
+		const auto & possibleConstants = allConstants[possibleID];
+		bool valid = true;
+		for (size_t varIdx = 0; varIdx < possibleConstants.size (); ++varIdx)
+		{
+			int varValue = assignedVariables[varIdx];
+			if (assignedVariables.NOT_ASSIGNED != varValue && possibleConstants[varIdx].count (varValue) == 0)
+			{
+				valid = false;
+				break;
+			}
+		}
+		if (valid)
+			return true;
+
+	}
+	return false;
+}
+
+
 static bool isAssignmentCompatible (const std::vector<PossibleConstants> & possibleConstants, const VariableAssignment & assignedVariables)
 {
 	for (const auto & possibleConstants : possibleConstants)
@@ -377,11 +431,50 @@ bool HierarchyTyping::isAssignmentCompatible<Task> (int taskNo, const VariableAs
 {
 	if (domain->tasks[taskNo].isCompiledConditionalEffect) return true; // actions representing conditional effects will always be kept. Their main task already passed HT checking
 
+
+	int best = -1;
+	int bestSize = 0x3f3f3f3f;
+	for (size_t varIdx = 0; varIdx < assignedVariables.assignments.size (); ++varIdx){
+		int e = assignedVariables[varIdx]; 
+		if (e == assignedVariables.NOT_ASSIGNED) continue;
+		auto it = possibleConstantsSplitted[taskNo][varIdx].find(e);
+		if (it == possibleConstantsSplitted[taskNo][varIdx].end()) return false;
+		if (bestSize > it->second.size()){
+			best = varIdx;
+			bestSize = it->second.size();
+		}
+	}
+	if (best != -1){
+		int e = assignedVariables[best]; 
+		return ::isAssignmentCompatibleSplitted(possibleConstantsPerTask[taskNo], possibleConstantsSplitted[taskNo][best].at(e), assignedVariables);
+	}
+
+	if (best == -1 && assignedVariables.assignments.size()) return true; // nothing constrained yet
+
 	return ::isAssignmentCompatible (possibleConstantsPerTask[taskNo], assignedVariables);
 }
 
 template<>
 bool HierarchyTyping::isAssignmentCompatible<DecompositionMethod> (int methodNo, const VariableAssignment & assignedVariables) const
 {
+	int best = -1;
+	int bestSize = 0x3f3f3f3f;
+	for (size_t varIdx = 0; varIdx < assignedVariables.assignments.size (); ++varIdx){
+		int e = assignedVariables[varIdx]; 
+		if (e == assignedVariables.NOT_ASSIGNED) continue;
+		auto it = possibleConstantsPerMethodSplitted[methodNo][varIdx].find(e);
+		if (it == possibleConstantsPerMethodSplitted[methodNo][varIdx].end()) return false;
+		if (bestSize > it->second.size()){
+			best = varIdx;
+			bestSize = it->second.size();
+		}
+	}
+	if (best != -1){
+		int e = assignedVariables[best]; 
+		return ::isAssignmentCompatibleSplitted(possibleConstantsPerMethod[methodNo], possibleConstantsPerMethodSplitted[methodNo][best].at(e), assignedVariables);
+	}
+
+	if (best == -1 && assignedVariables.assignments.size()) return true; // nothing constrained yet
+
 	return ::isAssignmentCompatible (possibleConstantsPerMethod[methodNo], assignedVariables);
 }
