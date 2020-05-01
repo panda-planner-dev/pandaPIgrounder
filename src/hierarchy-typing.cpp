@@ -2,6 +2,7 @@
 #include <iostream>
 #include <set>
 #include <vector>
+#include <ctime>
 
 #include <cassert>
 
@@ -16,6 +17,51 @@ static std::set<T> intersect (const std::set<T> & a, const std::set<T> & b)
 	std::set_intersection (a.begin (), a.end (), b.begin (), b.end (), std::inserter (result, result.begin ()));
 	return result;
 }
+
+void intersect (std::set<int> & a, std::set<int> & bParameter, const Domain & domain){
+	int sort = -1;
+	if (bParameter.size() == 1 && *(bParameter.begin()) < 0)
+		sort = -(*(bParameter.begin())) - 1;
+	
+	const std::set<int> & b = (sort == -1)? bParameter : domain.sorts[sort].members;
+	
+	if (a.size() == 1 && *(a.begin()) < 0){
+		int sort = -(*(a.begin())) - 1;
+		a.clear();
+		for (const int & i : b)
+			if (domain.sorts[sort].members.count(i))
+				a.insert(i);
+	} else {
+		if (a.size() > 10 * b.size()){ // b is significantly smaller
+			std::set<int> newA;
+			for (const int & i : b)
+				if (a.count(i))
+					newA.insert(i);
+			a = newA;
+		} else if (b.size() > 10 * a.size()){  // a is significantly smaller
+			std::set<int> newA;
+			for (const int & i : a)
+				if (b.count(i))
+					newA.insert(i);
+			a = newA;
+		} else { // a and b have roughly the same size
+			auto itA = a.begin();
+			auto itB = b.begin();
+
+			while (itA != a.end() && itB != b.end()){
+				if (*itA < *itB){
+					a.erase(itA++);
+				} else if (*itA > *itB){
+					itB++;
+				} else {
+					itA++;
+					itB++;
+				}
+			}
+		}
+	}
+}
+
 
 /**
  * @brief Reduces the set of possible constants for a task/method by applying variable constraints.
@@ -61,6 +107,11 @@ static void applyConstraints (PossibleConstants & possibleConstants, const std::
 	}
 	while (changed);
 }
+
+double contains = 0;
+double restrict = 0;
+double mprep = 0;
+
 
 HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, bool quietMode) : domain(&domain), possibleConstantsPerTask (domain.nTotalTasks), possibleConstantsPerMethod (domain.decompositionMethods.size ())
 {
@@ -115,8 +166,19 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 
 	if (!quietMode) std::cout << "Starting Hierarchy Typing" << std::endl;
 	// Start the DFS at the top task
+			
+	std::clock_t ht_start = std::clock();
 	taskDfs (domain, problem, withStaticPreconditionChecking, staticPredicates, factsPerPredicate, problem.initialAbstractTask, topTaskPossibleConstants);
+	std::clock_t ht_end = std::clock();
+	double time_elapsed_ms = 1000.0 * (ht_end-ht_start) / CLOCKS_PER_SEC;
+	if (!quietMode){
+		std::cout << "Total " << time_elapsed_ms << "ms" << std::endl;
+		std::cout << "Contains " << contains	<< "ms" << std::endl;
+		std::cout << "Restrict " << restrict << "ms" << std::endl;
+		std::cout << "MPrep " << mprep << "ms" << std::endl;
+	}
 	if (!quietMode) std::cout << "Finished Hierarchy Typing" << std::endl;
+
 
 	DEBUG(
 	for (size_t taskID = 0; taskID < domain.nPrimitiveTasks; taskID++)
@@ -152,11 +214,13 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 	}
 }
 
+
 void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, const std::vector<bool> & staticPredicates, std::vector<std::vector<std::map<int,std::vector<int>>>> & factsPerPredicate, size_t taskNo, PossibleConstants possibleConstants)
 {
 	const Task & task = domain.tasks[taskNo];
 
 	// Stop recursion if we already found this set of possible constants
+	std::clock_t ht_start = std::clock();
 	for (const auto & visitedConstants : possibleConstantsPerTask[taskNo])
 	{
 		assert (visitedConstants.size () == task.variableSorts.size ());
@@ -176,6 +240,10 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 			return;
 		}
 	}
+	std::clock_t ht_end = std::clock();
+	double time_elapsed_ms = 1000.0 * (ht_end-ht_start) / CLOCKS_PER_SEC;
+	contains += time_elapsed_ms;	
+	
 	DEBUG(
 		std::cout << "Adding Hierarchy Typing for " << taskNo << " " << domain.tasks[taskNo].name;
 	   	std::cout << "[";
@@ -186,7 +254,8 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 	   		bool ffirst = true;
 			for (auto v : p){
 				if (!ffirst) std::cout << ",";
-				std::cout << domain.constants[v];
+				if (v > 0) std::cout << domain.constants[v];
+				else std::cout << domain.sorts[-v-1].name;
 				ffirst = false;	
 			}
 			std::cout << "}";
@@ -200,25 +269,54 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 
 	for (int methodNo : task.decompositionMethods)
 	{
+		std::clock_t m_start = std::clock();
 		const DecompositionMethod & method = domain.decompositionMethods[methodNo];
 		assert (task.variableSorts.size () == method.taskParameters.size ());
 
 		// Determine possible constants for this method
+		//
+		//   -> we put a -s-1 into variables that have the full variable type (saves a lot of runtime in certain domains, especially Minecraft)
+		//
 		PossibleConstants possibleMethodConstants (method.variableSorts.size ());
 		for (size_t methodVarIdx = 0; methodVarIdx < method.variableSorts.size (); ++methodVarIdx)
 		{
 			// Initially, we can use all constants from the method variable's sort.
 			int sort = method.variableSorts[methodVarIdx];
-			possibleMethodConstants[methodVarIdx] = domain.sorts[sort].members;
+			possibleMethodConstants[methodVarIdx].insert(-sort-1);
+			//  	= domain.sorts[sort].members;
 		}
 		for (size_t taskVarIdx = 0; taskVarIdx < method.taskParameters.size (); ++taskVarIdx)
 		{
 			// For method variables that correspond to task variables, we intersect the possible constants.
 			int methodVarIdx = method.taskParameters[taskVarIdx];
-			possibleMethodConstants[methodVarIdx] = intersect (possibleMethodConstants[methodVarIdx], possibleConstants[taskVarIdx]);
+			// either this already an expanded sort or not ...
+			intersect(possibleMethodConstants[methodVarIdx], possibleConstants[taskVarIdx], domain);
 		}
-		applyConstraints (possibleMethodConstants, method.variableConstraints);
-
+	
+		DEBUG(
+			std::cout << "Starting on method" << methodNo << " " << method.name;
+	   		std::cout << "[";
+	   		bool first = true;
+			for (auto p : possibleMethodConstants){
+				if (!first) std::cout << ",";
+				std::cout << "{";
+	   			bool ffirst = true;
+				for (auto v : p){
+					if (!ffirst) std::cout << ",";
+					if (v > 0) std::cout << domain.constants[v];
+					else std::cout << domain.sorts[-v-1].name;
+					ffirst = false;	
+				}
+				std::cout << "}";
+				first = false;
+			}	
+			std::cout << "]";
+			std::cout << std::endl;
+		);
+	
+		std::clock_t r_start = std::clock();
+		double time_elapsed_ms = 1000.0 * (r_start-m_start) / CLOCKS_PER_SEC;
+		mprep += time_elapsed_ms;	
 
 		// checking static preconditions of subtasks
 		// TODO optimise this ordering ... start with subtasks that are likely to prune something
@@ -228,12 +326,12 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 			// can only check preconditions for primitive tasks
 			if (subtask.taskNo >= domain.nPrimitiveTasks) continue;
 
-			PossibleConstants possibleSubtaskConstants (subtask.arguments.size ());
-			for (size_t subtaskVarIdx = 0; subtaskVarIdx < subtask.arguments.size (); ++subtaskVarIdx)
-			{
-				int methodVarIdx = subtask.arguments[subtaskVarIdx];
-				possibleSubtaskConstants[subtaskVarIdx] = possibleMethodConstants[methodVarIdx];
-			}
+			//PossibleConstants possibleSubtaskConstants (subtask.arguments.size ());
+			//for (size_t subtaskVarIdx = 0; subtaskVarIdx < subtask.arguments.size (); ++subtaskVarIdx)
+			//{
+			//	int methodVarIdx = subtask.arguments[subtaskVarIdx];
+			//	possibleSubtaskConstants[subtaskVarIdx] = possibleMethodConstants[methodVarIdx];
+			//}
 
 			for (size_t precID = 0; precID < domain.tasks[subtask.taskNo].preconditions.size(); precID++){
 				if (!staticPredicates[domain.tasks[subtask.taskNo].preconditions[precID].predicateNo])
@@ -248,22 +346,24 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 				);
 
 				// we have a static precondition, so we can prune along it
-				PossibleConstants possiblePreconditionConstants (arguments.size());
-				for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
-					int taskVarIndex = arguments[predicateVarIdx];
-					possiblePreconditionConstants[predicateVarIdx] = possibleSubtaskConstants[taskVarIndex];
-				}
+				//PossibleConstants possiblePreconditionConstants (arguments.size());
+				//for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
+				//	int taskVarIndex = arguments[predicateVarIdx];
+				//	possiblePreconditionConstants[predicateVarIdx] = possibleSubtaskConstants[taskVarIndex];
+				//}
 				
 				DEBUG(
 					std::cout << "starting with ";
 				   	bool first = true;
-					for (auto p : possiblePreconditionConstants){
+					for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
+						auto & p = possibleMethodConstants[subtask.arguments[arguments[predicateVarIdx]]];
 						if (!first) std::cout << ",";
-						std::cout << "{";
+						std::cout << subtask.arguments[arguments[predicateVarIdx]] << "  {";
 				   		bool ffirst = true;
 						for (auto v : p){
 							if (!ffirst) std::cout << ",";
-							std::cout << domain.constants[v];
+							if (v > 0) std::cout << domain.constants[v];
+							else std::cout << domain.sorts[-v-1].name;
 							ffirst = false;	
 						}
 						std::cout << "}";
@@ -272,50 +372,95 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 					std::cout << std::endl;
 						);
 	
-				// let's check whether we violate something
-				PossibleConstants newPossiblePreconditionConstants (arguments.size());
 				
 				// only do facts that are actually useful
 				int smallestNumberOfInstances = 0x3f3f3f3f;
 				int indexOfSmallest = 0x3f3f3f3f;
 				for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
-					int size = possiblePreconditionConstants[predicateVarIdx].size();
-
+					int size = possibleMethodConstants[subtask.arguments[arguments[predicateVarIdx]]].size();
+					if (size == 1 && *(possibleMethodConstants[subtask.arguments[arguments[predicateVarIdx]]].begin()) < 0)
+						continue;
 					if (size < smallestNumberOfInstances){
 						smallestNumberOfInstances = size;
 						indexOfSmallest = predicateVarIdx;
 					}
 				}
 
+				if (smallestNumberOfInstances == 0x3f3f3f3f){
+					// everything is a full sort ...
+					for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
+						int sort = *(possibleMethodConstants[subtask.arguments[arguments[predicateVarIdx]]].begin());
+						sort = -sort - 1;
+						int size = domain.sorts[sort].members.size();
+						if (size < smallestNumberOfInstances){
+							smallestNumberOfInstances = size;
+							indexOfSmallest = predicateVarIdx;
+						}
+					}
+					assert(smallestNumberOfInstances != 0x3f3f3f3f);
+					int sort = *(possibleMethodConstants[subtask.arguments[arguments[indexOfSmallest]]].begin());
+					sort = -sort - 1;
+					possibleMethodConstants[subtask.arguments[arguments[indexOfSmallest]]] = domain.sorts[sort].members;
+
+				}
+
 				assert(smallestNumberOfInstances != 0x3f3f3f3f);
 
-				for (const int & val : possiblePreconditionConstants[indexOfSmallest])
+				DEBUG(std::cout << "Selected variable " << subtask.arguments[arguments[indexOfSmallest]] << " of size " << smallestNumberOfInstances << std::endl);
+
+				// let's check whether we violate something
+				PossibleConstants newPossiblePreconditionConstants (arguments.size());
+				for (const int & val : possibleMethodConstants[subtask.arguments[arguments[indexOfSmallest]]])
 					for (int factNo : factsPerPredicate[predicate][indexOfSmallest][val]){
 					  	const Fact & f = problem.init[factNo];
 						// check whether all are ok
 						bool possible = true;
-						for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++)
-							if (possiblePreconditionConstants[predicateVarIdx].count(f.arguments[predicateVarIdx]) == 0){
+						for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
+							std::set<int> & vals = possibleMethodConstants[subtask.arguments[arguments[predicateVarIdx]]];
+							int constant = f.arguments[predicateVarIdx];
+							if (vals.size() == 1 && *(vals.begin()) < 0){
+								if (domain.sorts[-(*(vals.begin())) - 1].members.count(constant) == 0){
+									possible = false;
+									break;
+								}
+							} else if (vals.count(constant) == 0){
 								possible = false;
 								break;
 							}
+						}
 						
 						if (!possible) continue;
 						
 						for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++)
 							newPossiblePreconditionConstants[predicateVarIdx].insert(f.arguments[predicateVarIdx]);
 					}
-					
+			
+				
+				// writing back the information to the overall arguments of the task
+				for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
+					int taskVarIndex = arguments[predicateVarIdx];
+					int methodVarIndex = subtask.arguments[taskVarIndex];
+				
+					if (possibleMethodConstants[methodVarIndex].size() != 1 || *(possibleMethodConstants[methodVarIndex].begin()) >= 0)	
+						if (possibleMethodConstants[methodVarIndex].size() == newPossiblePreconditionConstants[predicateVarIdx].size())
+							continue; // nothing changed
+
+					intersect(possibleMethodConstants[methodVarIndex], newPossiblePreconditionConstants[predicateVarIdx], domain);
+				}
+
+
 				DEBUG(
 					std::cout << "Pruned arguments to ";
 				   	bool first = true;
-					for (auto p : newPossiblePreconditionConstants){
+					for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
+						auto & p = possibleMethodConstants[subtask.arguments[arguments[predicateVarIdx]]];
 						if (!first) std::cout << ",";
 						std::cout << "{";
 				   		bool ffirst = true;
 						for (auto v : p){
 							if (!ffirst) std::cout << ",";
-							std::cout << domain.constants[v];
+							if (v > 0) std::cout << domain.constants[v];
+							else std::cout << domain.sorts[-v-1].name;
 							ffirst = false;	
 						}
 						std::cout << "}";
@@ -323,36 +468,22 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 					}	
 					std::cout << std::endl;
 						);
-
-				// writing back the information to the overall arguments of the task
-				for (size_t predicateVarIdx = 0; predicateVarIdx < arguments.size(); predicateVarIdx++){
-					int taskVarIndex = arguments[predicateVarIdx];
-	
-					std::set<int> newConstants;
-					for (int c : possibleSubtaskConstants[taskVarIndex])
-						if (newPossiblePreconditionConstants[predicateVarIdx].count(c))
-							newConstants.insert(c);
-					
-					DEBUG(if (newConstants.size() < possibleSubtaskConstants[taskVarIndex].size())
-							std::cout << "Reducing size of TaskVar" << taskVarIndex << std::endl);
-					possibleSubtaskConstants[taskVarIndex] = newConstants;
-				}
 			}
-			
-			// writing back to the method's constants
-			for (size_t subtaskVarIdx = 0; subtaskVarIdx < subtask.arguments.size (); ++subtaskVarIdx)
-			{
-				int methodVarIdx = subtask.arguments[subtaskVarIdx];
+		}
 
-				std::set<int> newConstants;
-				for (int c : possibleMethodConstants[methodVarIdx])
-					if (possibleSubtaskConstants[subtaskVarIdx].count(c))
-					   newConstants.insert(c);
-				possibleMethodConstants[methodVarIdx] = newConstants;
+		// expand yet unexpanded arguments
+		for (size_t methodVarIdx = 0; methodVarIdx < method.variableSorts.size (); ++methodVarIdx)
+		{
+			// For method variables that correspond to task variables, we intersect the possible constants.
+			if (possibleMethodConstants[methodVarIdx].size() == 1 && *(possibleMethodConstants[methodVarIdx].begin()) < 0){
+				int sort = -(*(possibleMethodConstants[methodVarIdx].begin())) - 1;
+				possibleMethodConstants[methodVarIdx] = domain.sorts[sort].members;
 			}
 		}
 	
+		applyConstraints (possibleMethodConstants, method.variableConstraints);
 
+		//if (taskNo == 14) exit(0);
 
 		// If we have no valid assignment for a variable, we cannot instantiate this method.
 		if (std::any_of (possibleMethodConstants.begin (), possibleMethodConstants.end (), [](const auto & possibleValues) { return possibleValues.size () == 0; }))
@@ -360,6 +491,11 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 
 		possibleConstantsPerMethod[methodNo].push_back (possibleMethodConstants);
 
+		std::clock_t r_end = std::clock();
+		time_elapsed_ms = 1000.0 * (r_end-r_start) / CLOCKS_PER_SEC;
+		restrict += time_elapsed_ms;	
+		
+		
 
 		for (const auto & subtask : method.subtasks)
 		{
@@ -380,6 +516,7 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 			);
 			taskDfs (domain, problem, withStaticPreconditionChecking, staticPredicates, factsPerPredicate, subtask.taskNo, possibleSubtaskConstants);
 		}
+
 	}
 }
 
