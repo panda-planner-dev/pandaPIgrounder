@@ -17,7 +17,7 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 
-bool replacement_type_dfs(int cur, int end, std::set<int> & visited, std::vector<std::set<int>> & parents, const Domain & domain){
+bool replacement_type_dfs(int cur, int end, std::set<int> & visited, std::vector<std::set<int>> & parents){
 	if (cur == end) return true;
 	if (!parents[cur].size()) return false;
 	
@@ -25,19 +25,19 @@ bool replacement_type_dfs(int cur, int end, std::set<int> & visited, std::vector
 	visited.insert(cur);
 
 	for (int p : parents[cur])
-		if (!replacement_type_dfs(p,end,visited,parents,domain)) return false;
+		if (!replacement_type_dfs(p,end,visited,parents)) return false;
 
 	return true;
 }
 
 
-std::pair<int,std::set<int>> get_replacement_type(int type_to_replace, std::vector<std::set<int>> & parents, const Domain & domain){
+std::pair<int,std::set<int>> get_replacement_type(int type_to_replace, std::vector<std::set<int>> & parents){
 	// try all possible replacement sorts
 	std::set<int> best_visited;
 	int best_replacement = -1;
-	for (size_t s = 0; s < domain.sorts.size(); s++) if (s != type_to_replace){
+	for (size_t s = 0; s < parents.size(); s++) if (s != type_to_replace){
 		std::set<int> visited;
-		if (replacement_type_dfs(type_to_replace, s, visited, parents, domain))
+		if (replacement_type_dfs(type_to_replace, s, visited, parents))
 			if (best_replacement == -1 || best_visited.size() > visited.size()){
 				best_replacement = s;
 				best_visited = visited;
@@ -149,7 +149,7 @@ std::tuple<std::vector<int>,std::vector<int>,std::map<int,int>> compute_local_ty
 	
 	for (size_t s = 0; s < domain.sorts.size(); s++) if (parent[s] == -2){
 		DEBUG(std::cout << "Sort " << domain.sorts[s].name << " has multiple parents and must be replaced." << std::endl);
-		auto [replacement, all_covered] = get_replacement_type(s,parents,domain);
+		auto [replacement, all_covered] = get_replacement_type(s,parents);
 		assert(replacement != -1); // there is always the object type
 		DEBUG(std::cout << "Replacement sort is " << domain.sorts[replacement].name << std::endl);
 		DEBUG(std::cout << "All to be replaced:"; for (int ss : all_covered) std::cout << " " << domain.sorts[ss].name; std::cout << std::endl);
