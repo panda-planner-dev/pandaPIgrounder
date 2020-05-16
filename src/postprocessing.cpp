@@ -391,13 +391,14 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 			decomposedTaskName += "]";
 	
 			// apply this method in all methods it is occurring
-			DEBUG( std::cerr << "Abstract task " << groundedTask.groundedNo << " has only a single method" << std::endl);
+			DEBUG( std::cerr << "Abstract task " << decomposedTaskName << " (" << groundedTask.groundedNo << ") has only a single method" << std::endl);
 			for (const int & method : taskToMethodsTheyAreContainedIn[groundedTask.groundedNo]){
 				if (prunedMethods[method]) continue;
-				DEBUG( std::cerr << "expanding in method " << method << std::endl);
 				// copy the lifted method
 				GroundedMethod & groundedMethod = inputMethodsGroundedTdg[method];
 				DecompositionMethod liftedMethod = domain.decompositionMethods[groundedMethod.methodNo];
+				
+				DEBUG( std::cerr << "expanding in method " << liftedMethod.name << " (" << method << ")" << std::endl);
 				
 				while (true){
 					bool found = false;
@@ -454,7 +455,6 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 									if (order.second > subTaskIdx) order.second--;
 									liftedMethod.orderingConstraints.push_back(order);
 								}
-								break; // we can't go on from here, we have to restart the loop. It is too dangerous
 							} else {
 								DEBUG( std::cerr << "Applied method is not empty." << std::endl);
 								// set first subtask and add the rest
@@ -523,6 +523,8 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 								liftedMethod.name += std::to_string(idmapping[i]);
 							}
 							liftedMethod.name += ">";
+							
+							if (unitGroundedMethod.groundedPreconditions.size() == 0) break;
 						}
 					}
 	
