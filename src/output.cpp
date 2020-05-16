@@ -998,6 +998,7 @@ std::string toHDDLName(std::string name){
 		else if (c == '>') result += "RA_";
 		else if (c == '[') result += "LB_";
 		else if (c == ']') result += "RB_";
+		else if (c == '|') result += "BAR_";
 		else if (c == ';') result += "SEM_";
 		else if (c == ',') result += "COM_";
 		else if (c == '+') result += "PLUS_";
