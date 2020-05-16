@@ -254,7 +254,7 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 	   		bool ffirst = true;
 			for (auto v : p){
 				if (!ffirst) std::cout << ",";
-				if (v > 0) std::cout << domain.constants[v];
+				if (v >= 0) std::cout << domain.constants[v];
 				else std::cout << domain.sorts[-v-1].name;
 				ffirst = false;	
 			}
@@ -263,7 +263,7 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 		}	
 		std::cout << "]";
 		std::cout << std::endl;
-			);
+	//		);
 	
 	possibleConstantsPerTask[taskNo].push_back (possibleConstants);
 
@@ -303,7 +303,7 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 	   			bool ffirst = true;
 				for (auto v : p){
 					if (!ffirst) std::cout << ",";
-					if (v > 0) std::cout << domain.constants[v];
+					if (v >= 0) std::cout << domain.constants[v];
 					else std::cout << domain.sorts[-v-1].name;
 					ffirst = false;	
 				}
@@ -362,7 +362,7 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 				   		bool ffirst = true;
 						for (auto v : p){
 							if (!ffirst) std::cout << ",";
-							if (v > 0) std::cout << domain.constants[v];
+							if (v >= 0) std::cout << domain.constants[v];
 							else std::cout << domain.sorts[-v-1].name;
 							ffirst = false;	
 						}
@@ -459,7 +459,7 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 				   		bool ffirst = true;
 						for (auto v : p){
 							if (!ffirst) std::cout << ",";
-							if (v > 0) std::cout << domain.constants[v];
+							if (v >= 0) std::cout << domain.constants[v];
 							else std::cout << domain.sorts[-v-1].name;
 							ffirst = false;	
 						}
