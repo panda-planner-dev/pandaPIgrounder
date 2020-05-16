@@ -338,14 +338,23 @@ std::pair<std::vector<bool>,std::vector<bool>> ground_invariant_analysis(const D
 
 		// check whether the preconditions violate one of the mutexes
 		std::map<int,int> mutex_required_count;
-		for (const int & pre : reachableTasks[aID].groundedPreconditions)
-			for (const int & m : mutex_groups_per_fact[pre])
+		std::unordered_set<int> handledPreconditions;
+		for (const int & pre : reachableTasks[aID].groundedPreconditions){
+			if (handledPreconditions.count(pre)) continue;
+			handledPreconditions.insert(pre);
+			for (const int & m : mutex_groups_per_fact[pre]){
+				DEBUG(std::cout << "Action " << aID << "[";
+					write_task_name(std::cout, domain, reachableTasks[aID]);
+					std::cout << "] mutex " << m << " on " << pre << std::endl;
+						);
 				mutex_required_count[m]++;
+			}
+		}
 
 		for (const auto & entry : mutex_required_count){
 			//DEBUG(std::cout << "Action " << aID << "'s preconditions refer mutex " << entry.first << " " << entry.second << " times " << std::endl);
 			if (entry.second == 1) continue; // ok
-			DEBUG(std::cout << "Pruning action " << aID << "[";
+			DEBUG(std::cout << "Pruning action " << aID << " [";
 				write_task_name(std::cout, domain, reachableTasks[aID]);
 				std::cout << "] as its preconditions violate a mutex " << entry.first << " @ " << entry.second << std::endl);
 			prunedTasks[aID] = true;
