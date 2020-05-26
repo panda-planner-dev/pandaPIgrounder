@@ -433,7 +433,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 
 			if (invElem < 0) {
 				assert(!prunedFacts[elem]);
-				out_inv.insert(-reachableFacts[elem].outputNo - 1);
+				out_inv.insert(-reachableFacts[elem].outputNo - 2);
 			} else {
 				if (cover_pruned.count(elem))
 					for (const int & other : cover_pruned[elem]){
@@ -456,7 +456,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		bool isTrivial = false;
 		bool hasNegativeOrHasSTRIPS = false;
 		for (const int & elem : out_inv)
-			if (out_inv.count(-elem-1)){
+			if (out_inv.count(-elem-2)){
 				isTrivial = true;
 				break;
 			} else if (elem < 0 || elem >= sas_g_per_fact.size())
@@ -864,7 +864,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	
 	// if necessary additional noop
 	if (contains_empty_method){
-		pout << 0 << " noop" << std::endl;
+		pout << 0 << " __noop" << std::endl;
 	}
 	
 	// output names of primitives

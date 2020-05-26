@@ -263,7 +263,7 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 		}	
 		std::cout << "]";
 		std::cout << std::endl;
-	//		);
+	);
 	
 	possibleConstantsPerTask[taskNo].push_back (possibleConstants);
 
