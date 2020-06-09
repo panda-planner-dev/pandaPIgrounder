@@ -8,25 +8,7 @@
 
 #include "output.h"
 #include "debug.h"
-
-
-
-/// hash function s.t. conditional effects can be checked for duplicates
-namespace std {
-    template<> struct hash<std::pair<std::unordered_set<int>,int>>
-    {
-        std::size_t operator()(const std::pair<std::unordered_set<int>,int> & m) const noexcept
-        {
-			std::vector<int> v;
-			for (const int & a : m.first) v.push_back(a);
-			std::sort(v.begin(),v.end());
-			std::size_t h = 0;
-			for (const int & a : v) h = h*601 + a;
-			h = h*601 + m.second;
-			return h;
-        }
-    };
-}
+#include "util.h"
 
 
 void instantiate_cover_pruned_dfs(std::map<int,int> & cover_pruned_precs, std::map<int,std::vector<int>> & cover_pruned, std::vector<int> & cover_pruned_facts, int curpos, std::vector<int> & current_assignment, std::vector<std::vector<int>> & all_assignments){
