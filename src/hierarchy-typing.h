@@ -22,8 +22,10 @@
 
 #include <set>
 #include <vector>
+#include <unordered_set>
 
 #include "model.h"
+#include "util.h"
 
 /// Contains a set of possible constants for each variable of a task/method.
 using PossibleConstants = std::vector<std::set<int>>;
@@ -51,14 +53,19 @@ struct HierarchyTyping
 	std::vector<std::vector<std::map<int,std::vector<int>>>> possibleConstantsPerMethodSplitted;
 
 	/**
-	 * @brief Calculates the hierarchy typing.
+	 * @brief for every HT task, the methods it can be decomposed into
 	 */
-	HierarchyTyping (const Domain & domain, const Problem & Problem, bool withStaticPreconditionChecking, bool quietMode);
+	std::vector<std::vector<std::unordered_set<std::pair<int,int>>>> possibleTasksToApplicablePossibleMethods;
 
 	/**
-	 * @brief Perform the depth-first search.
+	 * @brief for every HT method, the tasks it can create via decomposition
 	 */
-	void taskDfs (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, const std::vector<bool> & staticPredicates, std::vector<std::vector<std::map<int,std::vector<int>>>> & factsPerPredicate, size_t taskNo, PossibleConstants possibleConstants);
+	std::vector<std::vector<std::unordered_set<std::pair<int,int>>>> possibleMethodsToApplicablePossibleTasks;
+
+	/**
+	 * @brief Calculates the hierarchy typing.
+	 */
+	HierarchyTyping (const Domain & domain, const Problem & Problem, bool withStaticPreconditionChecking, bool pruneIfIncluded, bool generateFullGraph, bool quietMode);
 
 	/**
 	 * @brief Returns true if the given VariableAssignment is compatible with the Hierarchy Typing information.
@@ -67,6 +74,20 @@ struct HierarchyTyping
 	 */
 	template<typename>
 	bool isAssignmentCompatible (int taskNo, const VariableAssignment & assignedVariables) const;
+
+
+	std::string graphToDotString(const Domain & domain);
+
+	private:
+
+	/**
+	 * @brief Perform the depth-first search.
+	 */
+	int taskDfs (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, const std::vector<bool> & staticPredicates, std::vector<std::vector<std::map<int,std::vector<int>>>> & factsPerPredicate, size_t taskNo, PossibleConstants possibleConstants);
+
+	// members storing private information
+	bool useIncludesForContainsTest;
+	bool createWholeGraph;
 };
 
 /**

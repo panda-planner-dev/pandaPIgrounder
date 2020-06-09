@@ -35,7 +35,7 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	std::unique_ptr<HierarchyTyping> hierarchyTyping;
 	// don't do hierarchy typing for classical instances
 	if (problem.initialAbstractTask != -1 && enableHierarchyTyping)
-		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, quietMode);
+		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, true, false, quietMode);
 
 	if (!quietMode) std::cerr << "Running PG." << std::endl;
 	GpgPlanningGraph pg (domain, problem);

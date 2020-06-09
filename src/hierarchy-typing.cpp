@@ -113,8 +113,17 @@ double restrict = 0;
 double mprep = 0;
 
 
-HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, bool quietMode) : domain(&domain), possibleConstantsPerTask (domain.nTotalTasks), possibleConstantsPerMethod (domain.decompositionMethods.size ())
+HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem,
+			bool withStaticPreconditionChecking, bool pruneIfIncluded, bool generateFullGraph, bool quietMode) : 
+				domain(&domain),
+				possibleConstantsPerTask (domain.nTotalTasks),
+				possibleConstantsPerMethod (domain.decompositionMethods.size()),
+				possibleTasksToApplicablePossibleMethods (generateFullGraph?domain.nTotalTasks:0),
+				possibleMethodsToApplicablePossibleTasks (generateFullGraph?domain.decompositionMethods.size():0)
 {
+	useIncludesForContainsTest = pruneIfIncluded;
+	createWholeGraph = generateFullGraph;
+	
 	assert(domain.tasks.size() > problem.initialAbstractTask);
 	
 	std::vector<bool> staticPredicates;
@@ -189,8 +198,8 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 	);
 
 	// splitting
-	possibleConstantsSplitted.resize(domain.nPrimitiveTasks);
-	for (size_t taskID = 0; taskID < domain.nPrimitiveTasks; taskID++){
+	possibleConstantsSplitted.resize(domain.nTotalTasks);
+	for (size_t taskID = 0; taskID < domain.nTotalTasks; taskID++){
 		possibleConstantsSplitted[taskID].resize(domain.tasks[taskID].variableSorts.size());
 		for (size_t pc = 0; pc < possibleConstantsPerTask[taskID].size(); pc++){
 			for (size_t varIDX = 0; varIDX < domain.tasks[taskID].variableSorts.size(); varIDX++){
@@ -215,29 +224,38 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 }
 
 
-void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, const std::vector<bool> & staticPredicates, std::vector<std::vector<std::map<int,std::vector<int>>>> & factsPerPredicate, size_t taskNo, PossibleConstants possibleConstants)
+int HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, bool withStaticPreconditionChecking, const std::vector<bool> & staticPredicates, std::vector<std::vector<std::map<int,std::vector<int>>>> & factsPerPredicate, size_t taskNo, PossibleConstants possibleConstants)
 {
 	const Task & task = domain.tasks[taskNo];
 
 	// Stop recursion if we already found this set of possible constants
 	std::clock_t ht_start = std::clock();
-	for (const auto & visitedConstants : possibleConstantsPerTask[taskNo])
+	for (size_t i = 0; i < possibleConstantsPerTask[taskNo].size(); i++)
 	{
+		PossibleConstants & visitedConstants = possibleConstantsPerTask[taskNo][i];
 		assert (visitedConstants.size () == task.variableSorts.size ());
 
 		bool visited = true;
 		for (size_t varIdx = 0; varIdx < task.variableSorts.size (); ++varIdx)
 		{
-			if (!std::includes (visitedConstants[varIdx].begin (), visitedConstants[varIdx].end (), possibleConstants[varIdx].begin (), possibleConstants[varIdx].end ()))
-			{
-				visited = false;
-				break;
+			if (useIncludesForContainsTest) {
+				// this one is new if it is not included in the other one 
+				if (!std::includes (visitedConstants[varIdx].begin (), visitedConstants[varIdx].end (), possibleConstants[varIdx].begin (), possibleConstants[varIdx].end ()))
+				{
+					visited = false;
+					break;
+				}
+			} else {
+				if (visitedConstants[varIdx] != possibleConstants[varIdx]){
+					visited = false;
+					break;
+				}
 			}
 		}
 
 		if (visited){
 			DEBUG(std::cout << "Already visited" << std::endl);
-			return;
+			return i;
 		}
 	}
 	std::clock_t ht_end = std::clock();
@@ -265,6 +283,12 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 		std::cout << std::endl;
 	);
 	
+	int taskTypingIndex = possibleConstantsPerTask[taskNo].size();
+	if (createWholeGraph){
+		std::unordered_set<std::pair<int,int>> _empty;
+		possibleTasksToApplicablePossibleMethods[taskNo].push_back(_empty);
+	}
+
 	possibleConstantsPerTask[taskNo].push_back (possibleConstants);
 
 	for (int methodNo : task.decompositionMethods)
@@ -489,7 +513,17 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 		if (std::any_of (possibleMethodConstants.begin (), possibleMethodConstants.end (), [](const auto & possibleValues) { return possibleValues.size () == 0; }))
 			continue;
 
+		int methodTypingIndex = possibleConstantsPerMethod[methodNo].size();
+		if (createWholeGraph){
+			std::unordered_set<std::pair<int,int>> _empty;
+			possibleMethodsToApplicablePossibleTasks[methodNo].push_back(_empty);
+			possibleTasksToApplicablePossibleMethods[taskNo][taskTypingIndex].insert(std::make_pair(methodNo, methodTypingIndex));
+			DEBUG(std::cout << "Adding edge T" << taskNo << "-" << taskTypingIndex << " -> M" << methodNo << "-" << methodTypingIndex << std::endl);
+		}
+
 		possibleConstantsPerMethod[methodNo].push_back (possibleMethodConstants);
+		
+
 
 		std::clock_t r_end = std::clock();
 		time_elapsed_ms = 1000.0 * (r_end-r_start) / CLOCKS_PER_SEC;
@@ -514,10 +548,15 @@ void HierarchyTyping::taskDfs (const Domain & domain, const Problem & problem, b
 				std::cout << " via the method " << methodNo << " " << method.name;
 			   	std::cout << " to " << subtask.taskNo << " " << domain.tasks[subtask.taskNo].name << std::endl;
 			);
-			taskDfs (domain, problem, withStaticPreconditionChecking, staticPredicates, factsPerPredicate, subtask.taskNo, possibleSubtaskConstants);
+			int subtaskTypingIndex = taskDfs (domain, problem, withStaticPreconditionChecking, staticPredicates, factsPerPredicate, subtask.taskNo, possibleSubtaskConstants);
+			if (createWholeGraph){
+				possibleMethodsToApplicablePossibleTasks[methodNo][methodTypingIndex].insert(std::make_pair(subtask.taskNo, subtaskTypingIndex));
+				DEBUG(std::cout << "Adding edge M" << methodNo << "-" << methodTypingIndex << " -> T" << subtask.taskNo << "-" << subtaskTypingIndex << std::endl);
+			}
 		}
-
 	}
+
+	return taskTypingIndex;
 }
 
 static bool isAssignmentCompatibleSplitted (const std::vector<PossibleConstants> & allConstants, const std::vector<int> & actuallyPossibleConstants, const VariableAssignment & assignedVariables)
@@ -616,3 +655,53 @@ bool HierarchyTyping::isAssignmentCompatible<DecompositionMethod> (int methodNo,
 
 	return ::isAssignmentCompatible (possibleConstantsPerMethod[methodNo], assignedVariables);
 }
+
+
+std::string HierarchyTyping::graphToDotString(const Domain & domain){
+	if (!createWholeGraph) return ""; // safety
+
+	std::string ret = "digraph HT\n{\n";
+	for (size_t taskID = 0; taskID < domain.nTotalTasks; taskID++){
+		for (size_t pc = 0; pc < possibleConstantsPerTask[taskID].size(); pc++){
+			ret += "T" + std::to_string(taskID) + "x" + std::to_string(pc) + "[label=\"" + domain.tasks[taskID].name + "\"];\n";
+			
+			/*for (size_t varIDX = 0; varIDX < domain.tasks[taskID].variableSorts.size(); varIDX++){
+				for (int e : possibleConstantsPerTask[taskID][pc][varIDX])
+					possibleConstantsSplitted[taskID][varIDX][e].push_back(pc);
+			}*/
+		}
+	}
+
+
+	for (size_t methodID = 0; methodID < domain.decompositionMethods.size(); methodID++){
+		for (size_t pc = 0; pc < possibleConstantsPerMethod[methodID].size(); pc++){
+			ret += "M" + std::to_string(methodID) + "x" + std::to_string(pc) + "[label=\"" + domain.decompositionMethods[methodID].name + "\"];\n";
+			
+			
+			/*for (size_t varIDX = 0; varIDX < domain.decompositionMethods[methodID].variableSorts.size(); varIDX++){
+				for (int e : possibleConstantsPerMethod[methodID][pc][varIDX])
+					possibleConstantsPerMethodSplitted[methodID][varIDX][e].push_back(pc);
+			}*/
+		}
+	}
+
+	
+	for (size_t taskID = 0; taskID < domain.nTotalTasks; taskID++){
+		for (size_t pc = 0; pc < possibleConstantsPerTask[taskID].size(); pc++){
+			for (auto & [methodID,mpc] : possibleTasksToApplicablePossibleMethods[taskID][pc])
+				ret += "\tT" + std::to_string(taskID) + "x" + std::to_string(pc) + " -> " + 
+					"M" + std::to_string(methodID) + "x" + std::to_string(mpc) + ";\n";
+		}
+	}
+	
+	for (size_t methodID = 0; methodID < domain.decompositionMethods.size(); methodID++){
+		for (size_t pc = 0; pc < possibleConstantsPerMethod[methodID].size(); pc++){
+			for (auto & [taskID,tpc] : possibleMethodsToApplicablePossibleTasks[methodID][pc])
+				ret += "\tM" + std::to_string(methodID) + "x" + std::to_string(pc) + " -> " + 
+					"T" + std::to_string(taskID) + "x" + std::to_string(tpc) + ";\n";
+	
+		}
+	}		
+	return ret + "}\n";
+}
+

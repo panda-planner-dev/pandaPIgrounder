@@ -269,7 +269,9 @@ int main (int argc, char * argv[])
 		// Just run the PG - this is for speed testing
 		std::unique_ptr<HierarchyTyping> hierarchyTyping;
 		if (enableHierarchyTyping)
-			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, quietMode);
+			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, false, true, quietMode);
+
+		std::cout << hierarchyTyping.get()->graphToDotString(domain);
 
 		/*GpgPlanningGraph pg (domain, problem);
 		std::vector<GroundedTask> groundedTasks;
