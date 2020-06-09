@@ -11,39 +11,20 @@
 #include "duplicate.h"
 
 
-void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, 
-		bool enableHierarchyTyping, 
-		bool removeUselessPredicates,
-		bool expandChoicelessAbstractTasks,
-		bool pruneEmptyMethodPreconditions,
-		bool futureCachingByPrecondition,
-		bool withStaticPreconditionChecking,
-		bool h2Mutextes,
-		bool computeInvariants,
-		bool outputSASVariablesOnly,
-		sas_delete_output_mode sas_mode,
-		bool compileNegativeSASVariables,
-		bool removeDuplicateActions,
-		bool noopForEmptyMethods,
-		bool outputForPlanner, 
-		bool outputHDDL, 
-		bool outputSASPlus, 
-		bool printTimings,
-		bool quietMode){
+void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, grounding_configuration & config){
 
   	std::vector<FAMGroup> famGroups;	
-	if (computeInvariants){
-		famGroups = compute_FAM_mutexes(domain,problem,quietMode);
+	if (config.computeInvariants){
+		famGroups = compute_FAM_mutexes(domain,problem,config);
 	}
 
 	// if the instance contains conditional effects we have to compile them into additional primitive actions
 	// for this, we need to be able to write to the domain
 	expand_conditional_effects_into_artificial_tasks(const_cast<Domain &>(domain), const_cast<Problem &>(problem));
-	if (!quietMode) std::cout << "Conditional Effects expanded" << std::endl;
+	if (!config.quietMode) std::cout << "Conditional Effects expanded" << std::endl;
 
 	// run the lifted GPG to create an initial grounding of the domain
-	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, 
-			enableHierarchyTyping, futureCachingByPrecondition, withStaticPreconditionChecking, printTimings, quietMode);
+	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, config);
 	// run the grounded GPG until convergence to get the grounding smaller
 	std::vector<bool> prunedFacts (initiallyReachableFacts.size());
 	std::vector<bool> prunedTasks (initiallyReachableTasks.size());
@@ -51,15 +32,19 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	
 	run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 			prunedFacts, prunedTasks, prunedMethods,
-			quietMode);
+			config);
 
 ////////////////////// H2 mutexes
 	std::vector<std::unordered_set<int>> h2_mutexes;
 	std::vector<std::unordered_set<int>> h2_invariants;
-	if (h2Mutextes){
+	if (config.h2Mutexes){
 		// remove useless predicates to make the H2 inference easier
-		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
-			removeUselessPredicates, false, false, quietMode);	
+		grounding_configuration temp_configuration = config;
+		temp_configuration.expandChoicelessAbstractTasks = false;
+		temp_configuration.pruneEmptyMethodPreconditions = false;
+		temp_configuration.outputSASVariablesOnly = true; // -> force SAS+ here. This makes the implementation easier
+
+		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, temp_configuration); 
 
 		// H2 mutexes need the maximum amount of information possible, so we have to compute SAS groups at this point
 
@@ -84,8 +69,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 				famGroups, h2_mutexes,
 				initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
 				initFacts, reachableFactsSet,
-				true, // outputSASVariablesOnly -> force SAS+ here. This makes the implementation easier
-				quietMode);
+				temp_configuration);
 		
 		
 		bool changedPruned = false;
@@ -95,7 +79,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 				initFacts,
 				sas_groups,further_mutex_groups,
 				changedPruned,
-				quietMode);
+				temp_configuration);
 
 
 		// run H2 mutex analysis
@@ -103,7 +87,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			compute_h2_mutexes(domain,problem,initiallyReachableFacts,initiallyReachableTasks,
 					prunedFacts, prunedTasks, 
 					sas_groups, sas_variables_needing_none_of_them,
-					quietMode);
+					temp_configuration);
 		h2_mutexes = _h2_mutexes;
 		h2_invariants = _h2_invariants;
 
@@ -111,23 +95,22 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			// if we have pruned actions, rerun the PGP and HTN stuff
 			run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 				prunedFacts, prunedTasks, prunedMethods,
-				quietMode);
+				temp_configuration);
 		}
 	}
 //////////////////////// end of H2 mutexes
 
 	// run postprocessing
-	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, 
-			removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, quietMode);	
+	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, config);	
 
-	if (outputSASPlus){
-		write_sasplus(dout, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, quietMode);
+	if (config.outputSASPlus){
+		write_sasplus(dout, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, config);
 		return;
 	}
 
-	if (outputForPlanner){
-		if (outputHDDL)
-			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
+	if (config.outputForPlanner){
+		if (config.outputHDDL)
+			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, config);
 		else {
 			// prepare data structures that are needed for efficient access
 			std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
@@ -154,8 +137,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 						famGroups, h2_mutexes,
 						initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
 						initFacts, reachableFactsSet,
-						outputSASVariablesOnly,
-						quietMode);
+						config);
 
 				bool changedPruned = false;
 				auto [_sas_variables_needing_none_of_them,_mutex_groups_needing_none_of_them] = ground_invariant_analysis(domain, problem, 
@@ -164,12 +146,12 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 						initFacts,
 						_sas_groups,_further_mutex_groups,
 						changedPruned,
-						quietMode);
+						config);
 
 				if (changedPruned){
 					run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 						prunedFacts, prunedTasks, prunedMethods,
-						quietMode);
+						config);
 				} else {
 					sas_variables_needing_none_of_them = _sas_variables_needing_none_of_them;
 					mutex_groups_needing_none_of_them = _mutex_groups_needing_none_of_them;
@@ -180,8 +162,8 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			}
 
 			// duplicate elemination
-			if (removeDuplicateActions)
-				unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, quietMode);
+			if (config.removeDuplicateActions)
+				unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, config);
 
 			std::vector<std::unordered_set<int>> strict_mutexes;
 			std::vector<std::unordered_set<int>> non_strict_mutexes;
@@ -192,15 +174,14 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 					strict_mutexes.push_back(further_mutex_groups[m]);
 			}
 			
-			if (!quietMode)
+			if (!config.quietMode)
 				std::cout << "Further Mutex Groups: " << strict_mutexes.size() <<  " strict " << non_strict_mutexes.size() << " non strict" << std::endl;
 
 			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
 				initFacts, initFactsPruned, reachableFactsSet,
 				sas_groups, strict_mutexes, non_strict_mutexes, h2_invariants,
 				sas_variables_needing_none_of_them,
-				compileNegativeSASVariables, sas_mode, noopForEmptyMethods,
-				quietMode);
+				config);
 		}
 	
 	}

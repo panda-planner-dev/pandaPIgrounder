@@ -114,7 +114,7 @@ double mprep = 0;
 
 
 HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem,
-			bool withStaticPreconditionChecking, bool pruneIfIncluded, bool generateFullGraph, bool quietMode) : 
+			grounding_configuration & config, bool pruneIfIncluded, bool generateFullGraph) : 
 				domain(&domain),
 				possibleConstantsPerTask (domain.nTotalTasks),
 				possibleConstantsPerMethod (domain.decompositionMethods.size()),
@@ -129,8 +129,8 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 	std::vector<bool> staticPredicates;
 	std::vector<std::vector<std::map<int,std::vector<int>>>> factsPerPredicate (domain.predicates.size());
 	
-	if (withStaticPreconditionChecking){
-		if (!quietMode) std::cout << "Starting Preparations for Hierarchy Typing" << std::endl;
+	if (config.withStaticPreconditionChecking){
+		if (!config.quietMode) std::cout << "Starting Preparations for Hierarchy Typing" << std::endl;
 	
 		// determine predicates that are definitely static s.t. we can already prune using them here
 		for (size_t predicateID = 0; predicateID < domain.predicates.size(); predicateID++)
@@ -171,22 +171,22 @@ HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem
 		topTaskPossibleConstants[varIdx] = domain.sorts[varIdx].members;
 	applyConstraints (topTaskPossibleConstants, topTask.variableConstraints);
 	
-	if (!quietMode) std::cout << "done." << std::endl;
+	if (!config.quietMode) std::cout << "done." << std::endl;
 
-	if (!quietMode) std::cout << "Starting Hierarchy Typing" << std::endl;
+	if (!config.quietMode) std::cout << "Starting Hierarchy Typing" << std::endl;
 	// Start the DFS at the top task
 			
 	std::clock_t ht_start = std::clock();
-	taskDfs (domain, problem, withStaticPreconditionChecking, staticPredicates, factsPerPredicate, problem.initialAbstractTask, topTaskPossibleConstants);
+	taskDfs (domain, problem, config.withStaticPreconditionChecking, staticPredicates, factsPerPredicate, problem.initialAbstractTask, topTaskPossibleConstants);
 	std::clock_t ht_end = std::clock();
 	double time_elapsed_ms = 1000.0 * (ht_end-ht_start) / CLOCKS_PER_SEC;
-	if (!quietMode){
+	if (!config.quietMode){
 		std::cout << "Total " << time_elapsed_ms << "ms" << std::endl;
 		std::cout << "Contains " << contains	<< "ms" << std::endl;
 		std::cout << "Restrict " << restrict << "ms" << std::endl;
 		std::cout << "MPrep " << mprep << "ms" << std::endl;
 	}
-	if (!quietMode) std::cout << "Finished Hierarchy Typing" << std::endl;
+	if (!config.quietMode) std::cout << "Finished Hierarchy Typing" << std::endl;
 
 
 	DEBUG(

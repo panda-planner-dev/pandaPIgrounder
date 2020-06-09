@@ -65,16 +65,13 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::vector<std::unordered_set<int>> further_mutex_groups,
 		std::vector<std::unordered_set<int>> invariants,
 		std::vector<bool> & sas_variables_needing_none_of_them,
-		bool compileNegativeSASVariables,
-		sas_delete_output_mode sas_mode,
-		bool noopForEmptyMethods, 
-		bool quietMode	
+		grounding_configuration & config
 		){
-	if (!quietMode) std::cerr << "Writing instance to output." << std::endl;
+	if (!config.quietMode) std::cerr << "Writing instance to output." << std::endl;
 
 	// determine whether we need an additional noop for empty methods
 	bool contains_empty_method = false;
-	if (noopForEmptyMethods) for (auto & method : reachableMethods){
+	if (config.noopForEmptyMethods) for (auto & method : reachableMethods){
 		if (prunedMethods[method.groundedNo]) continue;
 		if (method.preconditionOrdering.size() == 0){
 			contains_empty_method = true;
@@ -144,7 +141,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		if (sas_variables_needing_none_of_them[og_large]) other_values.push_back(-og_large-1);
 	
 		// always use implications, where there is just one other option
-		if (other_values.size() != 1 && !compileNegativeSASVariables) continue;
+		if (other_values.size() != 1 && !config.compileNegativeSASVariables) continue;
 		
 		// might need a none-of-those
 		cover_pruned[other_fact] = other_values;
@@ -572,7 +569,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 
 		for (int & del : task.groundedDelEffects) if (!prunedFacts[del] && !cover_pruned.count(del)){
-			if (sas_mode != SAS_AS_INPUT && reachableFacts[del].outputNo < number_of_sas_covered_facts) 
+			if (config.sas_mode != SAS_AS_INPUT && reachableFacts[del].outputNo < number_of_sas_covered_facts) 
 				continue; // if the user instructed us to do something else than keeping, we will do it
 			del_out.push_back(std::make_pair(_empty,reachableFacts[del].outputNo));
 		}
@@ -597,7 +594,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			}
 
 			if (prunedFacts[effectID] || cover_pruned.count(effectID)) continue; // this effect is not necessary
-			if (sas_mode != SAS_AS_INPUT && reachableFacts[effectID].outputNo < number_of_sas_covered_facts)
+			if (config.sas_mode != SAS_AS_INPUT && reachableFacts[effectID].outputNo < number_of_sas_covered_facts)
 				continue; // see above
 
 			std::vector<int> nonPrunedPrecs;
@@ -639,7 +636,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 		
 		
-		if (sas_mode == SAS_ALL){
+		if (config.sas_mode == SAS_ALL){
 			for (const auto & add : add_out){
 				if (add.second >= number_of_sas_covered_facts) continue; // this is not a SAS+ fact
 				// add delete effects for everything that is not *this* add
@@ -956,14 +953,14 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 	}
 	
-	if (!quietMode) std::cout << "Final Statistics: F " << fn << " S " << sas_groups.size() << 
+	if (!config.quietMode) std::cout << "Final Statistics: F " << fn << " S " << sas_groups.size() << 
 		" SC " << number_of_sas_covered_facts << 
 		" SM " << out_strict_mutexes.size() << " NSM " << out_non_strict_mutexes.size() << " I " << out_invariants.size() <<
 		" P " << number_of_output_primitives << " S " << number_of_output_artificial_primitives <<
 		" A " << number_of_output_abstracts << " M " << number_of_output_methods << std::endl;
 
 	// exiting this way is faster as data structures will not be cleared ... who needs this anyway
-	if (!quietMode) std::cerr << "Exiting." << std::endl;
+	if (!config.quietMode) std::cerr << "Exiting." << std::endl;
 	// exiting this way is faster ...
 	_exit (0);
 }
@@ -999,7 +996,7 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
-		bool quietMode	
+		grounding_configuration & config
 		){
 
 	std::map<Fact,int> init_functions_map;

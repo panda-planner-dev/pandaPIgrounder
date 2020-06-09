@@ -57,8 +57,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		std::vector<bool> & prunedMethods,
 		std::unordered_set<int> initFacts,
 		std::unordered_set<Fact> reachableFactsSet,
-		bool outputSASVariablesOnly,
-		bool quietMode){
+		grounding_configuration & config){
 
 	DEBUG(std::cout << "Computing SAS+ groups" << std::endl);
 
@@ -269,7 +268,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 
 
 	// add mutex groups for all uncovered variables, if we want to output everything as SAS+
-	if (outputSASVariablesOnly){
+	if (config.outputSASVariablesOnly){
 		for (size_t f = 0; f < reachableFacts.size(); f++) if (!prunedFacts[f] && !factCovered[f]){
 			std::unordered_set<int> s;
 			s.insert(f);
@@ -300,7 +299,7 @@ std::pair<std::vector<bool>,std::vector<bool>> ground_invariant_analysis(const D
 		std::vector<std::unordered_set<int>> & sas_mutexes,
 		std::vector<std::unordered_set<int>> & other_mutexes,
 		bool & changedPruned,
-		bool quietMode){
+		grounding_configuration & config){
 	// identify those SAS+ groups, which need the element "none-of-them"
 	std::vector<bool> sas_groups_needing_none_of_them (sas_mutexes.size());
 	for (size_t i = 0; i < sas_groups_needing_none_of_them.size(); i++)

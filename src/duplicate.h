@@ -2,6 +2,7 @@
 #define DUPLICATE_H_INCLUDED 
 
 #include "model.h"
+#include "grounding.h"
 
 void unify_duplicates(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
@@ -10,7 +11,7 @@ void unify_duplicates(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
-		bool quietMode	
+		grounding_configuration & config	
 		);
 #endif
 

@@ -6,7 +6,7 @@ void write_sasplus(std::ostream & sout, const Domain & domain, const Problem & p
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
-		bool quietMode){
+		grounding_configuration & config){
 
 	// mandated output ..
 	sout << "begin_version" << std::endl << "3" << std::endl << "end_version" << std::endl;

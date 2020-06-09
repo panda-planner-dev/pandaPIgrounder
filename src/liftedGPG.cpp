@@ -26,29 +26,24 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 }
 
 
-std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMethod>> run_lifted_HTN_GPG(const Domain & domain, const Problem & problem, 
-		bool enableHierarchyTyping, 
-		bool futureCachingByPrecondition,
-		bool withStaticPreconditionChecking,
-		bool printTimings,
-		bool quietMode){
+std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMethod>> run_lifted_HTN_GPG(const Domain & domain, const Problem & problem, grounding_configuration & config){
 	std::unique_ptr<HierarchyTyping> hierarchyTyping;
 	// don't do hierarchy typing for classical instances
-	if (problem.initialAbstractTask != -1 && enableHierarchyTyping)
-		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, true, false, quietMode);
+	if (problem.initialAbstractTask != -1 && config.enableHierarchyTyping)
+		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, config, true, false);
 
-	if (!quietMode) std::cerr << "Running PG." << std::endl;
+	if (!config.quietMode) std::cerr << "Running PG." << std::endl;
 	GpgPlanningGraph pg (domain, problem);
 	std::vector<GpgPlanningGraph::ResultType *> groundedTasksPg;
 	std::set<Fact> reachableFacts;
-	runGpg (pg, groundedTasksPg, reachableFacts, hierarchyTyping.get (), futureCachingByPrecondition, printTimings, quietMode);
+	runGpg (pg, groundedTasksPg, reachableFacts, hierarchyTyping.get (), config);
 	
-	if (!quietMode) std::cerr << "PG done. Postprocessing" << std::endl;
+	if (!config.quietMode) std::cerr << "PG done. Postprocessing" << std::endl;
 	assignGroundNosToDeleteEffects(domain, groundedTasksPg, reachableFacts);
 	validateGroundedListP (groundedTasksPg);
 
-	if (!quietMode) std::cerr << "PG postprocessing done." << std::endl;
-	if (!quietMode) std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
+	if (!config.quietMode) std::cerr << "PG postprocessing done." << std::endl;
+	if (!config.quietMode) std::cerr << "Calculated [" << groundedTasksPg.size () << "] grounded tasks and [" << reachableFacts.size () << "] reachable facts." << std::endl;
 	
 
 	/*for (GroundedTask* out : groundedTasksPg){
@@ -133,13 +128,13 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 		method.orderingConstraints = newOrdering;
 	}
 
-	if (!quietMode) std::cerr << "Running TDG." << std::endl;
+	if (!config.quietMode) std::cerr << "Running TDG." << std::endl;
 	GpgTdg tdg (domain, problem, groundedTasksPg);
 	std::vector<GpgTdg::ResultType *> groundedMethods;
 	std::set<GpgTdg::StateType> groundedTaskSetTdg;
-	runGpg (tdg, groundedMethods, groundedTaskSetTdg, hierarchyTyping.get (), futureCachingByPrecondition, printTimings, quietMode);
-	if (!quietMode) std::cerr << "TDG done." << std::endl;
-	if (!quietMode) std::cerr << "Calculated [" << groundedTaskSetTdg.size () << "] grounded tasks and [" << groundedMethods.size () << "] grounded decomposition methods." << std::endl;
+	runGpg (tdg, groundedMethods, groundedTaskSetTdg, hierarchyTyping.get (), config);
+	if (!config.quietMode) std::cerr << "TDG done." << std::endl;
+	if (!config.quietMode) std::cerr << "Calculated [" << groundedTaskSetTdg.size () << "] grounded tasks and [" << groundedMethods.size () << "] grounded decomposition methods." << std::endl;
 
 	validateGroundedListP (groundedMethods);
 
@@ -200,7 +195,7 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 		reachableFactsList[fact.groundedNo] = fact;
 
 	// Perform DFS
-	if (!quietMode) std::cerr << "Performing DFS." << std::endl;
+	if (!config.quietMode) std::cerr << "Performing DFS." << std::endl;
 	// we first have to translate the tasks into pointers to save memory ...
 	std::vector<GroundedTask> reachableTasksDfs;
 	std::vector<GroundedMethod> reachableMethodsDfs;
@@ -220,8 +215,8 @@ std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMet
 	}
 
 
-	if (!quietMode) std::cerr << "DFS done." << std::endl;
-	if (!quietMode) std::cerr << "After DFS: " << reachableTasksDfs.size () << " tasks, " << reachableMethodsDfs.size () << " methods." << std::endl;
+	if (!config.quietMode) std::cerr << "DFS done." << std::endl;
+	if (!config.quietMode) std::cerr << "After DFS: " << reachableTasksDfs.size () << " tasks, " << reachableMethodsDfs.size () << " methods." << std::endl;
 
 	DEBUG(size_t tmp = 0;
 	for (const auto & t : reachableTasksDfs)

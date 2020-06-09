@@ -22,7 +22,7 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 		std::vector<bool> & prunedTasks,
 		std::vector<std::unordered_set<int>> sas_groups,
 		std::vector<bool> & sas_variables_needing_none_of_them,
-	bool quietMode){
+	grounding_configuration & config){
     
 	int h2_mutex_time = 10; // 10 seconds to compute mutexes by default
     bool disable_bw_h2 = false;
@@ -209,12 +209,12 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
 	// compute h2 mutexes
 
 
-	if (!quietMode)
+	if (!config.quietMode)
 		std::cout << "Entering H2 mutex computation with " << unprunedActions << " actions." << std::endl;
-	if (!quietMode) std::cout << "Building causal graph..." << std::endl;
+	if (!config.quietMode) std::cout << "Building causal graph..." << std::endl;
 
 	// H2 inference produces output to std, so temporarily disable it if in quiet mode
-	if (quietMode)
+	if (config.quietMode)
 		std::cout.setstate(std::ios_base::failbit);
 
     CausalGraph causal_graph(variables, operators, axioms, goals);
@@ -302,7 +302,7 @@ std::tuple<bool,std::vector<std::unordered_set<int>>, std::vector<std::unordered
     }
 
 	// H2 inference produces output to std, so re-endable cout
-	if (quietMode)
+	if (config.quietMode)
 		std::cout.clear();
 	
 	DEBUG(std::cout << "Finished H2 mutex computation" << std::endl);

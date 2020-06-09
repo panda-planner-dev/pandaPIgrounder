@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "model.h"
+#include "grounding.h"
 
 void postprocess_grounding(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
@@ -12,9 +13,6 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
-		bool removeUselessPredicates,
-		bool expandChoicelessAbstractTasks,
-		bool pruneEmptyMethodPreconditions,
-		bool quietMode);
+		grounding_configuration & config);
 
 #endif

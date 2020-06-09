@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_set>
 #include "model.h"
+#include "grounding.h"
 
 struct FAMGroupLiteral{
 	int predicateNo;
@@ -37,8 +38,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 		std::vector<bool> & prunedMethods,
 		std::unordered_set<int> initFacts,
 		std::unordered_set<Fact> reachableFactsSet,
-		bool outputSASVariablesOnly,
-		bool quietMode);
+		grounding_configuration & config);
 
 std::pair<std::vector<bool>,std::vector<bool>> ground_invariant_analysis(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
@@ -51,7 +51,7 @@ std::pair<std::vector<bool>,std::vector<bool>> ground_invariant_analysis(const D
 		std::vector<std::unordered_set<int>> & sas_mutexes,
 		std::vector<std::unordered_set<int>> & other_mutexes,
 		bool & changedPruned,
-		bool quietMode);
+		grounding_configuration & config);
 
 
 #endif

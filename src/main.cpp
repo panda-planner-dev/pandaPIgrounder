@@ -37,6 +37,7 @@ int main (int argc, char * argv[])
 		{"sasplus", 	        	                        no_argument,    NULL,   's'},
 		{"remove-duplicates",      	                        no_argument,    NULL,   'D'},
 		{"noop-for-empty-methods",                          no_argument,    NULL,   'E'},
+		{"two-tasks-per-method",                            no_argument,    NULL,   't'},
 		
 		{"no-hierarchy-typing",	                            no_argument,    NULL,   'h'},
 		{"no-literal-pruning", 	                            no_argument,    NULL,   'l'},
@@ -50,31 +51,17 @@ int main (int argc, char * argv[])
 	};
 
 	bool primitiveMode = false;
-	bool quietMode = false;
+	grounding_configuration config;
+	
+	
 	bool debugMode = false;
-	bool computeInvariants = false;
-	bool outputSASVariablesOnly = false;
-	bool compileNegativeSASVariables = false;
-	bool removeDuplicateTasks = false;
-	bool noopForEmptyMethods = false;
-	bool outputForPlanner = true; // don't output in 
-	bool outputHDDL = false;
-	bool outputSASPlus = false; 
 	bool optionsValid = true;
+	
 	bool outputDomain = false;
-	sas_delete_output_mode sas_mode = SAS_AS_INPUT;	
 
-	bool enableHierarchyTyping = true;
-	bool removeUselessPredicates = true;
-	bool expandChoicelessAbstractTasks = true;
-	bool pruneEmptyMethodPreconditions = true;
-	bool futureCachingByPrecondition = false;
-	bool withStaticPreconditionChecking = false;
-	bool h2mutexes = false;
-	bool printTimings = false;
 	while (true)
 	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNnaDEc", options, NULL);
+		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNnaDEct", options, NULL);
 		if (c == -1)
 			break;
 		if (c == '?' || c == ':')
@@ -91,47 +78,49 @@ int main (int argc, char * argv[])
 		else if (c == 'p')
 			outputDomain = true;
 		else if (c == 'q')
-			quietMode = true;
+			config.quietMode = true;
 		else if (c == 'i')
-			computeInvariants = true;
+			config.computeInvariants = true;
 		else if (c == 'S')
-			outputSASVariablesOnly = true;
+			config.outputSASVariablesOnly = true;
 		else if (c == 'n')
-			sas_mode = SAS_NONE;
+			config.sas_mode = SAS_NONE;
 		else if (c == 'a')
-			sas_mode = SAS_ALL;
+			config.sas_mode = SAS_ALL;
 		else if (c == 'N')
-			compileNegativeSASVariables = true;
+			config.compileNegativeSASVariables = true;
 		else if (c == 'D')
-			removeDuplicateTasks = true;
+			config.removeDuplicateActions = true;
 		else if (c == 'E')
-			noopForEmptyMethods = true;
+			config.noopForEmptyMethods = true;
+		else if (c == 't')
+			config.atMostTwoTasksPerMethod = true;
 		else if (c == 'O')
 			outputDomain = true;
 		
 		else if (c == 'H')
-			outputHDDL = true;
+			config.outputHDDL = true;
 		
 		else if (c == 'h')
-			enableHierarchyTyping = false;
+			config.enableHierarchyTyping = false;
 		else if (c == 'l')
-			removeUselessPredicates = false;
+			config.removeUselessPredicates = false;
 		else if (c == 'e')
-			expandChoicelessAbstractTasks = false;
+			config.expandChoicelessAbstractTasks = false;
 		else if (c == 'm')
-			pruneEmptyMethodPreconditions = false;
+			config.pruneEmptyMethodPreconditions = false;
 		else if (c == 'g')
-			outputForPlanner = false;
+			config.outputForPlanner = false;
 		else if (c == 'f')
-			futureCachingByPrecondition = true;
+			config.futureCachingByPrecondition = true;
 		else if (c == 'c')
-			withStaticPreconditionChecking = true;
+			config.withStaticPreconditionChecking = true;
 		else if (c == 't')
-			printTimings = true;
+			config.printTimings = true;
 		else if (c == '2')
-			h2mutexes = true;
+			config.h2Mutexes = true;
 		else if (c == 's')
-			outputSASPlus = true;
+			config.outputSASPlus = true;
 	}
 	
 	if (!optionsValid)
@@ -140,7 +129,7 @@ int main (int argc, char * argv[])
 		return 1;
 	}
 
-	if (!removeUselessPredicates && h2mutexes){
+	if (!config.removeUselessPredicates && config.h2Mutexes){
 		std::cout << "To use H2-mutexes, useless predicates must be removed, else the H2 preprocessor may crash ..." << std::endl;
 		return 1;
 	}
@@ -148,7 +137,7 @@ int main (int argc, char * argv[])
 	if (debugMode)
 		setDebugMode (debugMode);
 
-	if (primitiveMode && !quietMode)
+	if (primitiveMode && !config.quietMode)
 		std::cerr << "Note: Running in benchmark mode; grounding results will not be printed." << std::endl;
 
 	std::vector<std::string> inputFiles;
@@ -176,14 +165,14 @@ int main (int argc, char * argv[])
 	std::istream * inputStream;
 	if (inputFilename == "-")
 	{
-		if (!quietMode)
+		if (!config.quietMode)
 			std::cerr << "Reading input from standard input." << std::endl;
 
 		inputStream = &std::cin;
 	}
 	else
 	{
-		if (!quietMode)
+		if (!config.quietMode)
 			std::cerr << "Reading input from " << inputFilename << "." << std::endl;
 
 		std::ifstream * fileInput  = new std::ifstream(inputFilename);
@@ -204,14 +193,14 @@ int main (int argc, char * argv[])
 	std::ostream * outputStream;
 	if (outputFilename == "-")
 	{
-		if (!quietMode)
+		if (!config.quietMode)
 			std::cerr << "Writing output to standard output." << std::endl;
 
 		outputStream = &std::cout;
 	}
 	else
 	{
-		if (!quietMode)
+		if (!config.quietMode)
 			std::cerr << "Writing output to " << outputFilename << "." << std::endl;
 
 		std::ofstream * fileOutput  = new std::ofstream(outputFilename);
@@ -228,14 +217,14 @@ int main (int argc, char * argv[])
 	std::ostream * outputStream2;
 	if (outputFilename2 == "-")
 	{
-		if (!quietMode)
+		if (!config.quietMode)
 			std::cerr << "Writing output to standard output." << std::endl;
 
 		outputStream2 = &std::cout;
 	}
 	else
 	{
-		if (!quietMode)
+		if (!config.quietMode)
 			std::cerr << "Writing output to " << outputFilename2 << "." << std::endl;
 
 		std::ofstream * fileOutput  = new std::ofstream(outputFilename2);
@@ -254,7 +243,7 @@ int main (int argc, char * argv[])
 		std::cerr << "Failed to read input data!" << std::endl;
 		return 1;
 	}
-	if (!quietMode)
+	if (!config.quietMode)
 		std::cerr << "Parsing done." << std::endl;
 
 	if (outputDomain)
@@ -268,25 +257,14 @@ int main (int argc, char * argv[])
 	{
 		// Just run the PG - this is for speed testing
 		std::unique_ptr<HierarchyTyping> hierarchyTyping;
-		if (enableHierarchyTyping)
-			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, withStaticPreconditionChecking, false, true, quietMode);
+		if (config.enableHierarchyTyping)
+			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, config, false, true);
 
 		std::cout << hierarchyTyping.get()->graphToDotString(domain);
-
-		/*GpgPlanningGraph pg (domain, problem);
-		std::vector<GroundedTask> groundedTasks;
-		std::set<Fact> reachableFacts;
-		runGpg (pg, groundedTasks, reachableFacts, hierarchyTyping.get (), quietMode);*/
 	}
 	else
 	{
-		run_grounding (domain, problem, *outputStream, *outputStream2,  
-				enableHierarchyTyping, removeUselessPredicates, expandChoicelessAbstractTasks, pruneEmptyMethodPreconditions, 
-				futureCachingByPrecondition, withStaticPreconditionChecking,
-				h2mutexes,
-				computeInvariants, outputSASVariablesOnly, sas_mode, compileNegativeSASVariables, removeDuplicateTasks, noopForEmptyMethods,
-				outputForPlanner, outputHDDL, outputSASPlus, 
-				printTimings, quietMode);
+		run_grounding (domain, problem, *outputStream, *outputStream2, config);
 	}
 
 }

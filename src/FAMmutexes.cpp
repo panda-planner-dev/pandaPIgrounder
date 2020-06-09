@@ -48,7 +48,7 @@ std::pair<int,std::set<int>> get_replacement_type(int type_to_replace, std::vect
 }
 
 
-std::tuple<std::vector<int>,std::vector<int>,std::map<int,int>> compute_local_type_hierarchy(const Domain & domain, const Problem & problem, bool quietMode){
+std::tuple<std::vector<int>,std::vector<int>,std::map<int,int>> compute_local_type_hierarchy(const Domain & domain, const Problem & problem, grounding_configuration & config){
 	// find subset relations between sorts
 	
 	// [i][j] = true means that j is a subset of i
@@ -122,7 +122,7 @@ std::tuple<std::vector<int>,std::vector<int>,std::map<int,int>> compute_local_ty
 			if (subset[s1][s2]){
 				parents[s2].insert(s1);
 				if (parent[s2] != -1){
-					if (parent[s2] >= 0 && !quietMode) 
+					if (parent[s2] >= 0 && !config.quietMode) 
 						std::cout << "Type hierarchy is not a tree ... cpddl can't handle this. I have to compile ..." << std::endl;
 					parent[s2] = -2;
 				} else {
@@ -288,7 +288,7 @@ void cpddl_add_fact_to_conjunction(const Fact & f, pddl_cond_part_t * conj, cons
 	condPartAdd(conj,&atom->cls);
 }
 
-std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode){
+std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mutexes(const Domain & domain, const Problem & problem, grounding_configuration & config){
 	// create representation of the domain/problem
 	pddl_t * pddl = new pddl_t;
 	bzero(pddl,sizeof(pddl_t));
@@ -312,7 +312,7 @@ std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mut
 
 
 	// compute a local type hierarchy
-	auto [typeParents,objectType,replacedTypes] = compute_local_type_hierarchy(domain,problem,quietMode);
+	auto [typeParents,objectType,replacedTypes] = compute_local_type_hierarchy(domain,problem,config);
 	
 	// cpddl needs a root type named object
 	pddlTypesAdd(&pddl->type,root_type_cppdl,-1);
@@ -504,11 +504,11 @@ std::tuple<pddl_lifted_mgroups_t,pddl_t*,std::vector<int>> cpddl_compute_FAM_mut
 	pddl_lifted_mgroups_t lifted_mgroups;
 	pddlLiftedMGroupsInit(&lifted_mgroups);
 	bor_err_t err = BOR_ERR_INIT;
-	if (!quietMode)
+	if (!config.quietMode)
 		std::cout << "Computing Lifted FAM-Groups [Fiser, AAAI 2020]" << std::endl;
 	pddlLiftedMGroupsInferFAMGroups(pddl, &limits, &lifted_mgroups, &err);
 
-	if (!quietMode)
+	if (!config.quietMode)
 		std::cout << "Found " << lifted_mgroups.mgroup_size << " Lifted FAM-Groups" << std::endl;
 
 	DEBUG(for (int li = 0; li < lifted_mgroups.mgroup_size; ++li){
@@ -648,9 +648,9 @@ bool is_mutex_group_contained_in(pddl_lifted_mgroup_t * m1, pddl_lifted_mgroup_t
 
 
 
-std::vector<FAMGroup> compute_FAM_mutexes(const Domain & domain, const Problem & problem, bool quietMode){
+std::vector<FAMGroup> compute_FAM_mutexes(const Domain & domain, const Problem & problem, grounding_configuration & config){
 	// pddl_lifted_mgroups_t ; pddl_t*, map<int,int>
-	auto [lifted_mgroups,pddl,cpddlTypesToOurs] = cpddl_compute_FAM_mutexes(domain,problem,quietMode);
+	auto [lifted_mgroups,pddl,cpddlTypesToOurs] = cpddl_compute_FAM_mutexes(domain,problem,config);
 
 
 	std::vector<bool> pruned (lifted_mgroups.mgroup_size);

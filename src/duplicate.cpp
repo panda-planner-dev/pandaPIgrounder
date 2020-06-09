@@ -10,9 +10,9 @@ void unify_duplicates(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedMethods,
-		bool quietMode	
+		grounding_configuration & config	
 		){
-	if (!quietMode) std::cout << "Starting duplicate elimination." << std::endl;
+	if (!config.quietMode) std::cout << "Starting duplicate elimination." << std::endl;
 	// try do find tasks with identical preconditions and effects
 	std::map<std::tuple<std::vector<int>, std::vector<int>, std::vector<int>>, std::vector<int>> duplicate;
 	
@@ -34,7 +34,7 @@ void unify_duplicates(const Domain & domain, const Problem & problem,
 
 		duplicate[std::make_tuple(pre,add,del)].push_back(tID);
 	}
-	if (!quietMode) std::cout << "Data structure build." << std::endl;
+	if (!config.quietMode) std::cout << "Data structure build." << std::endl;
 
 
 	std::map<int,int> taskReplacement;
@@ -54,7 +54,7 @@ void unify_duplicates(const Domain & domain, const Problem & problem,
 			prunedTasks[entry.second[i]] = true;
 		}
 	}
-	if (!quietMode) std::cout << taskReplacement.size() << " duplicates found." << std::endl;
+	if (!config.quietMode) std::cout << taskReplacement.size() << " duplicates found." << std::endl;
 
 	// perform the actual replacement (in methods)
 	for (size_t mID = 0; mID < reachableMethods.size(); mID++){
@@ -67,6 +67,6 @@ void unify_duplicates(const Domain & domain, const Problem & problem,
 		}
 	}
 	
-	if (!quietMode) std::cout << "Duplicates replaced in methods." << std::endl;
+	if (!config.quietMode) std::cout << "Duplicates replaced in methods." << std::endl;
 }
 

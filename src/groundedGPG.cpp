@@ -331,7 +331,7 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
-		bool quietMode)
+		grounding_configuration & config)
 {
 	// don't to anything for grounded problems
 	if (problem.initialAbstractTask == -1)
@@ -355,8 +355,8 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 		std::vector<int> unfulfilledPreconditions;
 		auto [reachedTasksCount, reachedFactsCount] = groundedPg (factReached, unfulfilledPreconditions, prunedTasks, prunedFacts, reachableTasks, reachableFacts, domain, problem);
 
-		if (!quietMode) std::cerr << "Grounded PG:" << std::endl;
-		if (!quietMode) std::cerr << "Input was [" << remainingPrimitiveTasks << ", " << remainingFactsCount << "], output was [" << reachedTasksCount << ", " << reachedFactsCount << "]." << std::endl;
+		if (!config.quietMode) std::cerr << "Grounded PG:" << std::endl;
+		if (!config.quietMode) std::cerr << "Input was [" << remainingPrimitiveTasks << ", " << remainingFactsCount << "], output was [" << reachedTasksCount << ", " << reachedFactsCount << "]." << std::endl;
 #ifdef PRINT_DEBUG_STUFF
 		for (size_t taskIdx = 0; taskIdx < reachableTasks.size (); ++taskIdx)
 		{
@@ -376,8 +376,8 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 		// Do grounded TDG
 		std::vector<bool> taskReached;
 		auto [reachedMethodsCount, reachedTasksCountTdg] = groundedTdg (taskReached, unfulfilledPreconditions, prunedMethods, prunedTasks, reachableMethods, reachableTasks, domain, problem);
-		if (!quietMode) std::cerr << "Grounded TDG:" << std::endl;
-		if (!quietMode) std::cerr << "Input was [" << remainingMethodsCount << ", " << remainingPrimitiveTasks << "], output was [" << reachedMethodsCount << ", " << reachedTasksCountTdg << "]." << std::endl;
+		if (!config.quietMode) std::cerr << "Grounded TDG:" << std::endl;
+		if (!config.quietMode) std::cerr << "Input was [" << remainingMethodsCount << ", " << remainingPrimitiveTasks << "], output was [" << reachedMethodsCount << ", " << reachedTasksCountTdg << "]." << std::endl;
 
 		// Do DFS
 		auto [reachedPrimitiveTasksCountDfs, reachedMethodsCountDfs] = groundedTdgDfs (prunedTasks, prunedMethods, reachableTasks, reachableMethods, domain, problem);

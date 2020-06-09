@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "model.h"
+#include "grounding.h"
 
 void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,  
 		std::vector<Fact> reachableFacts,
@@ -12,7 +13,7 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
-		bool quietMode);
+		grounding_configuration & config);
 
 
 #endif

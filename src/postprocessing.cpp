@@ -639,30 +639,26 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
-		bool removeUselessPredicates,
-		bool expandChoicelessAbstractTasks,
-		bool pruneEmptyMethodPreconditions,
-		bool quietMode	
-		){
+		grounding_configuration & config){
 	// sort the subtasks of each method topologically s.t. 
 	sortSubtasksOfMethodsTopologically(domain, prunedTasks, prunedMethods, reachableMethods);
 	applyEffectPriority(domain, prunedTasks, prunedFacts, reachableTasks, reachableFacts);
 		
 	
-	if (!quietMode) std::cerr << "Simplifying instance." << std::endl;
-	if (removeUselessPredicates) {
-		if (!quietMode) std::cerr << "Removing useless facts/literals" << std::endl;
+	if (!config.quietMode) std::cerr << "Simplifying instance." << std::endl;
+	if (config.removeUselessPredicates) {
+		if (!config.quietMode) std::cerr << "Removing useless facts/literals" << std::endl;
 		removeUnnecessaryFacts(domain, problem, prunedTasks, prunedFacts, reachableTasks, reachableFacts);
 	}
 
-	if (pruneEmptyMethodPreconditions){
-		if (!quietMode) std::cerr << "Removing method precondition actions whose precondition is empty" << std::endl;
+	if (config.pruneEmptyMethodPreconditions){
+		if (!config.quietMode) std::cerr << "Removing method precondition actions whose precondition is empty" << std::endl;
 		removeEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,reachableTasks,reachableMethods);
 	}
 
 	// this MUST be the last step. Else the information stored inside the method names for reconstruction becomes invalid
-	if (expandChoicelessAbstractTasks){
-		if (!quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
+	if (config.expandChoicelessAbstractTasks){
+		if (!config.quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
 		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
 	}
 	

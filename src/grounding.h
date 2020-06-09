@@ -5,25 +5,42 @@
 #include "main.h"
 #include "model.h"
 
-void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout,
-		bool enableHierarchyTyping, 
-		bool removeUselessPredicates,
-		bool expandChoicelessAbstractTasks,
-		bool pruneEmptyMethodPreconditions,
-		bool futureCachingByPrecondition,
-		bool withStaticPreconditionChecking,
-		bool h2Mutextes,
-		bool computeInvariants,
-		bool outputSASVariablesOnly,
-		sas_delete_output_mode sas_mode,
-		bool compileNegativeSASVariables,
-		bool removeDuplicateActions,
-		bool noopForEmptyMethods,
-		bool outputForPlanner, 
-		bool outputHDDL, 
-		bool outputSASPlus, 
-		bool printTimings,
-		bool quietMode);
+
+struct grounding_configuration{
+	// runtime optimisations
+	bool enableHierarchyTyping = true;
+	bool futureCachingByPrecondition = false;
+	bool withStaticPreconditionChecking = false;
+	
+	// inference of additional information
+	bool h2Mutexes = false;
+	bool computeInvariants = false;
+
+	// select output format
+	bool outputForPlanner = true;
+	bool outputHDDL = false;
+	bool outputSASPlus = false; 
+
+	// output formatting
+	bool outputSASVariablesOnly = false;
+	sas_delete_output_mode sas_mode = SAS_AS_INPUT;
+	bool noopForEmptyMethods = false;
+	
+	// compilations to apply
+	bool compileNegativeSASVariables = false;
+	bool removeDuplicateActions = false;
+	bool removeUselessPredicates = true;
+	bool expandChoicelessAbstractTasks = true;
+	bool pruneEmptyMethodPreconditions = true;
+	bool atMostTwoTasksPerMethod = false;
+	
+	// program output behaviour	
+	bool printTimings = false;
+	bool quietMode = false;
+};
+
+
+void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, grounding_configuration & config);
 
 #endif
 
