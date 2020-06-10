@@ -630,6 +630,142 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 }
 
 
+void create_method_decomposing_into(const Domain & domain, int decomposedTask, int groundedTaskA, int groundedTaskB, int liftedDecomposed, int liftedA, int liftedB){
+	// lifted method
+
+}
+
+
+void change_to_methods_with_at_most_two_tasks(const Domain & domain,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedMethods,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<GroundedMethod> & inputMethodsGroundedTdg){
+	
+	std::vector<Task> newTasks;
+	std::vector<DecompositionMethod> newMethods;
+	std::vector<GroundedTask> newGroundTasks;
+	std::vector<GroundedMethod> newGroundMethods;
+
+	for (auto & method : inputMethodsGroundedTdg){
+		if (prunedMethods[method.groundedNo]) continue;
+
+		// if the method has at most two subtasks, it is ok
+		if (method.groundedPreconditions.size() <= 2) continue;
+
+		DEBUG(std::cout << "Method too large: " << method.groundedPreconditions.size() << std::endl);
+		prunedMethods[method.groundedNo] = true;
+		DecompositionMethod mainLiftedMethod = domain.decompositionMethods[method.methodNo];
+
+		// we can only do this compilation (currently) for totally-ordered methods ...
+		// TODO: do this in general for SHOP decompositions
+		
+		// use the precondition ordering for cutting the method into pieces
+		int currentAT = method.groundedAddEffects[0];
+		for (size_t currentSubtask = 0; currentSubtask < method.groundedPreconditions.size() - 2; currentSubtask++){
+			DEBUG(std::cout << "  Creating method containing " << currentSubtask << std::endl);
+			// create next task
+			Task newIntermediateTask;
+			newIntermediateTask.name = "_!_intermediate_task_method_" + std::to_string(method.groundedNo) + "_" + std::to_string(currentSubtask);
+			newIntermediateTask.number_of_original_variables = 0;
+			newIntermediateTask.isCompiledConditionalEffect = false;
+			// decomposition methods in the lifted model don't need to be filled
+			const_cast<Domain &>(domain).tasks.push_back(newIntermediateTask);
+			const_cast<Domain &>(domain).nAbstractTasks++;
+			const_cast<Domain &>(domain).nTotalTasks++;
+			
+			// create the ground instance
+			GroundedTask groundedIntermediateTask;
+			groundedIntermediateTask.groundedNo = prunedTasks.size();
+			groundedIntermediateTask.taskNo = domain.tasks.size() - 1;
+			inputTasksGroundedPg.push_back(groundedIntermediateTask);
+			prunedTasks.push_back(false); // add the task
+
+			// create a method decomposing the current AT into the current Subtask and the next AT
+		
+		
+			// create a new method
+			DecompositionMethod liftedMethod;
+			liftedMethod.name = mainLiftedMethod.name;
+			// only add the _i if we are not the first method (for plan reconstruction)
+		   	if (currentSubtask)	liftedMethod.name += "_" + std::to_string(currentSubtask);
+			liftedMethod.taskNo = inputTasksGroundedPg[currentAT].taskNo;
+			liftedMethod.variableSorts = mainLiftedMethod.variableSorts;
+			// if this is the initial one, it will have task parameters
+			if (currentSubtask == 0)
+				liftedMethod.taskParameters = mainLiftedMethod.taskParameters;
+			// else keep them empty
+			
+			int actualSubtaskIndex = method.preconditionOrdering[currentSubtask];
+			liftedMethod.subtasks.push_back(mainLiftedMethod.subtasks[actualSubtaskIndex]);
+			TaskWithArguments nextSubtask;
+			nextSubtask.taskNo = groundedIntermediateTask.taskNo;
+			liftedMethod.subtasks.push_back(nextSubtask);
+			liftedMethod.orderingConstraints.push_back(std::make_pair(0,1));
+			int liftedMethodNumber = domain.decompositionMethods.size() + newMethods.size();
+			newMethods.push_back(liftedMethod);
+
+			// add the grounded method
+			GroundedMethod newMethod;
+			newMethod.methodNo = liftedMethodNumber;
+			newMethod.arguments = method.arguments;
+			newMethod.groundedAddEffects.push_back(currentAT);
+			newMethod.groundedPreconditions.push_back(method.groundedPreconditions[actualSubtaskIndex]);
+			newMethod.groundedPreconditions.push_back(groundedIntermediateTask.groundedNo);
+			newMethod.preconditionOrdering.push_back(0);
+			newMethod.preconditionOrdering.push_back(1);
+			newMethod.groundedNo = inputMethodsGroundedTdg.size() + newGroundMethods.size();
+			
+
+			// add the grounded method
+			newGroundMethods.push_back(newMethod);
+				
+			currentAT = groundedIntermediateTask.groundedNo;
+		}
+
+		// create last method
+		DecompositionMethod liftedMethod;
+		liftedMethod.name = mainLiftedMethod.name;
+		liftedMethod.name += "_" + std::to_string(method.groundedPreconditions.size() - 2);
+		liftedMethod.taskNo = inputTasksGroundedPg[currentAT].taskNo;
+		liftedMethod.variableSorts = mainLiftedMethod.variableSorts;
+		
+		int actualSubtaskIndex1 = method.preconditionOrdering[method.groundedPreconditions.size() - 2];
+		int actualSubtaskIndex2 = method.preconditionOrdering[method.groundedPreconditions.size() - 1];
+
+		liftedMethod.subtasks.push_back(mainLiftedMethod.subtasks[actualSubtaskIndex1]);
+		liftedMethod.subtasks.push_back(mainLiftedMethod.subtasks[actualSubtaskIndex2]);
+		liftedMethod.orderingConstraints.push_back(std::make_pair(0,1));
+		int liftedMethodNumber = domain.decompositionMethods.size() + newMethods.size();
+		newMethods.push_back(liftedMethod);
+
+		// add the grounded method
+		GroundedMethod newMethod;
+		newMethod.methodNo = liftedMethodNumber;
+		newMethod.arguments = method.arguments;
+		newMethod.groundedAddEffects.push_back(currentAT);
+		newMethod.groundedPreconditions.push_back(method.groundedPreconditions[actualSubtaskIndex1]);
+		newMethod.groundedPreconditions.push_back(method.groundedPreconditions[actualSubtaskIndex2]);
+		newMethod.preconditionOrdering.push_back(0);
+		newMethod.preconditionOrdering.push_back(1);
+		newMethod.groundedNo = inputMethodsGroundedTdg.size() + newGroundMethods.size();
+		
+
+		// add the grounded method
+		newGroundMethods.push_back(newMethod);
+	}
+	
+	for (DecompositionMethod & m : newMethods)
+		const_cast<Domain &>(domain).decompositionMethods.push_back(m);
+	
+	for (GroundedMethod & m : newGroundMethods){
+		inputMethodsGroundedTdg.push_back(m);
+		prunedMethods.push_back(false);
+	}
+	
+	//exit(1);
+}
+
 
 
 void postprocess_grounding(const Domain & domain, const Problem & problem,
@@ -656,10 +792,15 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		removeEmptyMethodPreconditions(domain,prunedFacts,prunedTasks,prunedMethods,reachableTasks,reachableMethods);
 	}
 
-	// this MUST be the last step. Else the information stored inside the method names for reconstruction becomes invalid
+	// this MUST be the (second) last step. Else the information stored inside the method names for reconstruction becomes invalid
 	if (config.expandChoicelessAbstractTasks){
 		if (!config.quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
 		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
+	}
+
+	if (config.atMostTwoTasksPerMethod){
+		if (!config.quietMode) std::cerr << "Changing all methods s.t. they contain at most two tasks." << std::endl;
+		change_to_methods_with_at_most_two_tasks(domain, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
 	}
 	
 }
