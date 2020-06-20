@@ -624,6 +624,7 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 			// write back the new method, i.e. add the lifted version to the domain
 			// the grounded one is a reference, so it does not need to be written back
 			groundedMethod.methodNo = domain.decompositionMethods.size();
+			inputTasksGroundedPg[*(groundedMethod.groundedAddEffects.begin())].groundedDecompositionMethods.push_back(groundedMethod.methodNo);
 			const_cast<Domain &>(domain).decompositionMethods.push_back(liftedMethod);
 		}
 	}
@@ -755,12 +756,15 @@ void change_to_methods_with_at_most_two_tasks(const Domain & domain,
 		newGroundMethods.push_back(newMethod);
 	}
 	
-	for (DecompositionMethod & m : newMethods)
+	for (DecompositionMethod & m : newMethods){
 		const_cast<Domain &>(domain).decompositionMethods.push_back(m);
+	}
 	
 	for (GroundedMethod & m : newGroundMethods){
 		inputMethodsGroundedTdg.push_back(m);
 		prunedMethods.push_back(false);
+		// add as method to the task it decomposes
+		inputTasksGroundedPg[*(m.groundedAddEffects.begin())].groundedDecompositionMethods.push_back(m.methodNo);
 	}
 	
 	//exit(1);

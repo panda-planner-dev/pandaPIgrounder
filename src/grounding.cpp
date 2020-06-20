@@ -42,6 +42,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		grounding_configuration temp_configuration = config;
 		temp_configuration.expandChoicelessAbstractTasks = false;
 		temp_configuration.pruneEmptyMethodPreconditions = false;
+		temp_configuration.atMostTwoTasksPerMethod = false;
 		temp_configuration.outputSASVariablesOnly = true; // -> force SAS+ here. This makes the implementation easier
 
 		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, temp_configuration); 
