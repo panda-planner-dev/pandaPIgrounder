@@ -624,7 +624,6 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 			// write back the new method, i.e. add the lifted version to the domain
 			// the grounded one is a reference, so it does not need to be written back
 			groundedMethod.methodNo = domain.decompositionMethods.size();
-			inputTasksGroundedPg[*(groundedMethod.groundedAddEffects.begin())].groundedDecompositionMethods.push_back(groundedMethod.methodNo);
 			const_cast<Domain &>(domain).decompositionMethods.push_back(liftedMethod);
 		}
 	}
