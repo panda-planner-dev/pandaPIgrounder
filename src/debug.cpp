@@ -65,8 +65,16 @@ void printTask (const Domain & domain, const Task & task, bool printDecompositio
 				int nSubtaskVariables = subtask.variableSorts.size ();
 				for (int variableIdx = 0; variableIdx < nSubtaskVariables; ++variableIdx)
 				{
-					std::cerr << " <" << color (YELLOW, domain.sorts[subtask.variableSorts[variableIdx]].name);
-					std::cerr << "-" << color (CYAN, std::string () + ((char) ('A' + taskWithArguments.arguments[variableIdx]))) << ">";
+					int variable = taskWithArguments.arguments[variableIdx];
+					int variableSort = method.variableSorts[variable];
+					std::cerr << " <" << color (YELLOW, domain.sorts[variableSort].name);
+					std::cerr << "-" << color (CYAN, std::string () + ((char) ('A' + variable))) << ">";
+
+					// determine whether the task is declared with a different type
+					int parameterSort = subtask.variableSorts[variableIdx]; 
+					if (parameterSort != variableSort){
+						std::cerr << "%" << color (RED, domain.sorts[parameterSort].name);
+					}
 				}
 				std::cerr << std::endl;
 			}
