@@ -539,6 +539,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 				prec_out.push_back(reachableFacts[prec].outputNo);
 			else
 				prec_out.push_back(-cover_pruned_precs[prec]-1); // marker
+		} else {
+			DEBUG(std::cout << "  pruned PREC(" << prec  << "):" << reachableFacts[prec].predicateNo;
+					for (int arg : reachableFacts[prec].arguments) std::cout << " " << arg;
+					std::cout << std::endl;
+					);
 		}
 
 		std::vector<std::pair<std::vector<int>,int>> add_out;
