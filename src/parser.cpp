@@ -31,7 +31,6 @@ void readMultiple (const Domain & state, std::istream & input, std::vector<T> & 
 {
 	size_t count;
 	input >> count;
-
 	readN (state, input, outputVector, readFunc, count);
 }
 
@@ -207,8 +206,9 @@ void readOrderingConstraint (const Domain & state, std::istream & input, std::pa
 void readDecompositionMethod (const Domain & state, std::istream & input, DecompositionMethod & outputMethod)
 {
 	input >> outputMethod.name;
-
+	//std::cerr << "Name: " << outputMethod.name << std::endl;
 	input >> outputMethod.taskNo;
+	//std::cerr << "TaskNo: " << outputMethod.taskNo << std::endl;
 	failIfNotSatisfied (outputMethod.taskNo >= 0 && outputMethod.taskNo < state.nTotalTasks, "Decomposition method refers to invalid task");
 	const Task & taskInfo = state.tasks[outputMethod.taskNo];
 
