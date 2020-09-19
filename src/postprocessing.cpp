@@ -781,7 +781,6 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		grounding_configuration & config){
 	// sort the subtasks of each method topologically s.t. 
 	sortSubtasksOfMethodsTopologically(domain, prunedTasks, prunedMethods, reachableMethods);
-	applyEffectPriority(domain, prunedTasks, prunedFacts, reachableTasks, reachableFacts);
 		
 	
 	if (!config.quietMode) std::cerr << "Simplifying instance." << std::endl;

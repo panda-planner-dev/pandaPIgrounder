@@ -30,6 +30,9 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	std::vector<bool> prunedTasks (initiallyReachableTasks.size());
 	std::vector<bool> prunedMethods (initiallyReachableMethods.size());
 	
+	// do this early
+	applyEffectPriority(domain, prunedTasks, prunedFacts, initiallyReachableTasks, initiallyReachableFacts);
+	
 	run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 			prunedFacts, prunedTasks, prunedMethods,
 			config);

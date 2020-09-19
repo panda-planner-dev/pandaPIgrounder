@@ -6,7 +6,13 @@
 #include "model.h"
 #include "grounding.h"
 
-void postprocess_grounding(const Domain & domain, const Problem & problem,
+void applyEffectPriority(const Domain & domain,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedFacts,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<Fact> & inputFactsGroundedPg);
+
+	void postprocess_grounding(const Domain & domain, const Problem & problem,
 		std::vector<Fact> & reachableFacts,
 		std::vector<GroundedTask> & reachableTasks,
 		std::vector<GroundedMethod> & reachableMethods,
