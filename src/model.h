@@ -397,6 +397,13 @@ struct FactSet
 	size_t count (const Fact & fact) const;
 
 	/**
+	 * @brief Return the fact in this factset
+	 *
+	 * It is an error to call this function with a fact where Fact.predicateNo is greater than or equal to nPredicates as passed to the constructor of this FactSet.
+	 */
+	const Fact & find (const Fact & fact) const;
+
+	/**
 	 * @brief Inserts the given fact into the FactSet.
 	 *
 	 * It is an error to call this function with a fact where Fact.predicateNo is greater than or equal to nPredicates as passed to the constructor of this FactSet.

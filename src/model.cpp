@@ -207,6 +207,13 @@ size_t FactSet::count (const Fact & fact) const
 	return factsByPredicate[fact.predicateNo].count (fact);
 }
 
+const Fact & FactSet::find (const Fact & fact) const
+{
+	assert (fact.predicateNo < factsByPredicate.size ());
+
+	return * factsByPredicate[fact.predicateNo].find (fact);
+}
+
 void FactSet::insert (const Fact & fact)
 {
 	assert (fact.predicateNo < factsByPredicate.size ());
