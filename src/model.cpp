@@ -221,6 +221,13 @@ void FactSet::insert (const Fact & fact)
 	factsByPredicate[fact.predicateNo].insert (fact);
 }
 
+void FactSet::erase (const Fact & fact)
+{
+	assert (fact.predicateNo < factsByPredicate.size ());
+
+	factsByPredicate[fact.predicateNo].erase (fact);
+}
+
 const std::set<Fact> & FactSet::getFactsForPredicate (int predicateNo) const
 {
 	assert (predicateNo < factsByPredicate.size ());

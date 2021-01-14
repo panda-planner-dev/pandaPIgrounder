@@ -409,6 +409,9 @@ struct FactSet
 	 * It is an error to call this function with a fact where Fact.predicateNo is greater than or equal to nPredicates as passed to the constructor of this FactSet.
 	 */
 	void insert (const Fact & fact);
+	
+	
+	void erase (const Fact & fact);
 
 	/**
 	 * @brief Returns the set of facts for the given predicate.
