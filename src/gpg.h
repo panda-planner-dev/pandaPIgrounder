@@ -240,10 +240,19 @@ struct GpgPreprocessedDomain
 			}
 
 			// Determine which preconditions are eligible for optimization
-			// FIXME
-			//if (action.getAntecedents().size() < 6)
-			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx)
+			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx){
+				const typename InstanceType::PreconditionType & precondition = action.getAntecedents ()[preconditionIdx];
+				bool allVariablesAreConstants = true;
+				for (size_t argumentIdx = 0; argumentIdx < precondition.arguments.size (); ++argumentIdx)
+				{
+					int variable = precondition.arguments[argumentIdx];
+					allVariablesAreConstants &= domain.sorts[action.variableSorts[variable]].members.size() == 1;
+				}
+
+				if (allVariablesAreConstants) continue;
+
 				eligibleInitialPreconditionsByAction[actionIdx].insert (preconditionIdx);
+			}
 
 			std::set<int> alreadyAssignedVariables;
 			for (size_t preconditionIdx = 0; preconditionIdx < action.getAntecedents ().size (); ++preconditionIdx)

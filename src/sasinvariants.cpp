@@ -100,7 +100,7 @@ std::pair<std::vector<std::unordered_set<int>>, std::vector<std::unordered_set<i
 						const FAMVariable & v = g.vars[l.args[argID]];
 						if (!domain.sorts[v.sort].members.count(factArg))
 							notMatching = true;
-						else if (!v.isCounted){ // a free var, bust be assigned consistently
+						else if (!v.isCounted){ // a free var, must be assigned consistently
 							int assignment_index = g.vars_to_pos_in_separated_lists[l.args[argID]];
 							if (free_variable_assignment[assignment_index] != -1){
 								if (free_variable_assignment[assignment_index] != factArg)
