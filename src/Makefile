@@ -42,9 +42,9 @@ LIBS=
 # Files
 HFILES=$(wildcard *.h)
 SRCFILES=$(wildcard *.cpp)
-CSRCFILES=$(wildcard *.c)
+CSRCFILES=$(filter-out cmdline.c, $(wildcard *.c))
 OBJFILES=$(patsubst %.cpp,%.o,$(SRCFILES))
-COBJFILES=$(patsubst %.c,%.o,$(CSRCFILES))
+COBJFILES=$(patsubst %.c,%.o,$(CSRCFILES)) cmdline.o
 DEPENDENCIES=
 DEPENDENCIES_LD=
 PROGNAME=../pandaPIgrounder
@@ -58,7 +58,7 @@ H2OBJFILES=../h2-fd-preprocessor/src/axiom.cc.o ../h2-fd-preprocessor/src/causal
 
 all: $(PROGNAME)
 
-$(PROGNAME): $(OBJFILES) $(COBJFILES) $(H2OBJFILES) $(DEPENDENCIES_LD)
+$(PROGNAME): $(OBJFILES) $(COBJFILES) $(H2OBJFILES) $(DEPENDENCIES_LD) 
 	$(LD) $(LDFLAGS) -o $(PROGNAME) $(OBJFILES) $(COBJFILES) $(H2OBJFILES) $(LIBS)
 
 # All object files depend on the source file and all header files
@@ -72,6 +72,11 @@ $(PROGNAME): $(OBJFILES) $(COBJFILES) $(H2OBJFILES) $(DEPENDENCIES_LD)
 # All object files depend on the source file and all header files
 %.o: %.c 
 	$(CC) -c $(CCFLAGS) -o $@ $<
+
+main.cpp: cmdline.h
+
+cmdline.c cmdline.h: options.ggo
+	gengetopt --include-getopt --default-optional --unamed-opts -i options.ggo
 
 clean:
 	rm -f $(PROGNAME) $(OBJFILES) $(COBJFILES)

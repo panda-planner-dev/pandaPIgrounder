@@ -16,135 +16,71 @@
 #include "model.h"
 #include "parser.h"
 
+
+#include "cmdline.h"
+
 int main (int argc, char * argv[])
 {
-	struct option options[] = {
-		{"output-domain",      	                            no_argument,    NULL,   'O'},
-		{"primitive",          	                            no_argument,    NULL,   'P'},
-		{"debug",              	                            no_argument,    NULL,   'd'},
-		{"print-domain",       	                            no_argument,    NULL,   'p'},
-		{"quiet",              	                            no_argument,    NULL,   'q'},
-		{"print-timings",     	                            no_argument,    NULL,   't'},
-		{"invariants",         	                            no_argument,    NULL,   'i'},
-		{"force-sas-only",    	                            no_argument,    NULL,   'S'},
-		{"no-sas-deletes",    	                            no_argument,    NULL,   'n'},
-		{"all-sas-deletes",    	                            no_argument,    NULL,   'a'},
-		{"force-sas-only",    	                            no_argument,    NULL,   'S'},
-		{"compile-negative-sas",                            no_argument,    NULL,   'N'},
-		{"only-ground",         	                        no_argument,    NULL,   'g'},
-		{"output-hddl",         	                        no_argument,    NULL,   'H'},
-		{"h2", 			        	                        no_argument,    NULL,   '2'},
-		{"sasplus", 	        	                        no_argument,    NULL,   's'},
-		{"remove-duplicates",      	                        no_argument,    NULL,   'D'},
-		{"noop-for-empty-methods",                          no_argument,    NULL,   'E'},
-		{"two-tasks-per-method",                            no_argument,    NULL,   't'},
-		
-		{"no-hierarchy-typing",	                            no_argument,    NULL,   'h'},
-		{"no-literal-pruning", 	                            no_argument,    NULL,   'l'},
-		{"no-abstract-expansion",                           no_argument,    NULL,   'e'},
-		{"no-method-precondition-pruning",                  no_argument,    NULL,   'm'},
-		{"future-caching-by-initially-matched-precondition",no_argument,    NULL,   'f'},
-		{"static-preconditions-in-hierarchy-typing"		   ,no_argument,    NULL,   'c'},
+	gengetopt_args_info args_info;
+	if (cmdline_parser(argc, argv, &args_info) != 0) return 1;
 
-		
-		{NULL,                            0,              NULL,   0},
-	};
+	// set debug mode
+	if (args_info.debug_given) setDebugMode(true);
 
-	bool primitiveMode = false;
+	
 	grounding_configuration config;
-	
-	
-	bool debugMode = false;
-	bool optionsValid = true;
-	
+	// this flag is not accessible from the command line; only for debugging
+	bool primitiveMode = false;
 	bool outputDomain = false;
 
-	while (true)
-	{
-		int c = getopt_long_only (argc, argv, "dpqiOPhlemgft2sHSNnaDEct", options, NULL);
-		if (c == -1)
-			break;
-		if (c == '?' || c == ':')
-		{
-			// Invalid option; getopt_long () will print an error message
-			optionsValid = false;
-			continue;
-		}
+	outputDomain = args_info.output_domain_flag;
 
-		if (c == 'P')
-			primitiveMode = true;
-		else if (c == 'd')
-			debugMode = true;
-		else if (c == 'p')
-			outputDomain = true;
-		else if (c == 'q')
-			config.quietMode = true;
-		else if (c == 'i')
-			config.computeInvariants = true;
-		else if (c == 'S')
-			config.outputSASVariablesOnly = true;
-		else if (c == 'n')
-			config.sas_mode = SAS_NONE;
-		else if (c == 'a')
-			config.sas_mode = SAS_ALL;
-		else if (c == 'N')
-			config.compileNegativeSASVariables = true;
-		else if (c == 'D')
-			config.removeDuplicateActions = true;
-		else if (c == 'E')
-			config.noopForEmptyMethods = true;
-		else if (c == 't')
-			config.atMostTwoTasksPerMethod = true;
-		else if (c == 'O')
-			outputDomain = true;
-		
-		else if (c == 'H')
-			config.outputHDDL = true;
-		
-		else if (c == 'h')
-			config.enableHierarchyTyping = false;
-		else if (c == 'l')
-			config.removeUselessPredicates = false;
-		else if (c == 'e')
-			config.expandChoicelessAbstractTasks = false;
-		else if (c == 'm')
-			config.pruneEmptyMethodPreconditions = false;
-		else if (c == 'g')
-			config.outputForPlanner = false;
-		else if (c == 'f')
-			config.futureCachingByPrecondition = true;
-		else if (c == 'c')
-			config.withStaticPreconditionChecking = true;
-		else if (c == 't')
-			config.printTimings = true;
-		else if (c == '2')
-			config.h2Mutexes = true;
-		else if (c == 's')
-			config.outputSASPlus = true;
-	}
+	config.quietMode = args_info.quiet_flag;
+	config.printTimings = args_info.print_timings_flag;
+
+	config.computeInvariants = args_info.invariants_flag;
+	config.h2Mutexes = args_info.h2_flag;
+
+	// SAS mode
+	config.sas_mode = SAS_AS_INPUT;
+	if (args_info.no_sas_deletes_given) config.sas_mode = SAS_NONE;
+	if (args_info.all_sas_deletes_given) config.sas_mode = SAS_ALL;
+
+	// type of output (default is for planner)
+	if (args_info.sasplus_given) config.outputSASPlus = true, config.outputForPlanner = false;
+	if (args_info.hddl_given) config.outputHDDL = true, config.outputForPlanner = false;
+	if (args_info.no_output_given) config.outputForPlanner = false;
 	
-	if (!optionsValid)
-	{
-		std::cout << "Invalid options. Exiting." << std::endl;
-		return 1;
-	}
+	config.outputSASVariablesOnly = args_info.force_sas_flag;
+	config.compileNegativeSASVariables = args_info.compile_negative_flag;
+
+	// transformations
+	config.removeDuplicateActions = args_info.dont_remove_duplicates_flag;
+	config.noopForEmptyMethods = args_info.no_empty_compilation_flag;
+	config.removeUselessPredicates = args_info.no_literal_pruning_flag;
+	config.expandChoicelessAbstractTasks = args_info.no_abstract_expansion_flag;
+	config.pruneEmptyMethodPreconditions = args_info.no_method_precondition_pruning_flag;
+
+	config.atMostTwoTasksPerMethod = args_info.two_regularisation_flag;
+	
+	// algorithmic options for grounding
+	config.enableHierarchyTyping = args_info.no_hierarchy_typing_flag;
+	config.futureCachingByPrecondition = args_info.future_caching_by_initially_matched_precondition_flag;
+	config.withStaticPreconditionChecking = args_info.static_precondition_checking_in_hierarchy_typing_flag;	
+
+	config.print_options();	
 
 	if (!config.removeUselessPredicates && config.h2Mutexes){
 		std::cout << "To use H2-mutexes, useless predicates must be removed, else the H2 preprocessor may crash ..." << std::endl;
 		return 1;
 	}
 
-	if (debugMode)
-		setDebugMode (debugMode);
-
 	if (primitiveMode && !config.quietMode)
 		std::cerr << "Note: Running in benchmark mode; grounding results will not be printed." << std::endl;
 
 	std::vector<std::string> inputFiles;
-	for (int i = optind; i < argc; ++i)
-	{
-		inputFiles.push_back (argv[i]);
-	}
+	for (unsigned i = 0 ; i < args_info.inputs_num; i++)
+    	inputFiles.push_back(args_info.inputs[i]);
 
 	std::string inputFilename = "-";
 	std::string outputFilename = "-";

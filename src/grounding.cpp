@@ -10,6 +10,57 @@
 #include "conditional_effects.h"
 #include "duplicate.h"
 
+void grounding_configuration::print_options(){
+	if (quietMode) return;
+	
+	// program output behaviour	
+	std::cout << std::boolalpha;
+	std::cout << "General Options" << std::endl;
+	std::cout << "  Print timings: " << printTimings << std::endl;
+	std::cout << "  Quiet mode: " << quietMode << std::endl;
+	
+	
+	std::cout << "Inference Options" << std::endl;
+	// inference of additional information
+	std::cout << "  H2 mutexes: " << h2Mutexes << std::endl;
+	std::cout << "  FAM groups: " << computeInvariants << std::endl;
+
+	std::cout << "Transformation Options" << std::endl;
+	// compilations to apply
+	std::cout << "  Add zero-cost no-op to empty methods: " << noopForEmptyMethods << std::endl;
+	std::cout << "  Remove duplicate actions: " << removeDuplicateActions << std::endl;
+	std::cout << "  Remove useless literals: " << removeUselessPredicates << std::endl;
+	std::cout << "  Expand abstract tasks with one method: " << expandChoicelessAbstractTasks << std::endl;
+	std::cout << "  Remove empty method preconditions: " << pruneEmptyMethodPreconditions << std::endl;
+	std::cout << "  Two regularisation: " << atMostTwoTasksPerMethod << std::endl;
+	std::cout << "  Compile negative SAS variables: " << compileNegativeSASVariables << std::endl;
+	
+	std::cout << "Runtime Optimisations" << std::endl;
+	// runtime optimisations
+	std::cout << "  Hierarchy Typing: " << enableHierarchyTyping << std::endl;
+	std::cout << "  Future Caching: " << futureCachingByPrecondition << std::endl;
+	std::cout << "  Static Precondition Checking: " << withStaticPreconditionChecking << std::endl;
+	
+
+	std::cout << "Output Options" << std::endl;
+	// select output format
+	std::cout << "  Panda planner format: " << outputForPlanner << std::endl;
+	std::cout << "  HDDL: " << outputHDDL << std::endl;
+	std::cout << "  SAS for Fast Downward (without hierarchy): " << outputSASPlus << std::endl; 
+
+	std::cout << "Output Formatting Options" << std::endl;
+	// output formatting
+	std::cout << "  Output only SAS+ variables: " << outputSASVariablesOnly << std::endl;
+	std::cout << "  SAS+ delete mode: ";
+	switch (sas_mode){
+		case SAS_AS_INPUT: std::cout << "as input"; break;
+		case SAS_ALL: std::cout << "delete all facts of SAS+ group"; break;
+		case SAS_NONE: std::cout << "no deletes"; break;
+	}
+
+	std::cout << std::endl;
+}
+
 
 void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, grounding_configuration & config){
 

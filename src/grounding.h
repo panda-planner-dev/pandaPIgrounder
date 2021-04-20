@@ -37,6 +37,8 @@ struct grounding_configuration{
 	// program output behaviour	
 	bool printTimings = false;
 	bool quietMode = false;
+
+	void print_options();
 };
 
 
