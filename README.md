@@ -1,9 +1,18 @@
+# More Background Information
+
+We've put together a website with the history of all planning systems of the PANDA family, links to all relevant software projects, and further background information including pointers explaining the techniques deployed by the respective systems.
+
+- You find it on https://panda-planner-dev.github.io/
+- or, as a forward, on http://panda.hierarchical-task.net
+
+
 # pandaPIgrounder
+
 This is the grounder of pandaPI
 
 
-
 ## Building
+
 To compile pandaPIgrounder, you need to perform the following steps:
 
  - git clone https://github.com/panda-planner-dev/pandaPIgrounder.git
@@ -17,6 +26,7 @@ To compile pandaPIgrounder, you need to perform the following steps:
  - make
 
 ## Command Line Options
+
 The general syntax for a pandaPIgrounder call is
 ```
 ./pandaPIgrounder INPUT OUTPUT
