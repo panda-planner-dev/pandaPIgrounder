@@ -18,7 +18,7 @@ To compile pandaPIgrounder, you need to perform the following steps:
  - git clone https://github.com/panda-planner-dev/pandaPIgrounder.git
  - git submodule init
  - git submodule update
- - cd cpdl
+ - cd cpddl
  - make boruvka opts bliss
 	- if you have lpsolve installed, you may also need to ```make lpsolve```
  - make
