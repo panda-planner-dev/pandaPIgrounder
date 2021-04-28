@@ -163,82 +163,78 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		return;
 	}
 
-	if (config.outputForPlanner){
-		if (config.outputHDDL)
-			write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, config);
-		else {
-			// prepare data structures that are needed for efficient access
-			std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
-			
-			std::unordered_set<int> initFacts; // needed for efficient goal checking
-			std::unordered_set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
+	if (config.outputHDDL)
+		write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, config);
+	else if (config.outputForPlanner) {
+		// prepare data structures that are needed for efficient access
+		std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
+		
+		std::unordered_set<int> initFacts; // needed for efficient goal checking
+		std::unordered_set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
 
-			for (const Fact & f : problem.init){
-				int groundNo = reachableFactsSet.find(f)->groundedNo;
-				if (prunedFacts[groundNo]){
-					initFactsPruned.insert(groundNo);
-					continue;
-				}
-				initFacts.insert(groundNo);
+		for (const Fact & f : problem.init){
+			int groundNo = reachableFactsSet.find(f)->groundedNo;
+			if (prunedFacts[groundNo]){
+				initFactsPruned.insert(groundNo);
+				continue;
 			}
-
-			std::vector<bool> sas_variables_needing_none_of_them;
-			std::vector<bool> mutex_groups_needing_none_of_them;
-			std::vector<std::unordered_set<int>> sas_groups;
-			std::vector<std::unordered_set<int>> further_mutex_groups;
-
-			while (true){
-				auto [_sas_groups,_further_mutex_groups] = compute_sas_groups(domain, problem, 
-						famGroups, h2_mutexes,
-						initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
-						initFacts, reachableFactsSet,
-						config);
-
-				bool changedPruned = false;
-				auto [_sas_variables_needing_none_of_them,_mutex_groups_needing_none_of_them] = ground_invariant_analysis(domain, problem, 
-						initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
-						prunedTasks, prunedFacts, prunedMethods,
-						initFacts,
-						_sas_groups,_further_mutex_groups,
-						changedPruned,
-						config);
-
-				if (changedPruned){
-					run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
-						prunedFacts, prunedTasks, prunedMethods,
-						config);
-				} else {
-					sas_variables_needing_none_of_them = _sas_variables_needing_none_of_them;
-					mutex_groups_needing_none_of_them = _mutex_groups_needing_none_of_them;
-					sas_groups = _sas_groups;
-					further_mutex_groups = _further_mutex_groups;
-					break;
-				}
-			}
-
-			// duplicate elemination
-			if (config.removeDuplicateActions)
-				unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, config);
-
-			std::vector<std::unordered_set<int>> strict_mutexes;
-			std::vector<std::unordered_set<int>> non_strict_mutexes;
-			for (size_t m = 0; m < further_mutex_groups.size(); m++){
-				if (mutex_groups_needing_none_of_them[m])
-					non_strict_mutexes.push_back(further_mutex_groups[m]);
-				else
-					strict_mutexes.push_back(further_mutex_groups[m]);
-			}
-			
-			if (!config.quietMode)
-				std::cout << "Further Mutex Groups: " << strict_mutexes.size() <<  " strict " << non_strict_mutexes.size() << " non strict" << std::endl;
-
-			write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
-				initFacts, initFactsPruned, reachableFactsSet,
-				sas_groups, strict_mutexes, non_strict_mutexes, h2_invariants,
-				sas_variables_needing_none_of_them,
-				config);
+			initFacts.insert(groundNo);
 		}
-	
+
+		std::vector<bool> sas_variables_needing_none_of_them;
+		std::vector<bool> mutex_groups_needing_none_of_them;
+		std::vector<std::unordered_set<int>> sas_groups;
+		std::vector<std::unordered_set<int>> further_mutex_groups;
+
+		while (true){
+			auto [_sas_groups,_further_mutex_groups] = compute_sas_groups(domain, problem, 
+					famGroups, h2_mutexes,
+					initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, 
+					initFacts, reachableFactsSet,
+					config);
+
+			bool changedPruned = false;
+			auto [_sas_variables_needing_none_of_them,_mutex_groups_needing_none_of_them] = ground_invariant_analysis(domain, problem, 
+					initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods,
+					prunedTasks, prunedFacts, prunedMethods,
+					initFacts,
+					_sas_groups,_further_mutex_groups,
+					changedPruned,
+					config);
+
+			if (changedPruned){
+				run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
+					prunedFacts, prunedTasks, prunedMethods,
+					config);
+			} else {
+				sas_variables_needing_none_of_them = _sas_variables_needing_none_of_them;
+				mutex_groups_needing_none_of_them = _mutex_groups_needing_none_of_them;
+				sas_groups = _sas_groups;
+				further_mutex_groups = _further_mutex_groups;
+				break;
+			}
+		}
+
+		// duplicate elemination
+		if (config.removeDuplicateActions)
+			unify_duplicates(domain,problem,initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, config);
+
+		std::vector<std::unordered_set<int>> strict_mutexes;
+		std::vector<std::unordered_set<int>> non_strict_mutexes;
+		for (size_t m = 0; m < further_mutex_groups.size(); m++){
+			if (mutex_groups_needing_none_of_them[m])
+				non_strict_mutexes.push_back(further_mutex_groups[m]);
+			else
+				strict_mutexes.push_back(further_mutex_groups[m]);
+		}
+		
+		if (!config.quietMode)
+			std::cout << "Further Mutex Groups: " << strict_mutexes.size() <<  " strict " << non_strict_mutexes.size() << " non strict" << std::endl;
+
+		write_grounded_HTN(dout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods,
+			initFacts, initFactsPruned, reachableFactsSet,
+			sas_groups, strict_mutexes, non_strict_mutexes, h2_invariants,
+			sas_variables_needing_none_of_them,
+			config);
 	}
 }
-
