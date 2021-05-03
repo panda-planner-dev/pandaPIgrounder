@@ -855,10 +855,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	pout << -1 << std::endl << baseUtility << std::endl;
 	
-	exit(0);
-
-
-
 
 	int abstractTasks = 0;
 	for (GroundedTask & task : reachableTasks){
@@ -866,9 +862,6 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		if (task.taskNo < domain.nPrimitiveTasks) continue;
 		abstractTasks++;
 	}
-
-	
-
 
 	
 	pout << std::endl << ";; tasks (primitive and abstract)" << std::endl;
