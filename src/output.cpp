@@ -839,6 +839,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	// grounded utility	
 	pout << std::endl << ";; cost bound" << std::endl;
 	pout << problem.costBound << std::endl;
+	
+	pout << std::endl << ";; utility" << std::endl;
 	int baseUtility = 0;
 	for (auto [f,u] : problem.utility){
 		auto it = reachableFactsSet.find(f);
