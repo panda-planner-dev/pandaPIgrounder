@@ -836,12 +836,40 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 	pout << -1 << std::endl;
 
+	// grounded utility	
+	pout << std::endl << ";; cost bound" << std::endl;
+	pout << problem.costBound << std::endl;
+	int baseUtility = 0;
+	for (auto [f,u] : problem.utility){
+		auto it = reachableFactsSet.find(f);
+		if (it == reachableFactsSet.end()){
+			// utility is not reachable ... no problem, just ignore it!
+			continue;
+		}
+		if (prunedFacts[it->groundedNo]){
+			// utility got pruned, i.e. is is statically true!
+			baseUtility += u;
+			continue;
+		}
+		pout << reachableFacts[it->groundedNo].outputNo << " " << u << " ";
+	}
+	pout << -1 << std::endl << baseUtility << std::endl;
+	
+	exit(0);
+
+
+
+
 	int abstractTasks = 0;
 	for (GroundedTask & task : reachableTasks){
 		if (prunedTasks[task.groundedNo]) continue;
 		if (task.taskNo < domain.nPrimitiveTasks) continue;
 		abstractTasks++;
 	}
+
+	
+
+
 	
 	pout << std::endl << ";; tasks (primitive and abstract)" << std::endl;
 	pout << number_of_actions_in_output + abstractTasks + number_of_additional_abstracts + (contains_empty_method ? 1 : 0) << std::endl;

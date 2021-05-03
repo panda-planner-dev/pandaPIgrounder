@@ -311,6 +311,13 @@ void removeUnnecessaryFacts(const Domain & domain,
 		occuringInPrecondition[it->groundedNo] = true;
 	}
 
+	// facts in utilities
+	for (auto & [f,_] : problem.utility){
+		auto it = reachableFacts.find(f);
+		if (it == reachableFacts.end()) continue; // utility not reachable ... We will never get its rewards but who cares.
+		occuringInPrecondition[it->groundedNo] = true;
+	}
+
 	// remove facts that are not contained in preconditions
 	for (int f = 0; f < occuringInPrecondition.size(); f++)
 		if (!occuringInPrecondition[f]){

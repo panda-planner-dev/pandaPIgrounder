@@ -303,6 +303,14 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	// Read initial task
 	input >> outputProblem.initialAbstractTask;
 
+	// Read the cost bound
+	input >> outputProblem.costBound;
+
+	// Utilities
+	int nUtilities;
+	input >> nUtilities;
+	readN (state, input, outputProblem.utility, readFunctionFact, nUtilities);
+
 	// Reset exception mask
 	input.exceptions (exceptionMask);
 

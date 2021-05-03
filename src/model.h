@@ -311,6 +311,12 @@ struct Problem
 
 	/// The initial abstract task, identified by its number.
 	int initialAbstractTask;
+
+	/// Cost bound
+	int costBound;
+
+	/// Final State Utilities
+	std::vector<std::pair<Fact,int>> utility;
 };
 
 /**
