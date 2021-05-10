@@ -1124,15 +1124,18 @@ void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const 
 		
 		std::map<int,int> subTaskIndexToOutputIndex;
 		// output subtasks in their topological ordering
-		dout << "    :subtasks (and" << std::endl;
-		for (size_t outputIndex = 0; outputIndex < method.preconditionOrdering.size(); outputIndex++){
-			int subtaskIndex = method.preconditionOrdering[outputIndex];
-			subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
-			
-			GroundedTask & task	= reachableTasks[method.groundedPreconditions[subtaskIndex]];
-			dout << "      (t" << outputIndex << " (" << taskname[task.groundedNo] << "))" << std::endl;
+		
+		if (method.preconditionOrdering.size()){
+			dout << "    :subtasks (and" << std::endl;
+			for (size_t outputIndex = 0; outputIndex < method.preconditionOrdering.size(); outputIndex++){
+				int subtaskIndex = method.preconditionOrdering[outputIndex];
+				subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
+				
+				GroundedTask & task	= reachableTasks[method.groundedPreconditions[subtaskIndex]];
+				dout << "      (t" << outputIndex << " (" << taskname[task.groundedNo] << "))" << std::endl;
+			}
+			dout << "    )" << std::endl;
 		}
-		dout << "    )" << std::endl;
 
 		auto orderings = domain.decompositionMethods[method.methodNo].orderingConstraints;
 		std::sort(orderings.begin(), orderings.end());
