@@ -31,6 +31,7 @@ struct grounding_configuration{
 	bool removeDuplicateActions = false;
 	bool removeUselessPredicates = true;
 	bool expandChoicelessAbstractTasks = true;
+	bool keepTwoRegularisation = false;
 	bool pruneEmptyMethodPreconditions = true;
 	bool atMostTwoTasksPerMethod = false;
 	
