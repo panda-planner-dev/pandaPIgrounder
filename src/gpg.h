@@ -805,7 +805,7 @@ static void gpgAssignVariables (
 							);
 		
 		// Add "add" effects from this action to our known facts
-		for (const typename InstanceType::PreconditionType addEffect : action.getConsequences ())
+		for (const typename InstanceType::PreconditionType & addEffect : action.getConsequences ())
 		{
 			
 			typename InstanceType::StateType addState;
@@ -889,7 +889,7 @@ extern std::vector<size_t> htTests;
 
 template<GpgInstance InstanceType>
 void printStatistics(const InstanceType & instance){
-	bool outputPerPrec = true;
+	//bool outputPerPrec = true;
 	std::cerr << "========================================" << std::endl;
 	std::cerr << "Total fact misses: " << (totalFactTests - totalFactHits) << " / " << totalFactTests << " = " << std::fixed << std::setprecision (3) << 100.0 * (totalFactTests - totalFactHits) / totalFactTests << " % (" << totalFactHits << " hits)" << std::endl;
 	//for (size_t i = 0; i < instance.getNumberOfActions (); ++i)

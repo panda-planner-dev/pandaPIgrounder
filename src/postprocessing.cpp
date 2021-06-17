@@ -349,7 +349,8 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
 		std::vector<GroundedTask> & inputTasksGroundedPg,
-		std::vector<GroundedMethod> & inputMethodsGroundedTdg){
+		std::vector<GroundedMethod> & inputMethodsGroundedTdg,
+		bool keepTwoRegularisation){
 
 	std::vector<std::set<int>> taskToMethodsTheyAreContainedIn (inputTasksGroundedPg.size());
 	for (auto & method : inputMethodsGroundedTdg){
@@ -383,13 +384,24 @@ void expandAbstractTasksWithSingleMethod(const Domain & domain,
 			if (applicableIndex == -2) continue;
 			assert(applicableIndex != -1);
 
+			GroundedMethod & unitGroundedMethod = inputMethodsGroundedTdg[applicableIndex];
+			DecompositionMethod unitLiftedMethod = domain.decompositionMethods[unitGroundedMethod.methodNo];
+
+			
+			int maxSizeofContained = 0;
+			for (const int & method : taskToMethodsTheyAreContainedIn[groundedTask.groundedNo]){
+				if (prunedMethods[method]) continue;
+				GroundedMethod & groundedMethod = inputMethodsGroundedTdg[method];
+				if (groundedMethod.groundedPreconditions.size() > maxSizeofContained) maxSizeofContained = groundedMethod.groundedPreconditions.size();
+			}
+			
+			if (keepTwoRegularisation && unitGroundedMethod.groundedPreconditions.size() >= 2 && maxSizeofContained > 1)
+				continue;
+
 			// this method is now pruned ...
 			prunedMethods[applicableIndex] = true;
 			prunedTasks[groundedTask.groundedNo] = true;
 	
-			GroundedMethod & unitGroundedMethod = inputMethodsGroundedTdg[applicableIndex];
-			DecompositionMethod unitLiftedMethod = domain.decompositionMethods[unitGroundedMethod.methodNo];
-
 			std::string decomposedTaskName = domain.tasks[groundedTask.taskNo].name + "[";
 			for (size_t i = 0; i < groundedTask.arguments.size(); i++){
 				if (i) decomposedTaskName += ",";
@@ -804,12 +816,11 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 	// this MUST be the (second) last step. Else the information stored inside the method names for reconstruction becomes invalid
 	if (config.expandChoicelessAbstractTasks){
 		if (!config.quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
-		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
+		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods, config.keepTwoRegularisation);
 	}
 
 	if (config.atMostTwoTasksPerMethod){
 		if (!config.quietMode) std::cerr << "Changing all methods s.t. they contain at most two tasks." << std::endl;
 		change_to_methods_with_at_most_two_tasks(domain, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
 	}
-	
 }

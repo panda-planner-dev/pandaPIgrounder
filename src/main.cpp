@@ -59,6 +59,7 @@ int main (int argc, char * argv[])
 	config.noopForEmptyMethods = args_info.no_empty_compilation_flag;
 	config.removeUselessPredicates = args_info.no_literal_pruning_flag;
 	config.expandChoicelessAbstractTasks = args_info.no_abstract_expansion_flag;
+	config.keepTwoRegularisation = args_info.keep_two_regularisation_flag;
 	config.pruneEmptyMethodPreconditions = args_info.no_method_precondition_pruning_flag;
 
 	config.atMostTwoTasksPerMethod = args_info.two_regularisation_flag;
