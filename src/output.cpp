@@ -65,6 +65,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::vector<std::unordered_set<int>> further_mutex_groups,
 		std::vector<std::unordered_set<int>> invariants,
 		std::vector<bool> & sas_variables_needing_none_of_them,
+		std::vector<std::pair<std::string,std::vector<int>>> & outputUtilities,
 		grounding_configuration & config
 		){
 	if (!config.quietMode) std::cerr << "Writing instance to output." << std::endl;
@@ -841,22 +842,15 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	pout << problem.costBound << std::endl;
 	
 	pout << std::endl << ";; utility" << std::endl;
-	int baseUtility = 0;
-	for (auto [f,u] : problem.utility){
-		auto it = reachableFactsSet.find(f);
-		if (it == reachableFactsSet.end()){
-			// utility is not reachable ... no problem, just ignore it!
-			continue;
-		}
-		if (prunedFacts[it->groundedNo]){
-			// utility got pruned, i.e. is is statically true!
-			baseUtility += u;
-			continue;
-		}
-		pout << reachableFacts[it->groundedNo].outputNo << " " << u << " ";
+	pout << outputUtilities.size() << std::endl;
+	for (auto & [name,facts] : outputUtilities){
+		pout << name << " " << facts.size();
+		for (int & f : facts)
+			pout << " " << reachableFacts[f].outputNo;
+		pout << std::endl;
 	}
-	pout << -1 << std::endl << baseUtility << std::endl;
 	
+	pout << std::endl << ";; metric" << std::endl << problem.metric_expression << std::endl;
 
 	int abstractTasks = 0;
 	for (GroundedTask & task : reachableTasks){

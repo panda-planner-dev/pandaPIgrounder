@@ -316,7 +316,10 @@ struct Problem
 	int costBound;
 
 	/// Final State Utilities
-	std::vector<std::pair<Fact,int>> utility;
+	std::vector<std::pair<std::vector<Fact>,std::string>> utility;
+
+	/// Metric expression
+	std::string metric_expression;
 };
 
 /**

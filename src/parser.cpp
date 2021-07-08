@@ -125,9 +125,17 @@ void readFunctionFact (const Domain & state, std::istream & input, std::pair<Fac
 {
 	input >> ffact.first.predicateNo;
 
-	size_t nArguments = state.predicates[ffact.first.predicateNo].argumentSorts.size ();
+	size_t nArguments = state.functions[ffact.first.predicateNo].argumentSorts.size ();
 	readN (state, input, ffact.first.arguments, readPrimitive, nArguments);
 	input >> ffact.second;
+}
+
+void readPreference (const Domain & state, std::istream & input, std::pair<std::vector<Fact>,std::string> & pref)
+{
+	input >> pref.second;
+	int nFact; input >> nFact;
+
+	readN (state, input, pref.first, readFact, nFact);
 }
 
 void readTaskWithArguments (const Domain & state, std::istream & input, TaskWithArguments & outputTaskWithArguments)
@@ -296,20 +304,32 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	DEBUG (std::cerr << "Reading [" << nInitFacts << "] initial and [" << nGoalFacts << "] goal facts." << std::endl);
 	readN (state, input, outputProblem.init, readFact, nInitFacts);
 	readN (state, input, outputProblem.goal, readFact, nGoalFacts);
+	
+	
 	int nInitFunctions;
 	input >> nInitFunctions;
+	DEBUG (std::cerr << "Reading [" << nInitFunctions << "] function initialisations." << std::endl);
 	readN (state, input, outputProblem.init_functions, readFunctionFact, nInitFunctions);
 
+	DEBUG (std::cerr << "Reading initial task and cost bound." << std::endl);
 	// Read initial task
 	input >> outputProblem.initialAbstractTask;
+	std::cout << outputProblem.initialAbstractTask << std::endl;
 
 	// Read the cost bound
 	input >> outputProblem.costBound;
+	std::cout << outputProblem.costBound << std::endl;
 
 	// Utilities
-	int nUtilities;
-	input >> nUtilities;
-	readN (state, input, outputProblem.utility, readFunctionFact, nUtilities);
+	int nPref;
+	input >> nPref;
+	DEBUG (std::cerr << "Reading [" << nPref << "] utilities." << std::endl);
+	readN (state, input, outputProblem.utility, readPreference, nPref);
+
+    std::getline(input, outputProblem.metric_expression);
+    std::getline(input, outputProblem.metric_expression);
+
+	DEBUG (std::err << "Read metric expression: \"" << metric_expression << "\"" << std::endl);
 
 	// Reset exception mask
 	input.exceptions (exceptionMask);

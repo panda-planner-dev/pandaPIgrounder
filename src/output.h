@@ -22,6 +22,7 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		std::vector<std::unordered_set<int>> further_mutex_groups,
 		std::vector<std::unordered_set<int>> invariants,
 		std::vector<bool> & sas_variables_needing_none_of_them,
+		std::vector<std::pair<std::string,std::vector<int>>> & outputUtilities,
 		grounding_configuration & config);
 
 void write_grounded_HTN_to_HDDL(std::ostream & dout, std::ostream & pout, const Domain & domain, const Problem & problem,

@@ -154,9 +154,44 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		}
 	}
 //////////////////////// end of H2 mutexes
+	std::vector<std::pair<std::string,std::vector<int>>> outputUtilities;
+
+	// prepare data structures that are needed for efficient access
+	std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
+
+	for (auto [fs,uname] : problem.utility){
+		bool unsatisfiable = false;
+		std::vector<int> facts;
+		for (Fact f : fs){
+			auto it = reachableFactsSet.find(f);
+			if (it == reachableFactsSet.end() || prunedFacts[it->groundedNo]){
+				// utility is not reachable ... no problem, just ignore it!
+				unsatisfiable = true;
+				break;
+			}
+			facts.push_back(it->groundedNo);
+		}
+		if (unsatisfiable) continue;
+		outputUtilities.push_back({uname, facts});
+	}
 
 	// run postprocessing
 	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, config);	
+
+
+	std::vector<std::pair<std::string,std::vector<int>>> outputUtilities_filtered;
+
+	for (auto & [name, facts] : outputUtilities){
+		std::vector<int> remaining_facts;
+		for (int & fact : facts)
+			if (!prunedFacts[fact]) remaining_facts.push_back(fact);
+			// else it is statically true: facts will not be removed if they can change as the utilities are classified as preconditions
+
+		outputUtilities_filtered.push_back({name, remaining_facts});
+	}
+
+	outputUtilities.clear(); // save memory
+
 
 	if (config.outputSASPlus){
 		write_sasplus(dout, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, config);
@@ -166,8 +201,6 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	if (config.outputHDDL)
 		write_grounded_HTN_to_HDDL(dout, pout, domain, problem, initiallyReachableFacts,initiallyReachableTasks, initiallyReachableMethods, prunedTasks, prunedFacts, prunedMethods, config);
 	else if (config.outputForPlanner) {
-		// prepare data structures that are needed for efficient access
-		std::unordered_set<Fact> reachableFactsSet(initiallyReachableFacts.begin(), initiallyReachableFacts.end());
 		
 		std::unordered_set<int> initFacts; // needed for efficient goal checking
 		std::unordered_set<int> initFactsPruned; // needed for efficient checking of pruned facts in the goal
@@ -235,6 +268,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			initFacts, initFactsPruned, reachableFactsSet,
 			sas_groups, strict_mutexes, non_strict_mutexes, h2_invariants,
 			sas_variables_needing_none_of_them,
+			outputUtilities_filtered,
 			config);
 	}
 }
