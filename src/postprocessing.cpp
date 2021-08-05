@@ -814,7 +814,8 @@ void contract_consecutive_primitives(const Domain & domain, const Problem & prob
 				groundedSubTask *= -1;
 			}
 			liftedMethod.subtasks.push_back(nextSubtask);
-			liftedMethod.orderingConstraints.push_back(std::make_pair(current,current+1));
+			if (current) liftedMethod.orderingConstraints.push_back(std::make_pair(current-1,current));
+			current++;
 		}
 		
 		// add lifted version of the method to domain
