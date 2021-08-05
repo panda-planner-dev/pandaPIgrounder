@@ -156,7 +156,23 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 //////////////////////// end of H2 mutexes
 
 	// run postprocessing
-	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, config);	
+	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, config);
+
+	DEBUG(	
+	// check integrity of data structures
+	for (int i = 0; i < initiallyReachableMethods.size(); i++){
+		if (prunedMethods[i]) continue;
+		int at = initiallyReachableMethods[i].groundedAddEffects[0];
+		assert(std::count(initiallyReachableTasks[at].groundedDecompositionMethods.begin(),initiallyReachableTasks[at].groundedDecompositionMethods.end(),i));
+	}
+
+	for (int i = 0; i < initiallyReachableTasks.size(); i++){
+		if (prunedTasks[i]) continue;
+		for (int m : initiallyReachableTasks[i].groundedDecompositionMethods)
+			assert(initiallyReachableMethods[m].groundedAddEffects[0] == i);
+	});
+
+
 
 	if (config.outputSASPlus){
 		write_sasplus(dout, domain,problem,initiallyReachableFacts,initiallyReachableTasks, prunedFacts, prunedTasks, config);
@@ -186,6 +202,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		std::vector<std::unordered_set<int>> sas_groups;
 		std::vector<std::unordered_set<int>> further_mutex_groups;
 
+		bool first = true;
 		while (true){
 			auto [_sas_groups,_further_mutex_groups] = compute_sas_groups(domain, problem, 
 					famGroups, h2_mutexes,
@@ -202,10 +219,11 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 					changedPruned,
 					config);
 
-			if (changedPruned){
+			if (changedPruned || first){
 				run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 					prunedFacts, prunedTasks, prunedMethods,
 					config);
+				first = false;
 			} else {
 				sas_variables_needing_none_of_them = _sas_variables_needing_none_of_them;
 				mutex_groups_needing_none_of_them = _mutex_groups_needing_none_of_them;

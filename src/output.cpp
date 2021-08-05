@@ -680,6 +680,8 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 	}
 
 	for (const auto & [tID, costs, prec_out, add_out, del_out, instances] : output_actions){
+		DEBUG(std::cout << "Task " << tID << " gets outputID " << ac << std::endl);
+		
 		GroundedTask & task = reachableTasks[tID];
 		if (instances.size() == 1)
 			task.outputNo = ac;
@@ -910,8 +912,11 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 		}
 		pout << "]" << std::endl;*/
 
-		// the abstract tasks
-		pout << reachableTasks[method.groundedAddEffects[0]].outputNo << std::endl;
+		// the abstract task
+		int atOutputNo = reachableTasks[method.groundedAddEffects[0]].outputNo;
+		assert(atOutputNo >= 0);
+		pout << atOutputNo << std::endl;
+
 		
 		std::map<int,int> subTaskIndexToOutputIndex;
 		// output subtasks in their topological ordering
@@ -921,11 +926,14 @@ void write_grounded_HTN(std::ostream & pout, const Domain & domain, const Proble
 			assert(subtaskIndex < method.groundedPreconditions.size());
 			subTaskIndexToOutputIndex[subtaskIndex] = outputIndex;
 
-			int outNo = reachableTasks[method.groundedPreconditions[subtaskIndex]].outputNo;
+			int groundedSubtask = method.groundedPreconditions[subtaskIndex];
+			assert(!prunedTasks[groundedSubtask]);
+
+			int outNo = reachableTasks[groundedSubtask].outputNo;
 			if (outNo < 0) outNo = -outNo - 2; // marker task, and keeps -1 invariant ...
 
-			assert(outNo >= 0);
 			pout << outNo << " ";
+			assert(outNo >= 0);
 		}
 		// no empty methods if desired. If this method would be empty, add a no-op.
 		if (contains_empty_method && method.preconditionOrdering.size() == 0)

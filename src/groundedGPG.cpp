@@ -372,15 +372,38 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 			break;
 
 		remainingPrimitiveTasks = reachedTasksCount;
+	
+		DEBUG(for (int i = 0; i < reachableMethods.size(); i++){
+			if (prunedMethods[i]) continue;
+			assert(!prunedTasks[reachableMethods[i].groundedAddEffects[0]]);
+		});
+
 
 		// Do grounded TDG
 		std::vector<bool> taskReached;
 		auto [reachedMethodsCount, reachedTasksCountTdg] = groundedTdg (taskReached, unfulfilledPreconditions, prunedMethods, prunedTasks, reachableMethods, reachableTasks, domain, problem);
 		if (!config.quietMode) std::cerr << "Grounded TDG:" << std::endl;
 		if (!config.quietMode) std::cerr << "Input was [" << remainingMethodsCount << ", " << remainingPrimitiveTasks << "], output was [" << reachedMethodsCount << ", " << reachedTasksCountTdg << "]." << std::endl;
+	
+		DEBUG(for (int i = 0; i < reachableMethods.size(); i++){
+			if (prunedMethods[i]) continue;
+			assert(!prunedTasks[reachableMethods[i].groundedAddEffects[0]]);
+		});
+
 
 		// Do DFS
 		auto [reachedPrimitiveTasksCountDfs, reachedMethodsCountDfs] = groundedTdgDfs (prunedTasks, prunedMethods, reachableTasks, reachableMethods, domain, problem);
+
+		DEBUG(for (int i = 0; i < reachableMethods.size(); i++){
+			if (prunedMethods[i]) continue;	
+
+			if (prunedTasks[reachableMethods[i].groundedAddEffects[0]]){
+				std::cout << "Method " << i << " " << reachableMethods[i].groundedAddEffects[0] << std::endl;
+			}
+			assert(!prunedTasks[reachableMethods[i].groundedAddEffects[0]]);
+		});
+
+
 
 		// set this early
 		remainingMethodsCount = reachedMethodsCountDfs;

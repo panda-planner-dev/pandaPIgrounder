@@ -642,9 +642,274 @@ void removeEmptyMethodPreconditions(const Domain & domain,
 }
 
 
-void create_method_decomposing_into(const Domain & domain, int decomposedTask, int groundedTaskA, int groundedTaskB, int liftedDecomposed, int liftedA, int liftedB){
-	// lifted method
 
+void contract_consecutive_primitives(const Domain & domain, const Problem & problem,
+		std::vector<bool> & prunedTasks,
+		std::vector<bool> & prunedMethods,
+		std::vector<GroundedTask> & inputTasksGroundedPg,
+		std::vector<GroundedMethod> & inputMethodsGroundedTdg){
+
+	std::vector<Task> newTasks;
+	std::vector<GroundedTask> newGroundTasks;
+	
+	std::vector<DecompositionMethod> newMethods;
+	std::vector<GroundedMethod> newGroundMethods;
+
+	for (auto & method : inputMethodsGroundedTdg){
+		if (prunedMethods[method.groundedNo]) continue;
+		if (method.groundedPreconditions.size() < 2) continue; // can't compact anything
+
+		DEBUG(std::cout << "Method: " << method.groundedPreconditions.size() << std::endl);
+		
+		std::vector<std::vector<int>> segmentation;
+		std::vector<int> currentPrimitiveBlock;
+		for (size_t currentSubtask = 0; currentSubtask < method.groundedPreconditions.size(); currentSubtask++){
+			int actualSubtaskIndex = method.preconditionOrdering[currentSubtask];
+			// ground ID of the subtask
+			int groundedSubtask = method.groundedPreconditions[actualSubtaskIndex];
+
+			GroundedTask & groundTask = inputTasksGroundedPg[groundedSubtask];
+			int liftedTaskNumber = groundTask.taskNo;
+
+			DEBUG(std::cout << "\tmethod subtask #" << currentSubtask << " gID=" << groundedSubtask << " lID=" << liftedTaskNumber << " nPim=" << domain.nPrimitiveTasks << std::endl);
+
+			if (liftedTaskNumber < domain.nPrimitiveTasks){
+				DEBUG(std::cout << "\t\tis primitive" << std::endl);
+				currentPrimitiveBlock.push_back(groundedSubtask);
+			} else {
+				DEBUG(std::cout << "\t\tis abstract" << std::endl);
+				if (currentPrimitiveBlock.size())
+					segmentation.push_back(currentPrimitiveBlock);
+				currentPrimitiveBlock.clear();
+				
+				// add a singular block with the abstract task
+				currentPrimitiveBlock.push_back(groundedSubtask);
+				segmentation.push_back(currentPrimitiveBlock);
+				currentPrimitiveBlock.clear();
+			}
+		}
+		// if the method ends with a primitive block, add it to the segmentation
+		if (currentPrimitiveBlock.size())
+			segmentation.push_back(currentPrimitiveBlock);
+
+		bool largerThanOne = false;
+		for (auto & x : segmentation) largerThanOne |= x.size() > 1;
+
+		if (!largerThanOne) continue;
+		
+		DEBUG(std::cout << "\tmethod has (at least one) block of primitives" << std::endl);
+
+
+
+		std::vector<int> methodTasks;
+		bool methodNotExecutable = false;
+		for (auto & segment : segmentation) {
+			assert(segment.size());
+			if (segment.size() == 1){
+				methodTasks.push_back(segment[0]);
+				continue;
+			}
+
+			DEBUG(std::cout << "\tCompactifying action block" << std::endl);
+			
+			std::unordered_set<int> pre;
+			std::unordered_set<int> add;
+			std::unordered_set<int> del;
+
+			for (int groundAction : segment){
+				DEBUG(std::cout << "\t\taction" << std::endl);
+				GroundedTask & groundTask = inputTasksGroundedPg[groundAction];
+				
+				for (int myPre : groundTask.groundedPreconditions){
+					DEBUG(std::cout << "\t\t\tpre " << myPre << std::endl);
+					if (del.count(myPre)) methodNotExecutable = true;
+					if (add.count(myPre)) continue; // precondition automatically satisfied
+					pre.insert(myPre);
+				}
+
+				// first del then add to keep the precedence between them
+				for (int myDel : groundTask.groundedDelEffects){
+					DEBUG(std::cout << "\t\t\tdel " << myDel << std::endl);
+					del.insert(myDel);
+					add.erase(myDel); // if feature was previously deleted, it is not any more
+				}
+				
+				for (int myAdd : groundTask.groundedAddEffects){
+					DEBUG(std::cout << "\t\t\tadd " << myAdd << std::endl);
+					add.insert(myAdd);
+					del.erase(myAdd); // if feature was previously deleted, it is not any more
+				}
+			}
+			if (methodNotExecutable) break;
+		
+			DEBUG(std::cout << "\tinferred new action" << std::endl);
+		
+			DEBUG(for (int myPre : pre) std::cout << "\t\t\tpre " << myPre << std::endl);
+			DEBUG(for (int myAdd : add) std::cout << "\t\t\tadd " << myAdd << std::endl);
+			DEBUG(for (int myDel : del) std::cout << "\t\t\tdel " << myDel << std::endl);
+		
+
+			// create new primitive action (grounded version)
+			GroundedTask newGroundAction;
+			newGroundAction.groundedNo = inputTasksGroundedPg.size() + newTasks.size();
+			newGroundAction.taskNo = domain.nPrimitiveTasks + newTasks.size(); // have it temporarily negative for detecting these cases when adding the tasks to the domain proper
+			for (int myPre : pre) newGroundAction.groundedPreconditions.push_back(myPre);
+			for (int myAdd : add) newGroundAction.groundedAddEffects.push_back(myAdd);
+			for (int myDel : del) newGroundAction.groundedDelEffects.push_back(myDel);
+			// push back all variables of all sub actions
+			for (int groundAction : segment){
+				GroundedTask & groundTask = inputTasksGroundedPg[groundAction];
+				for (int & c : groundTask.arguments)
+					newGroundAction.arguments.push_back(c);
+			}
+			
+			// record number of new action
+			methodTasks.push_back(-inputTasksGroundedPg.size() - newGroundTasks.size());
+			// add action to list of actions to add
+			newGroundTasks.push_back(newGroundAction);
+
+			// create new primitive action (lifted version)
+			Task newLiftedAction;
+			newLiftedAction.name = "§aggregate";
+			for (int groundAction : segment){
+				GroundedTask & groundTask = inputTasksGroundedPg[groundAction];
+				newLiftedAction.name += "_#" + domain.tasks[groundTask.taskNo].name + "#" + std::to_string(groundTask.arguments.size());
+			}
+			newLiftedAction.name += "$";
+			DEBUG(std::cout << "\tCreating new lifted action: " << newLiftedAction.name << std::endl);
+		   
+			newLiftedAction.number_of_original_variables = newGroundAction.arguments.size();
+			newLiftedAction.isCompiledConditionalEffect = false;
+			newTasks.push_back(newLiftedAction);
+		}
+
+		// if the method contains a non executable sequence of actions, just prune it!
+		if (methodNotExecutable){
+			prunedMethods[method.groundedNo] = true;
+			DEBUG(std::cout << "\tMethod is not executable ... " << std::endl);
+			continue;
+		}
+		
+		// remove the previous version of the method
+		prunedMethods[method.groundedNo] = true;
+		DecompositionMethod mainLiftedMethod = domain.decompositionMethods[method.methodNo];
+
+		// create a new method for this
+		DecompositionMethod liftedMethod;
+		liftedMethod.name = mainLiftedMethod.name;
+		liftedMethod.taskNo = mainLiftedMethod.taskNo;
+		liftedMethod.variableSorts = mainLiftedMethod.variableSorts;
+		liftedMethod.taskParameters = mainLiftedMethod.taskParameters;
+
+		// create sequence of subtasks	
+		int current = 0;	
+		for (int & groundedSubTask : methodTasks){
+			TaskWithArguments nextSubtask;
+			if (groundedSubTask >= 0){
+				nextSubtask.taskNo = inputTasksGroundedPg[groundedSubTask].taskNo;
+			} else {
+				int no = groundedSubTask + inputTasksGroundedPg.size();
+				no *= -1;
+				nextSubtask.taskNo = newGroundTasks[no].taskNo;
+				groundedSubTask *= -1;
+			}
+			liftedMethod.subtasks.push_back(nextSubtask);
+			liftedMethod.orderingConstraints.push_back(std::make_pair(current,current+1));
+		}
+		
+		// add lifted version of the method to domain
+		int liftedMethodNumber = domain.decompositionMethods.size() + newMethods.size();
+		newMethods.push_back(liftedMethod);
+
+		// add the grounded method
+		GroundedMethod newMethod;
+		newMethod.methodNo = liftedMethodNumber;
+		newMethod.arguments = method.arguments;
+		newMethod.groundedAddEffects = method.groundedAddEffects;
+		newMethod.groundedPreconditions = methodTasks; // reduced tasks are the subtasks of this method
+		for (int i = 0; i < methodTasks.size(); i++)
+			newMethod.preconditionOrdering.push_back(i);
+		newMethod.groundedNo = inputMethodsGroundedTdg.size() + newGroundMethods.size();
+
+		// add the grounded method
+		newGroundMethods.push_back(newMethod);
+	}
+
+
+	// renumber the (lifted) abstract tasks as we have introduced new primitive ones ...
+	for (int i = 0 ; i < inputTasksGroundedPg.size(); i++){
+		if (inputTasksGroundedPg[i].taskNo >= domain.nPrimitiveTasks){
+			// it is abstract has has to be re-numbered
+			inputTasksGroundedPg[i].taskNo += newTasks.size();
+		}
+	}
+	// add the new ones
+	for (GroundedTask & newGroundTask : newGroundTasks){
+		inputTasksGroundedPg.push_back(newGroundTask);
+		prunedTasks.push_back(false);
+	}
+
+	// lifted tasks ...
+	std::vector<Task> oldTasks = const_cast<Domain &>(domain).tasks;
+	const_cast<Domain &>(domain).tasks.clear(); // remove the old
+	for (int i = 0; i < domain.nPrimitiveTasks; i++)
+		const_cast<Domain &>(domain).tasks.push_back(oldTasks[i]);
+
+	// insert the new primitives right in the middle
+	for (int i = 0; i < newTasks.size(); i++)
+		const_cast<Domain &>(domain).tasks.push_back(newTasks[i]);
+	
+	for (int i = domain.nPrimitiveTasks; i < domain.nTotalTasks; i++)
+		const_cast<Domain &>(domain).tasks.push_back(oldTasks[i]);
+
+	////// tasks are now fixed. Methods can just be added at the end
+
+	// add the methods
+	for (DecompositionMethod & m : newMethods){
+		// add lifted methods
+		const_cast<Domain &>(domain).decompositionMethods.push_back(m);
+	}
+
+	// fix numbers in methods
+	for (DecompositionMethod & m : const_cast<Domain &>(domain).decompositionMethods){
+		m.taskNo += newTasks.size(); // the decomposed task is always abstract ...
+		
+		for (TaskWithArguments & t : m.subtasks){
+			if (t.taskNo < 0){
+				t.taskNo *= -1;
+			} else if (t.taskNo >= domain.nPrimitiveTasks)
+				t.taskNo += newTasks.size();
+		}
+	}
+
+	for (GroundedMethod & m : newGroundMethods){
+		// add as method to the task it decomposes
+		inputTasksGroundedPg[*(m.groundedAddEffects.begin())].groundedDecompositionMethods.push_back(inputMethodsGroundedTdg.size());
+		// add the grounded method
+		inputMethodsGroundedTdg.push_back(m);
+		prunedMethods.push_back(false);
+	}
+	
+	//// fix the numbers of the grounded methods ...
+	//for (GroundedMethod & m : inputMethodsGroundedTdg){
+	//	for (int & add : m.groundedAddEffects){
+	//		if (add < 0){
+	//			add *= -1;
+	//		} else if (add >= domain.nPrimitiveTasks)
+	//			add += newTasks.size();
+	//	}
+	//	
+	//	for (int & pre : m.groundedPreconditions){
+	//		if (pre < 0){
+	//			pre *= -1;
+	//		} else if (pre >= domain.nPrimitiveTasks)
+	//			pre += newTasks.size();
+	//	}
+	//}
+
+	const_cast<Domain &>(domain).nPrimitiveTasks += newTasks.size();
+	const_cast<Domain &>(domain).nTotalTasks += newTasks.size();
+	const_cast<Problem &>(problem).initialAbstractTask += newTasks.size();
 }
 
 
@@ -772,10 +1037,11 @@ void change_to_methods_with_at_most_two_tasks(const Domain & domain,
 	}
 	
 	for (GroundedMethod & m : newGroundMethods){
+		// add as method to the task it decomposes
+		inputTasksGroundedPg[*(m.groundedAddEffects.begin())].groundedDecompositionMethods.push_back(inputMethodsGroundedTdg.size());
+		
 		inputMethodsGroundedTdg.push_back(m);
 		prunedMethods.push_back(false);
-		// add as method to the task it decomposes
-		inputTasksGroundedPg[*(m.groundedAddEffects.begin())].groundedDecompositionMethods.push_back(m.methodNo);
 	}
 	
 	//exit(1);
@@ -811,6 +1077,10 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		if (!config.quietMode) std::cerr << "Expanding abstract tasks with only one method" << std::endl;
 		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods, config.keepTwoRegularisation);
 	}
+
+
+	contract_consecutive_primitives(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
+
 
 	if (config.atMostTwoTasksPerMethod){
 		if (!config.quietMode) std::cerr << "Changing all methods s.t. they contain at most two tasks." << std::endl;
