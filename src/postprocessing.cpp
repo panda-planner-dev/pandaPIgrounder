@@ -773,7 +773,7 @@ void contract_consecutive_primitives(const Domain & domain, const Problem & prob
 			newLiftedAction.name = "%aggregate";
 			for (int groundAction : segment){
 				GroundedTask & groundTask = inputTasksGroundedPg[groundAction];
-				newLiftedAction.name += "_#" + domain.tasks[groundTask.taskNo].name + "#" + std::to_string(groundTask.arguments.size());
+				newLiftedAction.name += "#" + domain.tasks[groundTask.taskNo].name + "#" + std::to_string(groundTask.arguments.size());
 			}
 			newLiftedAction.name += "$";
 			DEBUG(std::cout << "\tCreating new lifted action: " << newLiftedAction.name << std::endl);
