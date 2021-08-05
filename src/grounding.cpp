@@ -97,9 +97,11 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		temp_configuration.expandChoicelessAbstractTasks = false;
 		temp_configuration.pruneEmptyMethodPreconditions = false;
 		temp_configuration.atMostTwoTasksPerMethod = false;
+		temp_configuration.compactConsecutivePrimitives = false;
 		temp_configuration.outputSASVariablesOnly = true; // -> force SAS+ here. This makes the implementation easier
 
-		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, temp_configuration); 
+		bool reachabilityNecessary = false;
+		postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, reachabilityNecessary, temp_configuration); 
 
 		// H2 mutexes need the maximum amount of information possible, so we have to compute SAS groups at this point
 
@@ -156,7 +158,8 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 //////////////////////// end of H2 mutexes
 
 	// run postprocessing
-	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, config);
+	bool reachabilityNecessary = false;
+	postprocess_grounding(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, prunedFacts, prunedTasks, prunedMethods, reachabilityNecessary, config);
 
 	DEBUG(	
 	// check integrity of data structures
@@ -202,7 +205,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 		std::vector<std::unordered_set<int>> sas_groups;
 		std::vector<std::unordered_set<int>> further_mutex_groups;
 
-		bool first = true;
+		bool first = reachabilityNecessary;
 		while (true){
 			auto [_sas_groups,_further_mutex_groups] = compute_sas_groups(domain, problem, 
 					famGroups, h2_mutexes,

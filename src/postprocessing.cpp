@@ -770,7 +770,7 @@ void contract_consecutive_primitives(const Domain & domain, const Problem & prob
 
 			// create new primitive action (lifted version)
 			Task newLiftedAction;
-			newLiftedAction.name = "§aggregate";
+			newLiftedAction.name = "%aggregate";
 			for (int groundAction : segment){
 				GroundedTask & groundTask = inputTasksGroundedPg[groundAction];
 				newLiftedAction.name += "_#" + domain.tasks[groundTask.taskNo].name + "#" + std::to_string(groundTask.arguments.size());
@@ -1056,6 +1056,7 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
+		bool & reachabilityNecessary,
 		grounding_configuration & config){
 	// sort the subtasks of each method topologically s.t. 
 	sortSubtasksOfMethodsTopologically(domain, prunedTasks, prunedMethods, reachableMethods);
@@ -1078,9 +1079,11 @@ void postprocess_grounding(const Domain & domain, const Problem & problem,
 		expandAbstractTasksWithSingleMethod(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods, config.keepTwoRegularisation);
 	}
 
-
-	contract_consecutive_primitives(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
-
+	if (config.compactConsecutivePrimitives){
+		if (!config.quietMode) std::cerr << "Compacting consecutive primitives in methods" << std::endl;
+		contract_consecutive_primitives(domain, problem, prunedTasks, prunedMethods, reachableTasks, reachableMethods);
+		reachabilityNecessary = true;
+	}
 
 	if (config.atMostTwoTasksPerMethod){
 		if (!config.quietMode) std::cerr << "Changing all methods s.t. they contain at most two tasks." << std::endl;

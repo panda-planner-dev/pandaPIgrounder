@@ -61,6 +61,7 @@ int main (int argc, char * argv[])
 	config.expandChoicelessAbstractTasks = args_info.no_abstract_expansion_flag;
 	config.keepTwoRegularisation = args_info.keep_two_regularisation_flag;
 	config.pruneEmptyMethodPreconditions = args_info.no_method_precondition_pruning_flag;
+	config.compactConsecutivePrimitives = args_info.compactify_actions_flag;
 
 	config.atMostTwoTasksPerMethod = args_info.two_regularisation_flag;
 	

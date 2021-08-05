@@ -19,6 +19,7 @@ void applyEffectPriority(const Domain & domain,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
+		bool & reachabilityNecessary,
 		grounding_configuration & config);
 
 #endif

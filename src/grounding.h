@@ -34,6 +34,7 @@ struct grounding_configuration{
 	bool keepTwoRegularisation = false;
 	bool pruneEmptyMethodPreconditions = true;
 	bool atMostTwoTasksPerMethod = false;
+	bool compactConsecutivePrimitives = false;
 	
 	// program output behaviour	
 	bool printTimings = false;
