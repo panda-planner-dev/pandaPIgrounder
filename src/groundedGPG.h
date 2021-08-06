@@ -13,7 +13,8 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
-		grounding_configuration & config);
+		grounding_configuration & config,
+		bool alwaysRunDFS);
 
 
 #endif

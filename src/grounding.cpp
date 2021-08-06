@@ -86,7 +86,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	
 	run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 			prunedFacts, prunedTasks, prunedMethods,
-			config);
+			config, false);
 
 ////////////////////// H2 mutexes
 	std::vector<std::unordered_set<int>> h2_mutexes;
@@ -152,7 +152,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			// if we have pruned actions, rerun the PGP and HTN stuff
 			run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 				prunedFacts, prunedTasks, prunedMethods,
-				temp_configuration);
+				temp_configuration, false);
 		}
 	}
 //////////////////////// end of H2 mutexes
@@ -225,7 +225,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 			if (changedPruned || first){
 				run_grounded_HTN_GPG(domain, problem, initiallyReachableFacts, initiallyReachableTasks, initiallyReachableMethods, 
 					prunedFacts, prunedTasks, prunedMethods,
-					config);
+					config, first);
 				first = false;
 			} else {
 				sas_variables_needing_none_of_them = _sas_variables_needing_none_of_them;

@@ -331,7 +331,8 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 		std::vector<bool> & prunedFacts,
 		std::vector<bool> & prunedTasks,
 		std::vector<bool> & prunedMethods,
-		grounding_configuration & config)
+		grounding_configuration & config,
+		bool alwaysRunDFS)
 {
 	// don't to anything for grounded problems
 	if (problem.initialAbstractTask == -1)
@@ -368,8 +369,10 @@ void run_grounded_HTN_GPG(const Domain & domain, const Problem & problem,
 
 		remainingFactsCount = reachedFactsCount;
 
-		if (reachedTasksCount == remainingPrimitiveTasks)
+		if (reachedTasksCount == remainingPrimitiveTasks && !alwaysRunDFS)
 			break;
+
+		alwaysRunDFS = false;
 
 		remainingPrimitiveTasks = reachedTasksCount;
 	
