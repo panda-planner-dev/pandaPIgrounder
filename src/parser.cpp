@@ -106,7 +106,7 @@ void readCostStatement (const Domain & state, std::istream & input, std::variant
 		PredicateWithArguments predicate;
 
 		input >> predicate.predicateNo;
-		size_t nArguments = state.predicates[predicate.predicateNo].argumentSorts.size ();
+		size_t nArguments = state.functions[predicate.predicateNo].argumentSorts.size ();
 		readN (state, input, predicate.arguments, readPrimitive, nArguments);
 		outputCosts.emplace<PredicateWithArguments>(predicate);
 	}
