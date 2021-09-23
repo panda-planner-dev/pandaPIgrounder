@@ -106,7 +106,7 @@ void readCostStatement (const Domain & state, std::istream & input, std::variant
 		PredicateWithArguments predicate;
 
 		input >> predicate.predicateNo;
-		size_t nArguments = state.predicates[predicate.predicateNo].argumentSorts.size ();
+		size_t nArguments = state.functions[predicate.predicateNo].argumentSorts.size ();
 		readN (state, input, predicate.arguments, readPrimitive, nArguments);
 		outputCosts.emplace<PredicateWithArguments>(predicate);
 	}
@@ -311,14 +311,15 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	DEBUG (std::cerr << "Reading [" << nInitFunctions << "] function initialisations." << std::endl);
 	readN (state, input, outputProblem.init_functions, readFunctionFact, nInitFunctions);
 
-	DEBUG (std::cerr << "Reading initial task and cost bound." << std::endl);
 	// Read initial task
+	DEBUG (std::cerr << "Reading initial task." << std::endl);
 	input >> outputProblem.initialAbstractTask;
-	std::cout << outputProblem.initialAbstractTask << std::endl;
+	DEBUG(std::cerr << "Initial abstract task " << outputProblem.initialAbstractTask << std::endl);
 
 	// Read the cost bound
+	DEBUG (std::cerr << "Reading cost bound." << std::endl);
 	input >> outputProblem.costBound;
-	std::cout << outputProblem.costBound << std::endl;
+	DEBUG(std::cerr << "Cost bound: " << outputProblem.costBound << std::endl);
 
 	// Utilities
 	int nPref;
@@ -326,10 +327,11 @@ void parseInput (std::istream & input, Domain & output, Problem & outputProblem)
 	DEBUG (std::cerr << "Reading [" << nPref << "] utilities." << std::endl);
 	readN (state, input, outputProblem.utility, readPreference, nPref);
 
+	DEBUG (std::cerr << "Reading metric expression." << std::endl);
     std::getline(input, outputProblem.metric_expression);
     std::getline(input, outputProblem.metric_expression);
 
-	DEBUG (std::err << "Read metric expression: \"" << metric_expression << "\"" << std::endl);
+	DEBUG (std::cerr << "Read metric expression: \"" << outputProblem.metric_expression << "\"" << std::endl);
 
 	// Reset exception mask
 	input.exceptions (exceptionMask);
