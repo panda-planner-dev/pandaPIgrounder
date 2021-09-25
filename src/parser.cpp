@@ -125,7 +125,7 @@ void readFunctionFact (const Domain & state, std::istream & input, std::pair<Fac
 {
 	input >> ffact.first.predicateNo;
 
-	size_t nArguments = state.predicates[ffact.first.predicateNo].argumentSorts.size ();
+	size_t nArguments = state.functions[ffact.first.predicateNo].argumentSorts.size ();
 	readN (state, input, ffact.first.arguments, readPrimitive, nArguments);
 	input >> ffact.second;
 }
