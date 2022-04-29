@@ -16,6 +16,7 @@ option "debug" d "activate debug mode" flag off
 option "quiet" q "activate quiet mode. Grounder will make no output." flag off
 option "print-timings" T "print detailed timings of individual operations." flag off
 option "output-domain" O "write internal data structures representing the lifted input to standard out (only for debugging)." flag off
+option "plan" P "specify a plan. One the methods pertaining to this plan will be grounded. Provide a file(name) in which the plan is." string
 
 
 section "Additional Inferences"

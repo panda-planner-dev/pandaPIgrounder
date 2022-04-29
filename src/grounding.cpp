@@ -62,7 +62,7 @@ void grounding_configuration::print_options(){
 }
 
 
-void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, grounding_configuration & config){
+void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, grounding_configuration & config, given_plan_typing_information & given_typing){
 
   	std::vector<FAMGroup> famGroups;	
 	if (config.computeInvariants){
@@ -75,7 +75,7 @@ void run_grounding (const Domain & domain, const Problem & problem, std::ostream
 	if (!config.quietMode) std::cout << "Conditional Effects expanded" << std::endl;
 
 	// run the lifted GPG to create an initial grounding of the domain
-	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, config);
+	auto [initiallyReachableFacts,initiallyReachableTasks,initiallyReachableMethods] = run_lifted_HTN_GPG(domain, problem, config, given_typing);
 	// run the grounded GPG until convergence to get the grounding smaller
 	std::vector<bool> prunedFacts (initiallyReachableFacts.size());
 	std::vector<bool> prunedTasks (initiallyReachableTasks.size());

@@ -114,12 +114,13 @@ double mprep = 0;
 
 
 HierarchyTyping::HierarchyTyping (const Domain & domain, const Problem & problem,
-			grounding_configuration & config, bool pruneIfIncluded, bool generateFullGraph) : 
+			grounding_configuration & config, given_plan_typing_information & given_typing, bool pruneIfIncluded, bool generateFullGraph) : 
 				domain(&domain),
 				possibleConstantsPerTask (domain.nTotalTasks),
 				possibleConstantsPerMethod (domain.decompositionMethods.size()),
 				possibleTasksToApplicablePossibleMethods (generateFullGraph?domain.nTotalTasks:0),
-				possibleMethodsToApplicablePossibleTasks (generateFullGraph?domain.decompositionMethods.size():0)
+				possibleMethodsToApplicablePossibleTasks (generateFullGraph?domain.decompositionMethods.size():0),
+				given_typing(given_typing)
 {
 	useIncludesForContainsTest = pruneIfIncluded;
 	createWholeGraph = generateFullGraph;
@@ -608,6 +609,29 @@ bool HierarchyTyping::isAssignmentCompatible<Task> (int taskNo, const VariableAs
 {
 	if (domain->tasks[taskNo].isCompiledConditionalEffect) return true; // actions representing conditional effects will always be kept. Their main task already passed HT checking
 
+	if (given_typing.info.size() != 0){
+		if (given_typing.artificialTasks.count(taskNo) == 0){
+			bool okAssignment = false;
+			for (std::vector<int> const & possible : const_cast<HierarchyTyping*>(this)->given_typing.info[taskNo]){
+				bool thisOK = true;
+				for (unsigned int i = 0; i < possible.size(); i++){
+
+					if (assignedVariables.assignments[i] != assignedVariables.NOT_ASSIGNED && assignedVariables.assignments[i] != possible[i]){
+						thisOK = false;
+						break;
+					}
+				}
+
+				if (thisOK){
+					okAssignment = true;
+					break;
+				}
+			}
+
+			if (!okAssignment)
+				return false;
+		}
+	}
 
 	int best = -1;
 	int bestSize = 0x3f3f3f3f;

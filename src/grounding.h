@@ -4,6 +4,7 @@
 #include <ostream>
 #include "main.h"
 #include "model.h"
+#include "givenPlan.h"
 
 
 struct grounding_configuration{
@@ -44,7 +45,7 @@ struct grounding_configuration{
 };
 
 
-void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, grounding_configuration & config);
+void run_grounding (const Domain & domain, const Problem & problem, std::ostream & dout, std::ostream & pout, grounding_configuration & config, given_plan_typing_information & given_typing);
 
 #endif
 

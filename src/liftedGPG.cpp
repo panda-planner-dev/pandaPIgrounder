@@ -26,11 +26,11 @@ void assignGroundNosToDeleteEffects(const Domain & domain, std::vector<GpgPlanni
 }
 
 
-std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMethod>> run_lifted_HTN_GPG(const Domain & domain, const Problem & problem, grounding_configuration & config){
+std::tuple<std::vector<Fact>, std::vector<GroundedTask>, std::vector<GroundedMethod>> run_lifted_HTN_GPG(const Domain & domain, const Problem & problem, grounding_configuration & config, given_plan_typing_information & given_typing){
 	std::unique_ptr<HierarchyTyping> hierarchyTyping;
 	// don't do hierarchy typing for classical instances
 	if (problem.initialAbstractTask != -1 && config.enableHierarchyTyping)
-		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, config, true, false);
+		hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, config, given_typing, true, false);
 
 	if (!config.quietMode) std::cerr << "Running PG." << std::endl;
 	GpgPlanningGraph pg (domain, problem);

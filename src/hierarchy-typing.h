@@ -27,6 +27,7 @@
 #include "model.h"
 #include "util.h"
 #include "grounding.h"
+#include "givenPlan.h"
 
 /// Contains a set of possible constants for each variable of a task/method.
 using PossibleConstants = std::vector<std::set<int>>;
@@ -66,7 +67,7 @@ struct HierarchyTyping
 	/**
 	 * @brief Calculates the hierarchy typing.
 	 */
-	HierarchyTyping (const Domain & domain, const Problem & Problem, grounding_configuration & config, bool pruneIfIncluded, bool generateFullGraph);
+	HierarchyTyping (const Domain & domain, const Problem & Problem, grounding_configuration & config, given_plan_typing_information & given_typing, bool pruneIfIncluded, bool generateFullGraph);
 
 	/**
 	 * @brief Returns true if the given VariableAssignment is compatible with the Hierarchy Typing information.
@@ -89,6 +90,9 @@ struct HierarchyTyping
 	// members storing private information
 	bool useIncludesForContainsTest;
 	bool createWholeGraph;
+
+	// restrictions w.r.t. a given plan
+	given_plan_typing_information given_typing;
 };
 
 /**

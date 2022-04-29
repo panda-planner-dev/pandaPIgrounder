@@ -15,6 +15,7 @@
 #include "hierarchy-typing.h"
 #include "model.h"
 #include "parser.h"
+#include "givenPlan.h"
 
 
 #include "cmdline.h"
@@ -190,19 +191,28 @@ int main (int argc, char * argv[])
 		return 1;
 	}
 
+
+	given_plan_typing_information given_typing_info;
+	if (args_info.plan_given){
+		std::string plan_filename(args_info.plan_orig);
+		given_typing_info = extract_given_plan_typer(domain,problem,plan_filename);
+	}
+
+
+
 	// Run the actual grounding procedure
 	if (primitiveMode)
 	{
 		// Just run the PG - this is for speed testing
 		std::unique_ptr<HierarchyTyping> hierarchyTyping;
 		if (config.enableHierarchyTyping)
-			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, config, false, true);
+			hierarchyTyping = std::make_unique<HierarchyTyping> (domain, problem, config, given_typing_info, false, true);
 
 		std::cout << hierarchyTyping.get()->graphToDotString(domain);
 	}
 	else
 	{
-		run_grounding (domain, problem, *outputStream, *outputStream2, config);
+		run_grounding (domain, problem, *outputStream, *outputStream2, config, given_typing_info);
 	}
 
 }
