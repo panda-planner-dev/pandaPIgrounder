@@ -4,4 +4,4 @@
 [submodule "cpddl"]
 	path = cpddl
 	url = https://gitlab.com/danfis/cpddl.git
-	branch = aaai2020
+	branch = aaai20
