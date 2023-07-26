@@ -28,6 +28,8 @@ cd ../src
 make
 ```
 
+To run all these commands, you can execute the `build.sh` script.
+
 ## Command Line Options
 
 The general syntax for a pandaPIgrounder call is
