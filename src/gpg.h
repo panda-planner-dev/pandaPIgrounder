@@ -37,7 +37,7 @@
 using namespace pandaPI;
 
 template <typename T>
-concept bool GpgInstance = requires (T instance)
+concept GpgInstance = requires (T instance)
 {
 	typename T::StateType;
 	typename T::ActionType;

@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 #include <variant>
-
+#include <concepts> // for same_as
 
 /**
  * @brief Sort (aka type) of a variable.
@@ -47,11 +47,11 @@ struct Predicate
  * @brief TODO
  */
 template <typename T>
-concept bool Literal = requires (T instance, int headNo)
+concept Literal = requires (T instance, int headNo)
 {
-	{ instance.setHeadNo (headNo) } -> void;
-	{ instance.getHeadNo () } -> int;
-	{ instance.arguments } -> std::vector<int>;
+	{ instance.setHeadNo (headNo) } -> std::same_as<void>;
+	{ instance.getHeadNo () } -> std::same_as<int>;
+	{ instance.arguments } -> std::convertible_to<std::vector<int>>;
 };
 
 /**

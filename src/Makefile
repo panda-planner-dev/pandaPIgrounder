@@ -19,7 +19,7 @@ CERROR=
 CXXFLAGS_LIBS=
 
 # CFlags for production and for debugging
-CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++17 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) -fconcepts -I../cpddl/ -I../cpddl/third-party/boruvka/
+CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++20 -fconcepts-diagnostics-depth=10 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) -fconcepts -I../cpddl/ -I../cpddl/third-party/boruvka/ 
 CCFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) 
 OPTIMIZER_PROD=-O3
 OPTIMIZER_DEBUG=-Og
