@@ -1,0 +1,14 @@
+diff --git a/Makefile b/Makefile
+index 5361aaf..029a9e2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -114,6 +114,9 @@ boruvka-clean:
+ third-party/boruvka/Makefile:
+ 	git submodule init -- third-party/boruvka
+ 	git submodule update -- third-party/boruvka
++	cd third-party/boruvka
++	git apply ../../../0001-boruvka-endian.patch
++	cd ../..
+ 
+ opts: third-party/opts/Makefile
+ 	$(MAKE) -C third-party/opts all

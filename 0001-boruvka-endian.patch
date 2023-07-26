@@ -1,0 +1,12 @@
+diff --git a/src/msg-schema.c b/src/msg-schema.c
+index 93e323a..e4e27d2 100644
+--- a/src/msg-schema.c
++++ b/src/msg-schema.c
+@@ -14,7 +14,6 @@
+  *  See the License for more information.
+  */
+ 
+-#include <endian.h>
+ #include <stdio.h>
+ 
+ #include "boruvka/msg-schema.h"
