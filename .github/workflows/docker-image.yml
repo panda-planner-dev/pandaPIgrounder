@@ -9,6 +9,7 @@ on:
     
 env:
   PANDA_SUBSYSTEM: pandaPIgrounder
+  IMAGE_NAME: panda-pi-grounder
 
 jobs:
 
@@ -19,4 +20,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${PANDA_SUBSYSTEM}:$(date +%s)
+      run: docker build . --file Dockerfile --tag ${IMAGE_NAME}:$(date +%s)
