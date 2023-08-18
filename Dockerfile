@@ -16,10 +16,18 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
 
 COPY . /pandaPIgrounder
 
-# Let us add some heavy dependency
+RUN cd /pandaPIgrounder/cpddl && \
+    git restore . && \
+    cd third-party/boruvka && git restore .
+
+RUN cd /pandaPIgrounder/cpddl && \
+    git apply ../0002-makefile.patch
+
 RUN cd /pandaPIgrounder && \
     cd cpddl && \
-    make boruvka opts bliss lpsolve && \
-    make && \
-    cd ../src && \
+    make boruvka opts bliss lpsolve 
+
+RUN cd /pandaPIgrounder/cpddl && make
+
+RUN cd /pandaPIgrounder/src && \
     make
