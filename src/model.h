@@ -201,6 +201,11 @@ struct DecompositionMethod : pandaPI::Operator<TaskWithArguments>
 	const std::vector<TaskWithArguments> getConsequences (void) const;
 
 	DecompositionMethod (void) {};
+	
+	bool isTotalOrder (void) const;
+	
+	bool isNoOrder (void) const;
+
 };
 
 // forward declaration
@@ -509,7 +514,7 @@ struct GroundedMethod
 	void setHeadNo (int headNo);
 
 	int getHeadNo (void) const;
-
+	
 	bool operator < (const GroundedMethod & other) const;
 
 	bool operator == (const GroundedMethod & other) const;

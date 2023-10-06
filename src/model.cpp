@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <numeric>
 #include <string>
+#include <unordered_set>
 #include <tuple>
 
 #include <cassert>
@@ -282,6 +283,37 @@ bool GroundedMethod::operator < (const GroundedMethod & other) const
 bool GroundedMethod::operator == (const GroundedMethod & other) const
 {
 	return std::tie (methodNo, arguments) == std::tie (other.methodNo, other.arguments);
+}
+
+bool DecompositionMethod::isTotalOrder () const
+{
+	// checking whether this is actually a full total order
+	std::unordered_set<int> taken;
+	while (taken.size() != this->subtasks.size()){
+		std::map<int,int> numPre;
+		for (size_t i = 0; i < this->orderingConstraints.size(); i++){
+			if (taken.count(this->orderingConstraints[i].first) || taken.count(this->orderingConstraints[i].second)) continue;
+			numPre[this->orderingConstraints[i].second]++;
+		}
+
+		int zeroPre = -1;
+		for (size_t i = 0; i < this->subtasks.size(); i++)
+			if (taken.count(i) == 0 && numPre[i] == 0){
+				if (zeroPre == -1)
+					zeroPre = i;
+				else
+					zeroPre = -2;
+			}
+		if (zeroPre == -2) return false;
+		taken.insert(zeroPre);
+	}
+
+	return true;
+}
+
+bool DecompositionMethod::isNoOrder () const
+{
+	return this->orderingConstraints.size() == 0;
 }
 
 
