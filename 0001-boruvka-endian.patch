@@ -1,3 +1,16 @@
+diff --git a/Makefile b/Makefile
+index 7aa9e10..01705ff 100644
+--- a/Makefile
++++ b/Makefile
+@@ -21,7 +21,7 @@ SO_VERSION = 0
+ 
+ CFLAGS += -I.
+ CXXFLAGS += -I.
+-LDFLAGS += -L. -lboruvka -lm -lrt
++LDFLAGS += -L. -lboruvka -lm
+ 
+ TARGETS  = libboruvka.a
+ 
 diff --git a/src/msg-schema.c b/src/msg-schema.c
 index 93e323a..e4e27d2 100644
 --- a/src/msg-schema.c
@@ -10,3 +23,16 @@ index 93e323a..e4e27d2 100644
  #include <stdio.h>
  
  #include "boruvka/msg-schema.h"
+diff --git a/test/Makefile b/test/Makefile
+index 26f7013..a0c9d93 100644
+--- a/test/Makefile
++++ b/test/Makefile
+@@ -8,7 +8,7 @@ endif
+ 
+ CFLAGS += -I./ -I../ -Icu/
+ CXXFLAGS += -I./ -I../ -Icu/
+-LDFLAGS += -L./ -ldata -Lcu/ -lcu -lrt -lm -L../ -lboruvka -pthread
++LDFLAGS += -L./ -ldata -Lcu/ -lcu -lm -L../ -lboruvka -pthread
+ CFLAGS_BENCH += $(CFLAGS) -O3 -funroll-loops -funsafe-loop-optimizations -fira-loop-pressure
+ 
+ CHECK_REG=cu/cu-check-regressions

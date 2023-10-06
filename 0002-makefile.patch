@@ -1,7 +1,16 @@
 diff --git a/Makefile b/Makefile
-index 5361aaf..055459e 100644
+index 5361aaf..3a9db98 100644
 --- a/Makefile
 +++ b/Makefile
+@@ -60,7 +60,7 @@ pddl/config.h:
+ 	if [ "$(DEBUG)" = "yes" ]; then echo "#define PDDL_DEBUG" >>$@; fi
+ 	echo '#include <boruvka/lp.h>' >__lp.c
+ 	echo 'int main(int argc, char *arvg[]) { return borLPSolverAvailable(BOR_LP_DEFAULT); }' >>__lp.c
+-	$(CC) $(CFLAGS) -o __lp __lp.c $(BORUVKA_LDFLAGS) $(LP_LDFLAGS) -pthread -lrt -lm
++	$(CC) $(CFLAGS) -o __lp __lp.c $(BORUVKA_LDFLAGS) $(LP_LDFLAGS) -pthread -lm
+ 	if ! ./__lp; then echo "#define PDDL_LP" >>$@; fi
+ 	rm -f __lp.c __lp
+ 	echo "" >>$@
 @@ -114,6 +114,7 @@ boruvka-clean:
  third-party/boruvka/Makefile:
  	git submodule init -- third-party/boruvka
@@ -10,9 +19,45 @@ index 5361aaf..055459e 100644
  
  opts: third-party/opts/Makefile
  	$(MAKE) -C third-party/opts all
-diff --git a/third-party/boruvka b/third-party/boruvka
---- a/third-party/boruvka
-+++ b/third-party/boruvka
-@@ -1 +1 @@
--Subproject commit e320cc7b02714e4096a686965fab343735d82bec
-+Subproject commit e320cc7b02714e4096a686965fab343735d82bec-dirty
+diff --git a/Makefile.include b/Makefile.include
+index 39fa372..4f95fdd 100644
+--- a/Makefile.include
++++ b/Makefile.include
+@@ -1,8 +1,22 @@
+ BASEPATH_ := $(dir $(realpath $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))))
+ #BASEPATH_ := $(dir $(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))
+ 
+-CC ?= gcc
+-CXX ?= g++
++ifneq ($OS(OS), Windows_NT)
++     UNAME_S := $(shell uname -s)
++     ifeq ($(UNAME_S),Darwin)
++		CC ?= /opt/homebrew/opt/gcc/bin/gcc-13
++		CXX ?= /opt/homebrew/opt/gcc/bin/g++-13
++     else
++		CC ?= gcc
++		CXX ?= g++
++     endif
++else # guessing what will work on Windows
++	CC ?= gcc
++	CXX ?= g++
++endif
++
++
++
+ SCAN_BUILD ?= scan-build
+ PYTHON2 ?= python2
+ CPPCHECK ?= cppcheck
+diff --git a/bin/Makefile b/bin/Makefile
+index aebb463..98d85d0 100644
+--- a/bin/Makefile
++++ b/bin/Makefile
+@@ -9,7 +9,7 @@ LDFLAGS += $(BORUVKA_LDFLAGS)
+ LDFLAGS += $(OPTS_LDFLAGS)
+ LDFLAGS += $(LP_LDFLAGS)
+ LDFLAGS += $(BLISS_LDFLAGS)
+-LDFLAGS += -pthread -lrt -lm
++LDFLAGS += -pthread -lm
+ 
+ ifeq '$(BIN_STATIC)' 'yes'
+   LDFLAGS += -static
