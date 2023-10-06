@@ -931,11 +931,17 @@ void change_to_methods_with_at_most_two_tasks(const Domain & domain,
 		// if the method has at most two subtasks, it is ok
 		if (method.groundedPreconditions.size() <= 2) continue;
 
+
 		DEBUG(std::cout << "Method too large: " << method.groundedPreconditions.size() << std::endl);
 		prunedMethods[method.groundedNo] = true;
 		DecompositionMethod mainLiftedMethod = domain.decompositionMethods[method.methodNo];
+		
+		bool methodIsTotalOrder = mainLiftedMethod.isTotalOrder();
+		bool methodIsNoOrder = mainLiftedMethod.isNoOrder();
 
-		// we can only do this compilation (currently) for totally-ordered methods ...
+		if (!methodIsTotalOrder && !methodIsNoOrder) continue; // can't handle these cases at the moment
+
+		// we can only do this compilation (currently) for totally-ordered methods and methods that have no order at all...
 		// TODO: do this in general for SHOP decompositions
 		
 		// use the precondition ordering for cutting the method into pieces
@@ -979,7 +985,8 @@ void change_to_methods_with_at_most_two_tasks(const Domain & domain,
 			TaskWithArguments nextSubtask;
 			nextSubtask.taskNo = groundedIntermediateTask.taskNo;
 			liftedMethod.subtasks.push_back(nextSubtask);
-			liftedMethod.orderingConstraints.push_back(std::make_pair(0,1));
+			if (methodIsTotalOrder)
+				liftedMethod.orderingConstraints.push_back(std::make_pair(0,1));
 			int liftedMethodNumber = domain.decompositionMethods.size() + newMethods.size();
 			newMethods.push_back(liftedMethod);
 
@@ -1013,7 +1020,8 @@ void change_to_methods_with_at_most_two_tasks(const Domain & domain,
 
 		liftedMethod.subtasks.push_back(mainLiftedMethod.subtasks[actualSubtaskIndex1]);
 		liftedMethod.subtasks.push_back(mainLiftedMethod.subtasks[actualSubtaskIndex2]);
-		liftedMethod.orderingConstraints.push_back(std::make_pair(0,1));
+		if (methodIsTotalOrder)
+			liftedMethod.orderingConstraints.push_back(std::make_pair(0,1));
 		int liftedMethodNumber = domain.decompositionMethods.size() + newMethods.size();
 		newMethods.push_back(liftedMethod);
 
