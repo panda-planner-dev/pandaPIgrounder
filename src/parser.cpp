@@ -159,6 +159,7 @@ void readPrimitiveTask (const Domain & state, std::istream & input, Task & outpu
 	outputTask.isCompiledConditionalEffect = false;
 
 	input >> outputTask.name;
+	DEBUG (std::cerr << "Reading primitive tasks [" << outputTask.name << "]." << std::endl);
 	input >> outputTask.number_of_original_variables;
 
 	// Read number of variables and their sorts
