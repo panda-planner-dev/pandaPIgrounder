@@ -628,8 +628,9 @@ bool HierarchyTyping::isAssignmentCompatible<Task> (int taskNo, const VariableAs
 				}
 			}
 
-			if (!okAssignment)
+			if (!okAssignment){
 				return false;
+			}
 		}
 	}
 
