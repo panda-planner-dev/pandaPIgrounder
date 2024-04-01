@@ -101,10 +101,10 @@ given_plan_typing_information extract_given_plan_typer(const Domain & domain, co
 				std::cerr << "WARNING: Did not find mixed-case name of action, using lower case." << std::endl;
                 taskNumber = iter->second;
                 usinglowercase = true;
-                continue;
-            }
-			std::cerr << "ERROR: task name not found: " << taskName << std::endl;
-            exit(-1);
+            } else {
+				std::cerr << "ERROR: task name not found: " << taskName << std::endl;
+            	exit(-1);
+			}
         } else {
             taskNumber = iter->second;
         }
@@ -139,10 +139,10 @@ given_plan_typing_information extract_given_plan_typer(const Domain & domain, co
 					std::cerr << "WARNING: Did not find mixed-case name of object, using lower case." << std::endl;
 	                argumentID = iter->second;
 	                usinglowercase = true;
-	                continue;
-	            }
-				std::cerr << "ERROR: object name not found: " << argumentName << std::endl;
-	            exit(-1);
+	            } else {
+					std::cerr << "ERROR: object name not found: " << argumentName << std::endl;
+	            	exit(-1);
+				}
 	        } else {
 	            argumentID = iter->second;
 	        }
