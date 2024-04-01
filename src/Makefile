@@ -19,7 +19,15 @@ CERROR=
 CXXFLAGS_LIBS=
 
 # CFlags for production and for debugging
-CXXFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic -std=gnu++20 -fconcepts-diagnostics-depth=10 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) -fconcepts -I../cpddl/ -I../cpddl/third-party/boruvka/ 
+CXXFLAGS_GENERAL :=-pipe -Wall -Wextra -pedantic -std=gnu++20 $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) -I../cpddl/ -I../cpddl/third-party/boruvka/ 
+
+## only append the concepts related flags under macos
+UNAME := $(shell uname)
+ifneq ($(UNAME), Darwin)
+	CXXFLAGS_GENERAL := $(CXXFLAGS_GENERAL) -fconcepts-diagnostics-depth=10 -fconcepts 
+endif
+
+
 CCFLAGS_GENERAL=-pipe -Wall -Wextra -pedantic $(CDEFS) $(CWARN) $(CERROR) $(CXXFLAGS_LIBS) 
 OPTIMIZER_PROD=-O3
 OPTIMIZER_DEBUG=-Og
