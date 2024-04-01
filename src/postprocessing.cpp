@@ -933,13 +933,14 @@ void change_to_methods_with_at_most_two_tasks(const Domain & domain,
 
 
 		DEBUG(std::cout << "Method too large: " << method.groundedPreconditions.size() << std::endl);
-		prunedMethods[method.groundedNo] = true;
 		DecompositionMethod mainLiftedMethod = domain.decompositionMethods[method.methodNo];
 		
 		bool methodIsTotalOrder = mainLiftedMethod.isTotalOrder();
 		bool methodIsNoOrder = mainLiftedMethod.isNoOrder();
 
 		if (!methodIsTotalOrder && !methodIsNoOrder) continue; // can't handle these cases at the moment
+		
+		prunedMethods[method.groundedNo] = true;
 
 		// we can only do this compilation (currently) for totally-ordered methods and methods that have no order at all...
 		// TODO: do this in general for SHOP decompositions
