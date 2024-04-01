@@ -11,11 +11,12 @@ index 5361aaf..3a9db98 100644
  	if ! ./__lp; then echo "#define PDDL_LP" >>$@; fi
  	rm -f __lp.c __lp
  	echo "" >>$@
-@@ -114,6 +114,7 @@ boruvka-clean:
+@@ -114,6 +114,8 @@ boruvka-clean:
  third-party/boruvka/Makefile:
  	git submodule init -- third-party/boruvka
  	git submodule update -- third-party/boruvka
 +	cd third-party/boruvka; git apply ../../../0001-boruvka-endian.patch
++	cd third-party/boruvka; git apply ../../../0001-Removed-non-macos-call-in-unused-function.patch
  
  opts: third-party/opts/Makefile
  	$(MAKE) -C third-party/opts all

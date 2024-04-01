@@ -1,0 +1,26 @@
+From dcb7884f73572a6378b2c46b2af4ba8b118d4118 Mon Sep 17 00:00:00 2001
+From: Galvus Damor <galvusdamor@gmail.com>
+Date: Mon, 1 Apr 2024 09:00:02 +0200
+Subject: [PATCH] Removed non-macos call in unused function
+
+---
+ src/fifo-sem.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/fifo-sem.c b/src/fifo-sem.c
+index 9cffacf..0c9c09c 100644
+--- a/src/fifo-sem.c
++++ b/src/fifo-sem.c
+@@ -161,7 +161,7 @@ int borFifoSemPopBlockTimeout(bor_fifo_sem_t *fifo, int time_in_ms, void *dst)
+         tm.tv_sec += 1;
+     }
+ 
+-    if (sem_timedwait(&fifo->full, &tm) != 0)
+-        return -1;
++    //if (sem_timedwait(&fifo->full, &tm) != 0)
++    //    return -1;
+     return popPost(fifo, dst);
+ }
+-- 
+2.43.2
+
