@@ -1,11 +1,12 @@
-From dcb7884f73572a6378b2c46b2af4ba8b118d4118 Mon Sep 17 00:00:00 2001
+From 816d1e0e5d8966f926e9475cdcb8d47b95eaac2d Mon Sep 17 00:00:00 2001
 From: Galvus Damor <galvusdamor@gmail.com>
 Date: Mon, 1 Apr 2024 09:00:02 +0200
 Subject: [PATCH] Removed non-macos call in unused function
 
 ---
- src/fifo-sem.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ src/fifo-sem.c   | 4 ++--
+ src/ring_queue.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/src/fifo-sem.c b/src/fifo-sem.c
 index 9cffacf..0c9c09c 100644
@@ -20,6 +21,20 @@ index 9cffacf..0c9c09c 100644
 +    //if (sem_timedwait(&fifo->full, &tm) != 0)
 +    //    return -1;
      return popPost(fifo, dst);
+ }
+diff --git a/src/ring_queue.c b/src/ring_queue.c
+index 3561bd5..6a28d5c 100644
+--- a/src/ring_queue.c
++++ b/src/ring_queue.c
+@@ -143,7 +143,7 @@ void *borRingQueuePopBlockTimeout(bor_ring_queue_t *q, int time_in_ms)
+         tm.tv_sec += 1;
+     }
+ 
+-    if (sem_timedwait(&q->full, &tm) != 0)
+-        return NULL;
++    //if (sem_timedwait(&q->full, &tm) != 0)
++    //    return NULL;
+     return queuePost(q);
  }
 -- 
 2.43.2
