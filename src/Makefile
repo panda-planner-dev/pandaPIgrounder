@@ -3,8 +3,18 @@
 # Variables
 # ==================================================
 # Tools
-CXX=g++
-CC=gcc
+UNAME := $(shell uname)
+# In Mac, assume use of g++/gcc from brew
+ifeq ($(UNAME), Darwin) 
+    CXX=g++-11
+	CC=gcc-11
+else
+# Original tools
+	CXX=g++
+	CC=gcc
+endif
+# MacOS has an old compiler, so use brew's
+
 LD=$(CXX)
 
 # Command-line defines
@@ -40,7 +50,11 @@ CXXFLAGS=$(CXXFLAGS_GENERAL) $(CXXFLAGS_PROD)
 
 # LDFlags
 LDFLAGS_GENERAL=
-LDFLAGS_PROD=$(OPTIMIZER_PROD) -flto -static -static-libgcc
+ifeq ($(UNAME), Darwin)
+	LDFLAGS_PROD=$(OPTIMIZER_PROD) -flto #-static -static-libgcc # Mac does not like statically linked libgcc
+else
+	LDFLAGS_PROD=$(OPTIMIZER_PROD) -flto -static -static-libgcc # Original linker ins
+endif
 LDFLAGS_DEBUG=-g $(OPTIMIZER_DEBUG)
 LDFLAGS=$(LDFLAGS_GENERAL) $(LDFLAGS_PROD)
 
